@@ -1,0 +1,1 @@
+import{Sn as e,tn as t,yn as n,z as r}from"./index-CglVadfD.js";n();var i=t();function a({className:e,...t}){return(0,i.jsx)(`div`,{"data-slot":`skeleton`,className:r(`bg-primary/10 animate-pulse rounded-md`,e),...t})}export{a as t};

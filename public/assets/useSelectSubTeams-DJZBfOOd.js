@@ -1,0 +1,1 @@
+import{t as e}from"./useQuery-BIP7lypG.js";import{P as t}from"./index-CglVadfD.js";const n=async(e={})=>{let n=[];e.team&&n.push(`team=${encodeURIComponent(String(e.team))}`);let r=n.join(`&`),i=r?`select-sub-teams?${r}`:`select-sub-teams`;return(await t.get(i)).data.data},r=(t={})=>e({queryKey:[`select-sub-teams`,t],queryFn:()=>n(t)});export{r as t};

@@ -1,0 +1,1 @@
+import{S as e,i as t}from"./index-CglVadfD.js";function n(n){return e(t,n)}export{n as t};

@@ -1,0 +1,1 @@
+import{t as e}from"./useQuery-BIP7lypG.js";import{P as t}from"./index-CglVadfD.js";const n=async()=>(await t.get(`select-teams`)).data.data,r=()=>e({queryKey:[`select-teams`],queryFn:n});export{r as t};

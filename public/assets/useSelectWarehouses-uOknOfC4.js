@@ -1,0 +1,1 @@
+import{t as e}from"./useQuery-BIP7lypG.js";import{P as t}from"./index-CglVadfD.js";const n=async()=>(await t.get(`select-warehouses`)).data?.data||[],r=t=>e({queryKey:[`select-warehouses`],queryFn:n,staleTime:300*1e3,enabled:t?.enabled??!0});export{r as t};

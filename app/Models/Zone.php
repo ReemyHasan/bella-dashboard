@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Models;
+
+use App\Traits\HasFilters;
+use App\Traits\HasFormattedTimestamps;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Zone extends Model
+{
+    use HasFactory, HasFilters, HasFormattedTimestamps;
+    protected $appends = [
+        "created_at_formatted",
+        "updated_at_formatted"
+    ];
+
+    protected $fillable = [
+        'currency_id',
+        'name',
+        'symbol',
+        
+        'delivery_cost',
+    ];
+
+    protected $casts = [
+        'delivery_cost' => 'decimal:2',
+    ];
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class);
+    }
+
+    public function cities()
+    {
+        return $this->hasMany(City::class);
+    }
+
+
+    public function tips()
+    {
+        return $this->hasMany(Tip::class);
+    }
+}
