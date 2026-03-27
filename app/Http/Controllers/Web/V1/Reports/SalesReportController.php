@@ -6,10 +6,10 @@ use App\Exports\TeamReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DashUser\Reports\SalesReportRequest;
 use App\Services\DashUser\ReportsService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Maatwebsite\Excel\Facades\Excel;
+use Rezgui\LaravelMpdfDz\Facades\LaravelMpdfDz;
 
 class SalesReportController extends Controller implements HasMiddleware
 {
@@ -55,15 +55,15 @@ class SalesReportController extends Controller implements HasMiddleware
 
     private function exportExcel($data)
     {
-        $fileName = 'sales_' . now()->format('Y-m-d _h:i') . '_report.xlsx';
+        $fileName = 'sales_' . now()->format('Y-m-d_h:i') . '_report.xlsx';
         return Excel::download(new TeamReportExport($data), $fileName);
     }
 
     private function exportPdf($data)
     {
-        $pdf = Pdf::loadView('reports.team', ['data' => $data]);
-        $fileName = 'sales_' . now()->format('Y-m-d _h:i') . '_report.pdf';
-        
+        $html = view('reports.team', ['data' => $data])->render();
+        $pdf = LaravelMpdfDz::loadHTML($html);
+        $fileName = 'sales_' . now()->format('Y-m-d_h:i') . '_report.pdf';
         return $pdf->download($fileName);
     }
 }

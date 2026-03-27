@@ -5,11 +5,28 @@
     <title>Sales Report Export</title>
     <style>
         body {
-            font-family: DejaVu Sans, sans-serif;
+            font-family: "amiri", sans-serif;
+            direction: rtl;
+        }
+
+        table {
+            direction: rtl;
+        }
+
+        th,
+        td {
+            text-align: right;
+        }
+
+        body {
             color: #333;
             font-size: 11px;
             margin: 20px;
             background-color: #FBFBFB;
+
+            direction: rtl;
+            text-align: right;
+
         }
 
         h1,
@@ -119,8 +136,8 @@
 </head>
 <body>
 
-    
-     <h2> {{ ucfirst($export_type ?? 'Report') }} -تقرير المبيعات</h2>
+
+    <h2>تقرير المبيعات</h2>
 
     <div class="section-title">تفاصيل التقرير</div>
 
@@ -149,9 +166,8 @@
         </tbody>
     </table>
 
-   <footer>
+    <footer>
         تم توليد التقرير في تاريخ: {{ now()->format('Y-m-d H:i') }}
     </footer>
 </body>
 </html>
-

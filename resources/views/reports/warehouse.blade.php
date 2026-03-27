@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Warehouses Report Export</title>
     <style>
         body {
-            font-family: 'NotoNaskhArabic', DejaVu Sans, sans-serif;
+            font-family: "amiri", sans-serif;
             direction: rtl;
-            unicode-bidi: bidi-override;
         }
 
         table {
@@ -24,6 +23,7 @@
             font-size: 11px;
             margin: 20px;
             background-color: #FBFBFB;
+
             direction: rtl;
             text-align: right;
 
@@ -136,7 +136,7 @@
 </head>
 <body>
 
-    <h2> {{ ucfirst($export_type ?? 'Report') }} -تقرير جرد المستودعات</h2>
+    <h2>تقرير جرد المستودعات</h2>
 
     <div class="section-title">تفاصيل التقرير</div>
 

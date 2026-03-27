@@ -6,10 +6,10 @@ use App\Exports\WarehouseReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DashUser\Reports\WarehouseReportRequest;
 use App\Services\DashUser\ReportsService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Maatwebsite\Excel\Facades\Excel;
+use Rezgui\LaravelMpdfDz\Facades\LaravelMpdfDz;
 
 class WarehouseReportController extends Controller implements HasMiddleware
 {
@@ -67,17 +67,15 @@ class WarehouseReportController extends Controller implements HasMiddleware
     }
     private function exportExcel($data)
     {
-        $fileName = 'warehouse_' . now()->format('Y-m-d _h:i') . '_report.xlsx';
+        $fileName = 'warehouse_' . now()->format('Y-m-d_h:i') . '_report.xlsx';
         return Excel::download(new WarehouseReportExport($this->transformForExport($data)), $fileName);
     }
 
     private function exportPdf($data)
     {
-        Pdf::setOption([
-            'defaultFont' => 'NotoNaskhArabic'
-        ]);
-        $pdf = Pdf::loadView('reports.warehouse', ['data' => $this->transformForExport($data)]);
-        $fileName = 'warehouse_' . now()->format('Y-m-d _h:i') . '_report.pdf';
+        $html = view('reports.warehouse', ['data' => $this->transformForExport($data)])->render();
+        $pdf = LaravelMpdfDz::loadHTML($html);
+        $fileName = 'warehouse_' . now()->format('Y-m-d_h:i') . '_report.pdf';
 
         return $pdf->download($fileName);
     }
