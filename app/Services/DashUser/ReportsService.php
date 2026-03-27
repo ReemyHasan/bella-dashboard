@@ -53,16 +53,16 @@ class ReportsService
                             'product_id' => $item->product_id,
                             'product_name' => $item->product?->name,
 
-                            'quantity' => (int) $item->quantity,
-                            'reserved_quantity' => (int) $item->reserved_quantity,
-                            'available' => (int) $item->available, // accessor
+                            'quantity' => (int) ($item->quantity ?? 0),
+                            'reserved_quantity' => (int) ($item->reserved_quantity ?? 0),
+                            'available' => (int) ($item->available ?? 0), // accessor
                         ];
                     })->values(),
 
                     'totals' => [
-                        'total_quantity' => $items->sum('quantity'),
-                        'total_reserved' => $items->sum('reserved_quantity'),
-                        'total_available' => $items->sum(fn($i) => $i->available),
+                        'total_quantity' => $items->sum('quantity') ?? 0,
+                        'total_reserved' => $items->sum('reserved_quantity') ?? 0,
+                        'total_available' => $items->sum(fn($i) => $i->available) ?? 0,
                     ]
                 ];
             })
@@ -113,9 +113,9 @@ class ReportsService
 
                     'manager_name' => $first->team?->manager
                         ? $first->team->manager->first_name . ' ' . $first->team->manager->last_name
-                        : null,
-                    'total_orders' => $items->sum('total_orders'),
-                    'total_sales' => $items->sum('total_sales'),
+                        : "N/A",
+                    'total_orders' => $items->sum('total_orders') ?? 0,
+                    'total_sales' => $items->sum('total_sales') ?? 0,
                 ];
             })
             ->values();
@@ -149,9 +149,9 @@ class ReportsService
                 'sub_team_name' => $item->subTeam?->name,
                 'team_leader_name' => $item->subTeam?->teamLeader
                     ? $item->subTeam?->teamLeader?->first_name . ' ' . $item->subTeam?->teamLeader?->last_name
-                    : null,
-                'total_sales' => $item->total_sales,
-                'total_orders' => $item->total_orders,
+                    : "N/A",
+                'total_sales' => $item->total_sales ?? 0,
+                'total_orders' => $item->total_orders ?? 0,
             ]);
     }
 }

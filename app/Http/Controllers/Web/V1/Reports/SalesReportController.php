@@ -41,7 +41,7 @@ class SalesReportController extends Controller implements HasMiddleware
         if (!empty($data['export'])) {
 
             if ($data['export'] == 'excel') {
-                return $this->exportExcel($result);
+                return $this->exportExcel($result, $data['type']);
             }
 
             if ($data['export'] == 'pdf') {
@@ -53,10 +53,10 @@ class SalesReportController extends Controller implements HasMiddleware
     }
 
 
-    private function exportExcel($data)
+    private function exportExcel($data, $type)
     {
         $fileName = 'sales_' . now()->format('Y-m-d_h:i') . '_report.xlsx';
-        return Excel::download(new TeamReportExport($data), $fileName);
+        return Excel::download(new TeamReportExport($data, $type), $fileName);
     }
 
     private function exportPdf($data)

@@ -58,9 +58,9 @@ class WarehouseReportController extends Controller implements HasMiddleware
                 return [
                     'product' => $product['product_name'],
                     'warehouse' => $warehouse['warehouse_name'],
-                    'quantity' => $product['quantity'],
-                    'reserved' => $product['reserved_quantity'],
-                    'available' => $product['available'],
+                    'quantity'  => (int) ($product['quantity'] ?? 0),
+                    'reserved'  => (int) ($product['reserved_quantity'] ?? 0),
+                    'available' => (int) ($product['available'] ?? 0),
                 ];
             });
         });
