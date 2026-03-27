@@ -4,8 +4,12 @@ namespace App\Services\DashUser;
 
 use App\Enums\OrderStatus;
 use App\Models\CustomerOrder;
+use App\Models\OrderOffer;
+use App\Models\OrderProduct;
 use App\Models\ProductWarehouse;
 use App\Models\Team;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 
 class ReportsService
@@ -209,6 +213,156 @@ class ReportsService
                             ])
                         ];
                     }),
+                ];
+            });
+    }
+
+    public function ordersDailyReport(array $filters)
+    {
+        $from = Carbon::parse($filters['from']);
+        $to   = Carbon::parse($filters['to']);
+
+        $orders = CustomerOrder::select(
+            DB::raw('DATE(created_at) as date'),
+            'order_status',
+            DB::raw('COUNT(*) as total')
+        )
+            ->whereBetween('created_at', [$from, $to])
+            ->groupBy('date', 'order_status')
+            ->get();
+
+        $period = CarbonPeriod::create($from, $to);
+
+        $statuses = [
+            'pending',
+            'approved',
+            'completed',
+            'cancelled',
+            'rejected',
+            'refund',
+        ];
+
+        // 🔥 Format result
+        return collect($period)->map(function ($date) use ($orders, $statuses) {
+
+            $dayData = [
+                'date' => $date->format('Y-m-d'),
+            ];
+
+            foreach ($statuses as $status) {
+                $count = $orders
+                    ->where('date', $date->format('Y-m-d'))
+                    ->where('order_status', $status)
+                    ->sum('total');
+
+                $dayData[$status] = (int) $count;
+            }
+
+            return $dayData;
+        });
+    }
+
+    public function ordersWarehouseManReport(array $filters)
+    {
+        $day = Carbon::parse($filters['day']);
+
+        $orders = CustomerOrder::with([
+            'warehouseMan:id,first_name,last_name'
+        ])
+            ->whereDate('created_at', $day)
+            ->get();
+
+
+        $dayOrders = $orders->whereBetween('created_at', [
+            $day->copy()->startOfDay(),
+            $day->copy()->endOfDay()
+        ]);
+
+        $grouped = $dayOrders->groupBy('warehouse_man_id');
+
+        return [
+            'date' => $day->format('Y-m-d'),
+
+            'warehouse_men' => $grouped->map(function ($items) {
+
+                $first = $items->first();
+
+                return [
+                    'name' => $first->warehouseMan
+                        ? $first->warehouseMan->first_name . ' ' . $first->warehouseMan->last_name
+                        : 'N/A',
+
+                    'orders_count' => $items->count() ?? 0,
+
+                    // 🔥 Total Price
+                    'total_price' => $items->sum(function ($o) {
+                        return $o->total_price * $o->current_exchange_rate;
+                    }),
+
+                    // 🔥 Deduction
+                    'total_deduction' => $items->sum(function ($o) {
+
+                        if ($o->deduction_type == 'percentage') {
+                            $value = ($o->total_price * $o->deduction_amount) / 100;
+                        } else {
+                            $value = $o->deduction_amount;
+                        }
+
+                        return $value * $o->current_exchange_rate;
+                    }),
+
+                    // 🔥 Tips
+                    'total_tips' => $items->sum(function ($o) {
+                        return $o->additional_tips * $o->current_exchange_rate;
+                    }),
+                ];
+            })->values()
+        ];
+    }
+
+    public function productsOrdersReport(array $filters)
+    {
+        return OrderProduct::query()
+            ->select(
+                'product_id',
+                DB::raw('SUM(quantity) as total_quantity')
+            )
+            ->with('product:id,name')
+            ->whereHas('order', function ($q) use ($filters) {
+                $q->whereBetween('created_at', [
+                    $filters['from'],
+                    $filters['to']
+                ]);
+            })
+            ->groupBy('product_id')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->product?->name ?? 'N/A',
+                    'quantity' => (int) $item->total_quantity,
+                ];
+            });
+    }
+    public function offersOrdersReport(array $filters)
+    {
+        return OrderOffer::query()
+            ->select(
+                'offer_id',
+                DB::raw('SUM(quantity) as total_quantity')
+            )
+            ->with('offer:id,name')
+            ->whereHas('order', function ($q) use ($filters) {
+                $q->whereBetween('created_at', [
+                    $filters['from'],
+                    $filters['to']
+                ]);
+            })
+            ->groupBy('offer_id')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->offer?->name ?? 'N/A',
+                    'quantity' => (int) $item->total_quantity,
                 ];
             });
     }
