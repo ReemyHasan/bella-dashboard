@@ -137,44 +137,34 @@
 <body>
 
 
-    <h2>تقرير الفرق</h2>
+    <h2>تقرير المبيعات</h2>
 
     <div class="section-title">تفاصيل التقرير</div>
 
-   @foreach($data as $team)
-    <div class="team">
-        <h3>📌 {{ $team['team_name'] }}</h3>
-        <p>المدير: {{ $team['manager_name'] }}</p>
-
-        <div class="box">
-            <strong>الفريق المباشر:</strong>
-            @foreach($team['direct_team'] as $sub)
-                <div class="box">
-                    <p>👤 {{ $sub['sub_team_name'] }} ({{ $sub['leader'] }})</p>
-                    <ul>
-                        @foreach($sub['users'] as $user)
-                            <li>{{ $user['name'] }}</li>
-                        @endforeach
-                    </ul>
-                </div>
+    <table>
+        <thead>
+            <tr>
+                <th>اسم الفريق</th>
+                <th>إجمالي المبيعات</th>
+                <th>إجمالي الطلبات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(isset($data) && count($data) > 0)
+            @foreach($data as $row)
+            <tr>
+                <td>{{ $row['team_name'] ?? $row['sub_team_name'] }}</td>
+                <td>{{ $row['total_sales'] }}</td>
+                <td>{{ $row['total_orders'] }}</td>
+            </tr>
             @endforeach
-        </div>
-
-        <div class="box">
-            <strong>الفرق الفرعية:</strong>
-            @foreach($team['sub_teams'] as $sub)
-                <div class="box">
-                    <p>👤 {{ $sub['sub_team_name'] }} ({{ $sub['leader'] }})</p>
-                    <ul>
-                        @foreach($sub['users'] as $user)
-                            <li>{{ $user['name'] }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endforeach
-        </div>
-    </div>
-@endforeach
+            @else
+            <tr>
+                <td colspan="3" class="no-data">لا يوجد بيانات للعرض</td>
+            </tr>
+            @endif
+        </tbody>
+    </table>
 
     <footer>
         تم توليد التقرير في تاريخ: {{ now()->format('Y-m-d H:i') }}

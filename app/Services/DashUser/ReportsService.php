@@ -5,6 +5,7 @@ namespace App\Services\DashUser;
 use App\Enums\OrderStatus;
 use App\Models\CustomerOrder;
 use App\Models\ProductWarehouse;
+use App\Models\Team;
 use Illuminate\Support\Facades\DB;
 
 class ReportsService
@@ -153,5 +154,62 @@ class ReportsService
                 'total_sales' => $item->total_sales ?? 0,
                 'total_orders' => $item->total_orders ?? 0,
             ]);
+    }
+
+    public function teamsHierarchyReport(array $filters)
+    {
+        return Team::query()
+            ->with([
+                'manager:id,first_name,last_name',
+
+                'directSubTeams.teamLeader:id,first_name,last_name',
+                'directSubTeams.users:id,first_name,last_name,subteam_id',
+
+                'normalSubTeams.teamLeader:id,first_name,last_name',
+                'normalSubTeams.users:id,first_name,last_name,subteam_id',
+            ])
+            ->when(
+                $filters['team_ids'] ?? null,
+                fn($q, $ids) => $q->whereIn('id', $ids)
+            )
+            ->get()
+            ->map(function ($team) {
+
+                return [
+                    'team_name' => $team->name,
+
+                    'manager_name' => $team->manager
+                        ? $team->manager->first_name . ' ' . $team->manager->last_name
+                        : 'N/A',
+
+                    // 🔥 Direct team
+                    'direct_team' => $team->directSubTeams->map(function ($sub) {
+                        return [
+                            'sub_team_name' => $sub->name,
+                            'leader' => $sub->teamLeader
+                                ? $sub->teamLeader->first_name . ' ' . $sub->teamLeader->last_name
+                                : 'N/A',
+
+                            'users' => $sub->users->map(fn($u) => [
+                                'name' => $u->first_name . ' ' . $u->last_name
+                            ])
+                        ];
+                    }),
+
+                    // 🔥 Other subteams
+                    'sub_teams' => $team->normalSubTeams->map(function ($sub) {
+                        return [
+                            'sub_team_name' => $sub->name,
+                            'leader' => $sub->teamLeader
+                                ? $sub->teamLeader->first_name . ' ' . $sub->teamLeader->last_name
+                                : 'N/A',
+
+                            'users' => $sub->users->map(fn($u) => [
+                                'name' => $u->first_name . ' ' . $u->last_name
+                            ])
+                        ];
+                    }),
+                ];
+            });
     }
 }

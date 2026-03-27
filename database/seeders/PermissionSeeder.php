@@ -236,6 +236,7 @@ class PermissionSeeder extends Seeder
 
             ['name' => 'view_sales_reports', 'name_ar' => 'عرض تقارير المبيعات', 'guard_name' => 'dash_user_guard', 'group' => 'التقارير'],
             ['name' => 'view_warehouses_reports', 'name_ar' => 'عرض تقارير المستودعات', 'guard_name' => 'dash_user_guard', 'group' => 'التقارير'],
+            ['name' => 'view_teams_reports', 'name_ar' => 'عرض تقارير الفرق', 'guard_name' => 'dash_user_guard', 'group' => 'التقارير'],
 
 
         ];

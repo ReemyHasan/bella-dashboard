@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\V1\Reports\SalesReportController;
+use App\Http\Controllers\Web\V1\Reports\TeamsReportController;
 use App\Http\Controllers\Web\V1\Reports\WarehouseReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -8,4 +9,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('reports/sales', [SalesReportController::class, 'salesReport']);
 
 Route::get('reports/warehouses', [WarehouseReportController::class, 'warehouseReport']);
+Route::get('reports/teams', [TeamsReportController::class, 'teamsHierarchyReport']);
+
 

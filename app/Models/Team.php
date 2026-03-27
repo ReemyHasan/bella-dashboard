@@ -22,7 +22,6 @@ class Team extends Model
         'team_leader_percentage',
         'manager_percentage',
         'direct_manager_percentage',
-        // 'delivery_man_percentage',
         'warehouse_man_percentage',
     ];
 
@@ -53,5 +52,15 @@ class Team extends Model
     public function subTeams()
     {
         return $this->hasMany(SubTeam::class);
+    }
+
+    public function directSubTeams()
+    {
+        return $this->hasMany(SubTeam::class)->where('is_direct', true);
+    }
+
+    public function normalSubTeams()
+    {
+        return $this->hasMany(SubTeam::class)->where('is_direct', false);
     }
 }
