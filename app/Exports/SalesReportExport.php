@@ -32,6 +32,7 @@ class SalesReportExport implements FromCollection, WithHeadings, WithMapping, Wi
             } else {
                 $this->rows[] = [
                     'name' => $item['sub_team_name'],
+                    'is_direct' => $item['is_direct'],
                     'leader' => $item['team_leader_name'],
                     'orders' => (int) ($item['total_orders'] ?? 0),
                     'sales' => (float) ($item['total_sales'] ?? 0),
@@ -59,6 +60,7 @@ class SalesReportExport implements FromCollection, WithHeadings, WithMapping, Wi
 
         return [
             'اسم الفريق الفرعي',
+            'مباشر؟',
             'اسم قائد الفريق',
             'عدد الطلبات',
             'إجمالي المبيعات',
@@ -67,23 +69,34 @@ class SalesReportExport implements FromCollection, WithHeadings, WithMapping, Wi
 
     public function map($row): array
     {
-        return [
-            $row['name'],
-            $row['manager'] ?? $row['leader'],
-            $row['orders'],
-            $row['sales'],
-        ];
+        if ($this->type == 'team') {
+
+            return [
+                $row['name'],
+                $row['manager'] ?? $row['leader'],
+                $row['orders'],
+                $row['sales'],
+            ];
+        } else {
+            return [
+                $row['name'],
+                $row['is_direct'],
+                $row['manager'] ?? $row['leader'],
+                $row['orders'],
+                $row['sales'],
+            ];
+        }
     }
 
     public function styles(Worksheet $sheet)
     {
         // 🔢 Numbers format
-        $sheet->getStyle('C:D')
+        $sheet->getStyle('C:E')
             ->getNumberFormat()
             ->setFormatCode(NumberFormat::FORMAT_NUMBER);
 
         // 📏 Auto width
-        foreach (range('A', 'D') as $col) {
+        foreach (range('A', 'E') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
@@ -91,7 +104,7 @@ class SalesReportExport implements FromCollection, WithHeadings, WithMapping, Wi
         $sheet->setRightToLeft(true);
 
         // 🎨 Header styling
-        $sheet->getStyle('A1:D1')->applyFromArray([
+        $sheet->getStyle('A1:E1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],

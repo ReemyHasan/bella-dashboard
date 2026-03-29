@@ -6,7 +6,7 @@ use App\Exports\OrdersItemExport;
 use App\Exports\OrdersReportExport;
 use App\Exports\OrdersWarehouseManExport;
 use App\Http\Controllers\Controller;
-use App\Services\DashUser\ReportsService;
+use App\Services\DashUser\Reports\ReportsService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;

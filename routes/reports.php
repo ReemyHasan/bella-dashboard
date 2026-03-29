@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('reports/sales', [SalesReportController::class, 'salesReport']);
+Route::get('reports/marketers-orders', [SalesReportController::class, 'subTeamMarketersReport']);
+Route::get('reports/marketers-daily', [SalesReportController::class, 'marketerDailyReport']);
 
 Route::get('reports/warehouses', [WarehouseReportController::class, 'warehouseReport']);
 Route::get('reports/teams', [TeamsReportController::class, 'teamsHierarchyReport']);

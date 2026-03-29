@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>Sales Report Export</title>
-    <style>
+      <style>
         body {
             font-family: "amiri", sans-serif;
             direction: rtl;
@@ -137,32 +136,35 @@
 <body>
 
 
-    <h2>تقرير المبيعات</h2>
+    <h2>تقرير المسوق اليومي</h2>
 
-    <div class="section-title">تفاصيل التقرير</div>
+    <div>
+        المسوق: {{ $data['marketer_name'] }} <br>
+        من: {{ $data['from'] }} إلى: {{ $data['to'] }}
+    </div>
+
 
     <table>
         <thead>
             <tr>
-                <th>اسم الفريق</th>
-                <th>مباشر؟</th>
+                <th>التاريخ</th>
+                <th>عدد الطلبات</th>
                 <th>إجمالي المبيعات</th>
-                <th>إجمالي الطلبات</th>
             </tr>
         </thead>
         <tbody>
             @if(isset($data) && count($data) > 0)
-            @foreach($data as $row)
+
+            @foreach($data['days'] as $day)
             <tr>
-                <td>{{ $row['team_name'] ?? $row['sub_team_name'] }}</td>
-                <td>{{ $row['is_direct']  ? "مباشر" : "غير مباشر" }}</td>
-                <td>{{ $row['total_sales'] }}</td>
-                <td>{{ $row['total_orders'] }}</td>
+                <td>{{ $day['date'] }}</td>
+                <td>{{ $day['total_orders'] }}</td>
+                <td>{{ number_format($day['total_sales'], 2) }}</td>
             </tr>
             @endforeach
             @else
             <tr>
-                <td colspan="3" class="no-data">لا يوجد بيانات للعرض</td>
+                <td colspan="6" class="no-data">لا يوجد بيانات للعرض</td>
             </tr>
             @endif
         </tbody>

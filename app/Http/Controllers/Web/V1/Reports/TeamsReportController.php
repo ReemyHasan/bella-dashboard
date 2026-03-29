@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Web\V1\Reports;
 
 use App\Exports\TeamReportExport;
 use App\Http\Controllers\Controller;
-use App\Services\DashUser\ReportsService;
+use App\Services\DashUser\Reports\ReportsService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;

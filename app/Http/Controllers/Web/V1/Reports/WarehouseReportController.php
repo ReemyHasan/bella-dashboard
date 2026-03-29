@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Web\V1\Reports;
 use App\Exports\WarehouseReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DashUser\Reports\WarehouseReportRequest;
-use App\Services\DashUser\ReportsService;
+use App\Services\DashUser\Reports\ReportsService;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Maatwebsite\Excel\Facades\Excel;
