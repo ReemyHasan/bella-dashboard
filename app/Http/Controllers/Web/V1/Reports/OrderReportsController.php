@@ -6,6 +6,9 @@ use App\Exports\OrdersItemExport;
 use App\Exports\OrdersReportExport;
 use App\Exports\OrdersWarehouseManExport;
 use App\Http\Controllers\Controller;
+use App\Models\AppUser;
+use App\Models\SubTeam;
+use App\Models\Team;
 use App\Services\DashUser\Reports\ReportsService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -110,21 +113,45 @@ class OrderReportsController extends Controller implements HasMiddleware
             'from' => ['required', 'date'],
             'to' => ['required', 'date'],
             'type' => ['required', 'in:products,offers'],
+            'team_id' => ['nullable', 'exists:teams,id'],
+            'sub_team_id' => ['nullable', 'exists:sub_teams,id'],
+            'marketer_id' => ['nullable', 'exists:app_users,id'],
             'export' => ['nullable', 'in:excel,pdf'],
         ]);
+
+        $filtersInfo = [
+            'team' => !empty($data['team_id'])
+                ? optional(Team::find($data['team_id']))->name
+                : null,
+
+            'sub_team' => !empty($data['sub_team_id'])
+                ? optional(SubTeam::find($data['sub_team_id']))->name
+                : null,
+
+            'marketer' => !empty($data['marketer_id'])
+                ? optional(AppUser::find($data['marketer_id']))->first_name . ' ' .
+                optional(AppUser::find($data['marketer_id']))->last_name
+                : null,
+        ];
 
         $result = $data['type'] == 'products'
             ? $this->service->productsOrdersReport($data)
             : $this->service->offersOrdersReport($data);
 
+        $payload = [
+            'data' => $result,
+            'filters' => $filtersInfo,
+            'from' => $data['from'],
+            'to' => $data['to'],
+        ];
         if (!empty($data['export'])) {
 
             if ($data['export'] === 'excel') {
-                return $this->exportItemExcel($result, $data['type']);
+                return $this->exportItemExcel($payload, $data['type']);
             }
 
             if ($data['export'] === 'pdf') {
-                return $this->exportItemPdf($result, $data['type']);
+                return $this->exportItemPdf($payload, $data['type']);
             }
         }
 
@@ -134,13 +161,14 @@ class OrderReportsController extends Controller implements HasMiddleware
     private function exportItemExcel($data, $type)
     {
         $fileName = $type . '_report_' . now()->format('Y-m-d_h:i') . '.xlsx';
-        return Excel::download(new OrdersItemExport($data), $fileName);
+        return Excel::download(new OrdersItemExport($data['data']), $fileName);
     }
 
     private function exportItemPdf($data, $type)
     {
         $html = view('reports.items', [
-            'data' => $data,
+            'data' => $data['data'],
+            'filters' => $data['filters'],
             'type' => $type,
             'from' => request('from'),
             'to' => request('to'),

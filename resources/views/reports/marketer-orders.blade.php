@@ -134,44 +134,50 @@
     </style>
 </head>
 <body>
+    <h2>تقرير طلبات المسوق</h2>
 
-    <h2> تقرير {{ $type === 'products' ? 'المنتجات' : 'العروض' }}</h2>
+    <p><strong>المسوق:</strong>{{ $data['marketer_name'] }}  </p>
+    <p><strong>التاريخ:</strong> {{ $data['date'] }}</p>
+    <p><strong>عدد الطلبات:</strong> {{ $data['total_orders'] }}</p>
 
-    <div class="section-title"> تفاصيل التقرير - من: {{ $from }} - إلى: {{ $to }}</div>
 
-    <table class="filters-table">
-        <tr>
-            <td><strong>الفريق:</strong></td>
-            <td>{{ $filters['team'] ?? 'الكل' }}</td>
-        </tr>
-        <tr>
-            <td><strong>الفريق الفرعي:</strong></td>
-            <td>{{ $filters['sub_team'] ?? 'الكل' }}</td>
-        </tr>
-        <tr>
-            <td><strong>المسوق:</strong></td>
-            <td>{{ $filters['marketer'] ?? 'الكل' }}</td>
-        </tr>
-    </table>
     <table>
         <thead>
             <tr>
-                <th>الاسم</th>
-                <th>الكمية</th>
+                <th>معرف الطلب</th>
+                <th>الرقم التسلسلي للطلب</th>
+                <th>الإضافات</th>
+                <th>الخصم</th>
+                <th>طريقة الخصم</th>
+                <th>السعر بالعملة المباعة</th>
+                <th>العملة</th>
+                <th>قيمة التحويل</th>
+                <th>السعر بعد تحويل العملة</th>
+                <th>حالة الطلب</th>
+                <th>المنتجات</th>
             </tr>
         </thead>
         <tbody>
-            @if(isset($data) && count($data) > 0)
+            @if(isset($data['orders']) && count($data['orders']) > 0)
 
-            @foreach($data as $item)
+            @foreach($data['orders'] as $order)
             <tr>
-                <td>{{ $item['name'] }}</td>
-                <td>{{ $item['quantity'] }}</td>
+                <td>{{ $order['order_id'] }}</td>
+                <td>{{ $order['order_number'] }}</td>
+                <td>{{ $order['additional_tips'] }}</td>
+                <td>{{ $order['deduction_amount'] }}</td>
+                <td>{{ $order['deduction_type'] }}</td>
+                <td>{{ $order['price_before_exchange'] }}</td>
+                <td>{{ $order['currency'] }}</td>
+                <td>{{ $order['current_exchange_rate'] }}</td>
+                <td>{{ $order['price_after_exchange'] }}</td>
+                <td>{{ $order['order_status'] }}</td>
+                <td>{{ $order['products'] }}</td>
             </tr>
             @endforeach
             @else
             <tr>
-                <td colspan="2" class="no-data">لا يوجد بيانات للعرض</td>
+                <td colspan="6" class="no-data">لا يوجد بيانات للعرض</td>
             </tr>
             @endif
         </tbody>

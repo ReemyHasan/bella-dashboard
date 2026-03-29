@@ -12,19 +12,45 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class MarketerOrdersExport implements FromCollection, WithHeadings, WithStyles
 {
+    protected $rows = [];
 
-    public function __construct(private $data) {}
+    public function __construct($data)
+    {
+        foreach ($data['orders'] as $order) {
+            $this->rows[] = [
+                $order['order_id'],
+                $order['order_number'],
+                $order['additional_tips'],
+                $order['deduction_amount'],
+                $order['deduction_type'],
+                $order['price_before_exchange'],
+                $order['currency'],
+                $order['current_exchange_rate'],
+                $order['price_after_exchange'],
+                $order['order_status'],
+                $order['products'],
 
+            ];
+        }
+    }
     public function collection()
     {
-        return collect($this->data);
+        return collect($this->rows);
     }
     public function headings(): array
     {
         return [
-            'التاريخ',
-            'عدد الطلبات',
-            'إجمالي المبيعات',
+            'معرف الطلب',
+            'الرقم التسلسلي للطلب',
+            'الإضافات',
+            'الخصم',
+            'طريقة الخصم',
+            'السعر بالعملة المباعة',
+            'العملة',
+            'قيمة التحويل',
+            'السعر بعد تحويل العملة',
+            'حالة الطلب',
+            'المنتجات',
         ];
     }
     public function styles(Worksheet $sheet)
@@ -32,7 +58,7 @@ class MarketerOrdersExport implements FromCollection, WithHeadings, WithStyles
         $sheet->setRightToLeft(true);
 
         // Header styling
-        $sheet->getStyle('A1:F1')->applyFromArray([
+        $sheet->getStyle('A1:K1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -46,7 +72,7 @@ class MarketerOrdersExport implements FromCollection, WithHeadings, WithStyles
             ],
         ]);
 
-        foreach (range('A', 'F') as $col) {
+        foreach (range('A', 'K') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

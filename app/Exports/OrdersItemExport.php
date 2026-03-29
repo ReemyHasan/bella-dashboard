@@ -31,7 +31,7 @@ class OrdersItemExport implements FromCollection, WithHeadings, WithStyles
         $sheet->setRightToLeft(true);
 
         // Header styling
-        $sheet->getStyle('A1:G1')->applyFromArray([
+        $sheet->getStyle('A1:B1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -45,7 +45,7 @@ class OrdersItemExport implements FromCollection, WithHeadings, WithStyles
             ],
         ]);
 
-        foreach (range('A', 'G') as $col) {
+        foreach (range('A', 'B') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

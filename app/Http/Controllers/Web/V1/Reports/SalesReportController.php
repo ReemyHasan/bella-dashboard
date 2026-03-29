@@ -133,11 +133,11 @@ class SalesReportController extends Controller implements HasMiddleware
 
         if (!empty($data['export'])) {
 
-            if ($data['export'] === 'excel') {
+            if ($data['export'] == 'excel') {
                 return $this->exportMarketerDailyExcel($result);
             }
 
-            if ($data['export'] === 'pdf') {
+            if ($data['export'] == 'pdf') {
                 return $this->exportMarketerDailyPdf($result);
             }
         }
@@ -146,7 +146,7 @@ class SalesReportController extends Controller implements HasMiddleware
     }
     private function exportMarketerDailyExcel($data)
     {
-        $fileName = 'marketer_daily__' . now()->format('Y-m-d_h:i') . '_report.xlsx';
+        $fileName = 'marketer_daily_' . now()->format('Y-m-d_h:i') . '_report.xlsx';
 
         return Excel::download(
             new MarketerDailyExport($data),
@@ -161,7 +161,7 @@ class SalesReportController extends Controller implements HasMiddleware
 
         $pdf = LaravelMpdfDz::loadHTML($html);
 
-        $fileName = 'marketer_daily__' . now()->format('Y-m-d_h:i') . '_report.pdf';
+        $fileName = 'marketer_daily_' . now()->format('Y-m-d_h:i') . '_report.pdf';
 
         return $pdf->download($fileName);
     }
@@ -178,11 +178,11 @@ class SalesReportController extends Controller implements HasMiddleware
 
         if (!empty($data['export'])) {
 
-            if ($data['export'] === 'excel') {
+            if ($data['export'] == 'excel') {
                 return $this->exportMarketerOrdersExcel($result);
             }
 
-            if ($data['export'] === 'pdf') {
+            if ($data['export'] == 'pdf') {
                 return $this->exportMarketerOrdersPdf($result);
             }
         }

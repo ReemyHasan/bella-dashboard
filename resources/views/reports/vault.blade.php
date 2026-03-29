@@ -131,50 +131,62 @@
             padding-top: 5px;
         }
 
+
+        tfoot td {
+            font-weight: bold;
+            background: #f5f5f5;
+        }
+
+        .info {
+            margin-bottom: 15px;
+        }
+
     </style>
 </head>
 <body>
 
-    <h2> تقرير {{ $type === 'products' ? 'المنتجات' : 'العروض' }}</h2>
 
-    <div class="section-title"> تفاصيل التقرير - من: {{ $from }} - إلى: {{ $to }}</div>
+    <h2>تقرير الخزائن</h2>
 
-    <table class="filters-table">
-        <tr>
-            <td><strong>الفريق:</strong></td>
-            <td>{{ $filters['team'] ?? 'الكل' }}</td>
-        </tr>
-        <tr>
-            <td><strong>الفريق الفرعي:</strong></td>
-            <td>{{ $filters['sub_team'] ?? 'الكل' }}</td>
-        </tr>
-        <tr>
-            <td><strong>المسوق:</strong></td>
-            <td>{{ $filters['marketer'] ?? 'الكل' }}</td>
-        </tr>
-    </table>
+    <div class="info">
+        <p><strong>من:</strong> {{ $data['from'] }}</p>
+        <p><strong>إلى:</strong> {{ $data['to'] }}</p>
+    </div>
     <table>
         <thead>
             <tr>
-                <th>الاسم</th>
-                <th>الكمية</th>
+                <th>#</th>
+                <th>اسم المالك</th>
+                <th>الرصيد الحالي</th>
+                <th>إجمالي الداخل</th>
+                <th>إجمالي الخارج</th>
             </tr>
         </thead>
         <tbody>
-            @if(isset($data) && count($data) > 0)
+            @if(isset($data['vaults']) && count($data['vaults']) > 0)
 
-            @foreach($data as $item)
+            @foreach($data['vaults'] as $index => $vault)
             <tr>
-                <td>{{ $item['name'] }}</td>
-                <td>{{ $item['quantity'] }}</td>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $vault['owner'] }}</td>
+                <td>{{ $vault['balance'] }}</td>
+                <td>{{ $vault['total_in'] }}</td>
+                <td>{{ $vault['total_out'] }}</td>
             </tr>
             @endforeach
             @else
             <tr>
-                <td colspan="2" class="no-data">لا يوجد بيانات للعرض</td>
+                <td colspan="6" class="no-data">لا يوجد بيانات للعرض</td>
             </tr>
             @endif
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2">إجمالي الأرصدة</td>
+                <td>{{ $data['total_balances'] }}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
     </table>
 
     <footer>

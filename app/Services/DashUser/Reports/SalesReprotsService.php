@@ -208,7 +208,7 @@ class SalesReprotsService
 
         $marketer = AppUser::find($filters['marketer_id']);
 
-        $orders = CustomerOrder::with(['products.product']) // eager load product relation
+        $orders = CustomerOrder::with(['products.product', 'currency']) // eager load product relation
             ->where('app_user_id', $filters['marketer_id'])
             ->whereBetween('created_at', [$date, $endDate])
             ->get()
@@ -223,7 +223,8 @@ class SalesReprotsService
                     'deduction_type' => $order->deduction_type,
 
                     'price_before_exchange' => $order->total_price,
-                    'currency' => optional($order->currency)->code ?? 'N/A',
+                    'currency' => optional($order->currency)->symbol ?? 'N/A',
+                    'current_exchange_rate' => $order->current_exchange_rate,
 
                     'price_after_exchange' => $order->total_price * $order->current_exchange_rate,
 

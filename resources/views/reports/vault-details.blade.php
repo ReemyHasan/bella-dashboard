@@ -131,47 +131,84 @@
             padding-top: 5px;
         }
 
+
+        tfoot td {
+            font-weight: bold;
+            background: #f5f5f5;
+        }
+
+        .summary td {
+            border: none;
+            padding: 4px 8px;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
 
-    <h2> تقرير {{ $type === 'products' ? 'المنتجات' : 'العروض' }}</h2>
 
-    <div class="section-title"> تفاصيل التقرير - من: {{ $from }} - إلى: {{ $to }}</div>
+    <h2>تقرير تفاصيل خزنة</h2>
 
-    <table class="filters-table">
+    <table class="summary">
         <tr>
-            <td><strong>الفريق:</strong></td>
-            <td>{{ $filters['team'] ?? 'الكل' }}</td>
+            <td>الخزنة:</td>
+            <td>{{ $data['vault']['owner'] }}</td>
         </tr>
         <tr>
-            <td><strong>الفريق الفرعي:</strong></td>
-            <td>{{ $filters['sub_team'] ?? 'الكل' }}</td>
+            <td>الرصيد الحالي:</td>
+            <td>{{ $data['vault']['balance'] }}</td>
         </tr>
         <tr>
-            <td><strong>المسوق:</strong></td>
-            <td>{{ $filters['marketer'] ?? 'الكل' }}</td>
+            <td>الفترة من:</td>
+            <td>{{ $data['from'] }}</td>
+        </tr>
+        <tr>
+            <td>إلى:</td>
+            <td>{{ $data['to'] }}</td>
         </tr>
     </table>
     <table>
         <thead>
             <tr>
-                <th>الاسم</th>
-                <th>الكمية</th>
+                <th>#</th>
+                <th>التاريخ</th>
+                <th>النوع</th>
+                <th>المبلغ</th>
+                <th>اتجاه</th>
+                <th>الرصيد قبل (من)</th>
+                <th>الرصيد بعد (من)</th>
+                <th>الرصيد قبل (إلى)</th>
+                <th>الرصيد بعد (إلى)</th>
+                <th>السبب</th>
+                <th>ملاحظات</th>
             </tr>
         </thead>
         <tbody>
-            @if(isset($data) && count($data) > 0)
+            @if(isset($data['transactions']) && count($data['transactions']) > 0)
 
-            @foreach($data as $item)
+            @forelse($data['transactions'] as $trx)
             <tr>
-                <td>{{ $item['name'] }}</td>
-                <td>{{ $item['quantity'] }}</td>
+                <td>{{ $trx['id'] }}</td>
+                <td>{{ $trx['date'] }}</td>
+                <td>{{ $trx['type'] }}</td>
+                <td>{{ $trx['amount'] }}</td>
+                <td>{{ $trx['direction'] }}</td>
+                <td>{{ $trx['from_balance_before'] }}</td>
+                <td>{{ $trx['from_balance_after'] }}</td>
+                <td>{{ $trx['to_balance_before'] }}</td>
+                <td>{{ $trx['to_balance_after'] }}</td>
+                <td>{{ $trx['reason'] }}</td>
+                <td>{{ $trx['notes'] }}</td>
             </tr>
-            @endforeach
+            @empty
+            <tr>
+                <td colspan="11" class="no-data">لا يوجد بيانات للعرض</td>
+            </tr>
+            @endforelse
             @else
             <tr>
-                <td colspan="2" class="no-data">لا يوجد بيانات للعرض</td>
+                <td colspan="11" class="no-data">لا يوجد بيانات للعرض</td>
             </tr>
             @endif
         </tbody>

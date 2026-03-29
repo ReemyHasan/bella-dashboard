@@ -243,10 +243,23 @@ class ReportsService
             )
             ->with('product:id,name')
             ->whereHas('order', function ($q) use ($filters) {
+
                 $q->whereBetween('created_at', [
                     $filters['from'],
                     $filters['to']
-                ]);
+                ])
+
+                    ->when(!empty($filters['team_id']), function ($q) use ($filters) {
+                        $q->where('team_id', $filters['team_id']);
+                    })
+
+                    ->when(!empty($filters['sub_team_id']), function ($q) use ($filters) {
+                        $q->where('sub_team_id', $filters['sub_team_id']);
+                    })
+
+                    ->when(!empty($filters['marketer_id']), function ($q) use ($filters) {
+                        $q->where('app_user_id', $filters['marketer_id']);
+                    });
             })
             ->groupBy('product_id')
             ->get()
@@ -266,10 +279,23 @@ class ReportsService
             )
             ->with('offer:id,name')
             ->whereHas('order', function ($q) use ($filters) {
+
                 $q->whereBetween('created_at', [
                     $filters['from'],
                     $filters['to']
-                ]);
+                ])
+
+                    ->when(!empty($filters['team_id']), function ($q) use ($filters) {
+                        $q->where('team_id', $filters['team_id']);
+                    })
+
+                    ->when(!empty($filters['sub_team_id']), function ($q) use ($filters) {
+                        $q->where('sub_team_id', $filters['sub_team_id']);
+                    })
+
+                    ->when(!empty($filters['marketer_id']), function ($q) use ($filters) {
+                        $q->where('app_user_id', $filters['marketer_id']);
+                    });
             })
             ->groupBy('offer_id')
             ->get()
