@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Services\DashUser\Reports;
+
+use App\Models\AppUser;
+use App\Models\CustomerOrder;
+use App\Models\FinancialAdjustment;
+use App\Models\VaultTransaction;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
+class UserAccountReportService
+{
+    public function userBalanceLedger(array $filters)
+    {
+        $from = Carbon::parse($filters['from'])->startOfDay();
+        $to   = Carbon::parse($filters['to'])->endOfDay();
+
+        $user = AppUser::findOrFail($filters['user_id']);
+
+        $transactions = VaultTransaction::where('to_vault_balance_after', '>=', 0)
+            ->where(function ($q) use ($user) {
+                $q->where('reference_type', CustomerOrder::class)
+                    ->orWhere('reference_type', FinancialAdjustment::class);
+            })
+            ->where('to_vault_balance_before', '>=', 0)
+            ->whereBetween('transaction_date', [$from, $to])
+            ->where('action_by_id', $user->id)
+            ->orderBy('transaction_date')
+            ->get()
+            ->map(function ($trx) use ($user) {
+                return [
+                    'date' => $trx->transaction_date,
+                    'type' => __('constant.' . $trx->type),
+                    'reference_type' => __('constant.' . class_basename($trx->reference_type)),
+                    'reference_id' => $trx->reference_id,
+                    'amount' => $trx->amount,
+                    'balance_before' => $trx->to_vault_balance_before,
+                    'balance_after' => $trx->to_vault_balance_after,
+                    'notes' => $trx->notes ?? "N/A",
+                    'reason' => $trx->reason ?? "N/A",
+                ];
+            });
+
+        return [
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->first_name . ' ' . $user->last_name,
+                'current_balance' => $user->balance,
+            ],
+            'from' => $from->format('Y-m-d'),
+            'to' => $to->format('Y-m-d'),
+            'transactions' => $transactions,
+        ];
+    }
+}

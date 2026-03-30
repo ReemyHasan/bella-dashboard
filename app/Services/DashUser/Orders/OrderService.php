@@ -1210,7 +1210,7 @@ class OrderService
         });
     }
 
-    private function handleComplete(CustomerOrder $order)
+    private function handleCompleteOrder(CustomerOrder $order)
     {
         if ($order->is_financial_processed)
             return;
@@ -1240,15 +1240,15 @@ class OrderService
         // =========================
         // APPLY BALANCES
         // =========================
-        $this->addBalance($order->app_user_id, $marketerAmount, 'marketer');
-        $this->addBalance($order->teamleader_id, $teamleaderAmount, 'teamleader');
+        $this->addBalance($order->app_user_id, $marketerAmount, 'marketer_percentage');
+        $this->addBalance($order->teamleader_id, $teamleaderAmount, 'teamleader_percentage');
 
         if ($order->manager_id) {
-            $this->addBalance($order->manager_id, $managerAmount, 'manager');
+            $this->addBalance($order->manager_id, $managerAmount, 'manager_percentage');
         }
 
         if ($order->warehouse_man_id) {
-            $this->addBalance($order->warehouse_man_id, $warehouseAmount, 'warehouse_man');
+            $this->addBalance($order->warehouse_man_id, $warehouseAmount, 'warehouse_man_percentage');
         }
     }
 

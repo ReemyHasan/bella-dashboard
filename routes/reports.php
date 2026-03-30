@@ -5,6 +5,8 @@ use App\Http\Controllers\Web\V1\Reports\SalesReportController;
 use App\Http\Controllers\Web\V1\Reports\TeamsReportController;
 use App\Http\Controllers\Web\V1\Reports\VaultReportsController;
 use App\Http\Controllers\Web\V1\Reports\WarehouseReportController;
+use App\Http\Controllers\Web\V1\Reports\UserReportsController;
+
 use Illuminate\Support\Facades\Route;
 
 
@@ -21,3 +23,6 @@ Route::get('reports/orders-items', [OrderReportsController::class, 'itemsReport'
 
 Route::get('reports/vaults-summary', [VaultReportsController::class, 'vaultReport']);
 Route::get('reports/vault-details', [VaultReportsController::class, 'vaultDetails']);
+
+Route::get('reports/user-balance-details', [UserReportsController::class, 'userBalanceLedgerReport']);
+

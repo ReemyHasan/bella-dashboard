@@ -29,6 +29,19 @@ return [
     'cash_request' => 'طلب رصيد',
     'financial_adjustment' => 'الخصم\ المكافأة',
     'general_settings' => 'الإعدادات العامة',
-    'customer_order' => 'طلب الزبون'
+    'customer_order' => 'طلب الزبون',
+    'CustomerOrder' => 'طلبات الزبائن',
+    'FinancialAdjustment' => 'تعديل مالي (مكافأة\خصم)',
+    'manager_percentage' => ' نسبة مدير الفريق الرئيسي',
+    'warehouse_man_percentage' => 'نسبة أمين المستودع',
+    'teamleader_percentage' => 'نسبة قائد الفريق',
+    'marketer_percentage' => 'نسبة المسوق',
+
+    'deduction' => 'خصم',
+    'bonus' => 'مكافأة',
+
+
+
+
 
 ];
