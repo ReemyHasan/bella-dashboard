@@ -53,17 +53,17 @@ class AppUserRequest extends FormRequest
             // 'is_manager' => 'nullable|boolean',
             // 'is_delivery_man' => 'nullable|boolean',
             // 'is_warehouse_man' => 'nullable|boolean',
-            // 'team_id' => [
-            //     'required',
-            //     'exists:teams,id',
-            // ],
-            // 'subteam_id' => [
-            //     'required',
-            //     Rule::exists('sub_teams', 'id')
-            //         ->where(function ($query) {
-            //             $query->where('team_id', $this->team_id);
-            //         }),
-            // ],
+            'team_id' => [
+                'required',
+                'exists:teams,id',
+            ],
+            'subteam_id' => [
+                'required',
+                Rule::exists('sub_teams', 'id')
+                    ->where(function ($query) {
+                        $query->where('team_id', $this->team_id);
+                    }),
+            ],
 
             'warehouse_id' => [
                 'nullable',

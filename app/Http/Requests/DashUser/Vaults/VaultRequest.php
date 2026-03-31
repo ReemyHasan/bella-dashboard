@@ -30,18 +30,24 @@ class VaultRequest extends FormRequest
 
             'owner_id' => [
                 'required',
-                'exists:app_users,id',
-                Rule::unique('vaults', 'owner_id')->ignore($vaultId)
 
+                // must exist AND be warehouse man
+                Rule::exists('app_users', 'id')->where(function ($query) {
+                    $query->where('is_warehouse_man', true);
+                }),
+
+                // must be unique in vaults (one vault per user)
+                Rule::unique('vaults', 'owner_id')->ignore($vaultId),
             ],
-
         ];
     }
 
     public function messages(): array
     {
         return [
-            'owner_id.unique' => 'هذا المستخدم لديه بالفعل خزنة.'
+            'owner_id.exists' => 'يجب أن يكون مالك الخزنة أمين مستودع.',
+            'owner_id.unique' => 'هذا المستخدم لديه بالفعل خزنة.',
+            'owner_id.required' => 'حقل مالك الخزنة مطلوب.',
         ];
     }
     public function attributes(): array

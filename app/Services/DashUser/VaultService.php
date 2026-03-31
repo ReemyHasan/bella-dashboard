@@ -60,10 +60,12 @@ class VaultService
         });
     }
 
-    public function update($balance)
+    public function update($balance, ?Vault $vault)
     {
         $user = Auth::user();
-        $vault = Vault::findOrFail(1);
+        if ($vault == null) {
+            $vault = Vault::findOrFail(1);
+        }
 
         $toBalanceBefore = $vault->balance;
 
@@ -88,7 +90,7 @@ class VaultService
 
             'transaction_date' => now(),
 
-            'notes' => 'تعديل خزنة الشركة',
+            'notes' => 'تعديل على الخزنة من super admin',
 
             'action_by_type' => get_class($user),
             'action_by_id' => $user->id,

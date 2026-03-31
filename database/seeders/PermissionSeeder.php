@@ -172,6 +172,11 @@ class PermissionSeeder extends Seeder
             ['name' => 'view_vault_by_id', 'name_ar' => 'عرض خزنة', 'guard_name' => 'dash_user_guard', 'group' => 'الخزنة'],
             ['name' => 'view_all_vaults', 'name_ar' => 'عرض الخزنات', 'guard_name' => 'dash_user_guard', 'group' => 'الخزنة'],
 
+            
+            
+            ['name' => 'update_company_vault', 'name_ar' => 'تحديث خزنة الشركة', 'guard_name' => 'dash_user_guard', 'group' => 'الخزنة'],
+            ['name' => 'update_not_company_vault', 'name_ar' => 'تحديث خزنة غير الشركة', 'guard_name' => 'dash_user_guard', 'group' => 'الخزنة'],
+
             // ================== User Request Types ==================
             ['name' => 'create_user_request_type', 'name_ar' => 'إدخال نوع طلب', 'guard_name' => 'dash_user_guard', 'group' => 'نوع الطلب'],
             ['name' => 'update_user_request_type', 'name_ar' => 'تحديث نوع طلب', 'guard_name' => 'dash_user_guard', 'group' => 'نوع الطلب'],

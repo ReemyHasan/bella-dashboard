@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\V1\Vaults;
 
+use App\Exceptions\ForbiddenException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DashUser\Vaults\VaultRequest;
 use App\Http\Resources\DashUser\VaultResource;
@@ -23,6 +24,10 @@ class VaultController extends Controller implements HasMiddleware
             new Middleware('permission:create_vault', only: ['store']),
             new Middleware('permission:update_vault', only: ['update']),
             new Middleware('permission:delete_vault', only: ['destroy']),
+            new Middleware('permission:update_company_vault', only: ['updateCompanyBalance']),
+            new Middleware('permission:update_not_company_vault', only: ['updateUserBalance']),
+
+
 
         ];
     }
@@ -53,11 +58,27 @@ class VaultController extends Controller implements HasMiddleware
             'balance' => 'required|numeric',
         ]);
 
-        $vault = $this->vaultService->update($validated['balance']);
+        $vault = $this->vaultService->update($validated['balance'], null);
 
 
         return response()->format(new VaultResource($vault),  __('messages.updated_successfully',  ['item' => __('constants.vault')]), 200);
     }
+
+    public function updateUserBalance(Request $request, Vault $vault)
+    {
+        if ($vault->id == 1) {
+            throw new ForbiddenException('لا يمكنك التعديل على خزنة الشركة من هنا.');
+        }
+        $validated = $request->validate([
+            'balance' => 'required|numeric',
+        ]);
+
+        $vault = $this->vaultService->update($validated['balance'], $vault);
+
+
+        return response()->format(new VaultResource($vault),  __('messages.updated_successfully',  ['item' => __('constants.vault')]), 200);
+    }
+
     public function show(Vault $vault)
     {
         $vault = $this->vaultService->show($vault);
