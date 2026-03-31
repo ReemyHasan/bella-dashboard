@@ -19,7 +19,7 @@ class Zone extends Model
         'currency_id',
         'name',
         'symbol',
-        
+
         'delivery_cost',
     ];
 
@@ -41,5 +41,9 @@ class Zone extends Model
     public function tips()
     {
         return $this->hasMany(Tip::class);
+    }
+    public function productPrices()
+    {
+        return $this->hasMany(ProductZonePrice::class, 'zone_id');
     }
 }

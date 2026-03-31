@@ -19,7 +19,9 @@ class Invoice extends Model
         'name_of_merchant',
         'date',
         'warehouse_id',
-        'is_confirmed'
+        'is_confirmed',
+        'created_by_id',
+        'created_by_type',
     ];
 
     protected $casts = [
@@ -46,5 +48,9 @@ class Invoice extends Model
     public function invoiceProductWarehouses()
     {
         return $this->hasMany(InvoiceProductWarehouse::class);
+    }
+    public function createdBy()
+    {
+        return $this->morphTo();
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Requests\DashUser\Products\ProductImageRequest;
 use App\Http\Requests\DashUser\Products\ProductRequest;
 use App\Http\Requests\DashUser\Products\ProductZonePriceSyncRequest;
 use App\Http\Resources\DashUser\ProductResource;
+use App\Http\Resources\DashUser\ProductWarehouseResource;
 use App\Models\Product;
 use App\Services\DashUser\ProductService;
 use Illuminate\Http\Request;
@@ -86,5 +87,13 @@ class ProductController extends Controller implements HasMiddleware
                 $product?->subCategory?->name . "-" . $product?->size . "-" . $product?->country_of_origin
         ]);
         return response()->format($returnedData, 'messages.success', 200);
+    }
+
+
+    public function productWarehouses(Request $request, Product $product)
+    {
+        $productWarehouses = $this->productService->productWarehouses($request, $product);
+        // dd($productWarehouses);
+        return response()->format($this->returnPaginatedResponse($productWarehouses, ProductWarehouseResource::collection($productWarehouses)), 'messages.success', 200);
     }
 }

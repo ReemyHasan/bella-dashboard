@@ -4,6 +4,7 @@ namespace App\Services\DashUser;
 
 use App\Enums\PaginationEnum;
 use App\Models\Product;
+use App\Models\ProductWarehouse;
 use App\Traits\HandlesImageUpload;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -14,11 +15,12 @@ class ProductService
 
     public function list($request)
     {
-        return Product::with(
+        return Product::with([
             'mainCategory',
             'subCategory',
-            'mainImage'
-        )->filterBy($request->all())
+            'mainImage',
+            'zonePrices.zone.currency'
+        ])->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
     }
@@ -188,5 +190,17 @@ class ProductService
         ]);
 
         return $products;
+    }
+
+    public function productWarehouses($request, Product $product)
+    {
+        return ProductWarehouse::with([
+            'warehouse'
+        ])
+            ->where('product_id', $product->id)
+
+            ->filterBy($request->all())
+            ->sortBy($request->get('sort', ['created_at' => 'desc']))
+            ->paginate($request->input('per_page') ?? PaginationEnum::GeneralPagination->value);
     }
 }

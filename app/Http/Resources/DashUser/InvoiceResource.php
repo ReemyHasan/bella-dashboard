@@ -32,6 +32,12 @@ class InvoiceResource extends JsonResource
                 $this->whenLoaded('invoiceProductWarehouses')
             ),
 
+            'created_by' => $this->whenLoaded('createdBy', fn() => [
+                'id' => $this->createdBy?->id,
+                'type' => get_class($this->createdBy) == 'App\Models\DashUser' ? 'Dashboard User' :  'Marketer',
+                'name' => $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name . ' (' . $this->createdBy?->user_name . ')',
+            ]),
+
         ];
     }
 }

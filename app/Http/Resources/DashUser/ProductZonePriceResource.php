@@ -20,6 +20,7 @@ class ProductZonePriceResource extends JsonResource
                     'id' => $this->zone->id,
                     'name' => $this->zone->name,
                     'symbol' => $this->zone->symbol,
+                    'currency' => $this->zone?->currency?->symbol,
                 ];
             }),
 

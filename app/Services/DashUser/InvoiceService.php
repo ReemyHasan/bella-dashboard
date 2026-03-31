@@ -4,26 +4,31 @@ namespace App\Services\DashUser;
 
 use App\Enums\PaginationEnum;
 use App\Models\Invoice;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceService
 {
     public function list($request)
     {
-        return Invoice::with('warehouse')->filterBy($request->all())
+        return Invoice::with('warehouse', 'createdBy')->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
     }
 
     public function create(array $data)
     {
-        return DB::transaction(function () use ($data) {
+        $user = Auth::user();
+
+        return DB::transaction(function () use ($data, $user) {
             $invoice = Invoice::create([
                 'title' => $data['title'],
                 'name_of_merchant' => $data['name_of_merchant'],
                 'date' => $data['date'],
                 'warehouse_id' => $data['warehouse_id'],
                 'is_confirmed' => false,
+                'created_by_type' => get_class($user),
+                'created_by_id' => $user->id,
             ]);
 
             foreach ($data['products'] as $product) {
@@ -36,7 +41,7 @@ class InvoiceService
             if ($data['is_confirmed']) {
                 $invoice->update(['is_confirmed' => true]);
             }
-            $invoice->load('warehouse');
+            $invoice->load('warehouse', 'createdBy');
             return $invoice;
         });
     }
@@ -94,7 +99,7 @@ class InvoiceService
             if ($data['is_confirmed']) {
                 $invoice->update(['is_confirmed' => true]);
             }
-            $invoice->load('warehouse');
+            $invoice->load('warehouse', 'createdBy');
 
             return $invoice;
         });
@@ -105,13 +110,13 @@ class InvoiceService
         $invoice->update([
             'is_confirmed' => true,
         ]);
-        $invoice->load('warehouse');
+        $invoice->load('warehouse', 'createdBy');
 
         return $invoice;
     }
     public function show(Invoice $invoice)
     {
-        $invoice->load(['warehouse', 'invoiceProductWarehouses.product.mainCategory', 'invoiceProductWarehouses.product.subCategory']);
+        $invoice->load(['warehouse', 'invoiceProductWarehouses.product.mainCategory', 'invoiceProductWarehouses.product.subCategory', 'createdBy']);
         return $invoice;
     }
 

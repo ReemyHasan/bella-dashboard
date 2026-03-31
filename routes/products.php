@@ -23,6 +23,8 @@ Route::get('select-sub-categories', [SubCategoryController::class, 'selectAvaila
 
 
 
+Route::get('products/{product}/warehouses', [ProductController::class, 'productWarehouses']);
+
 Route::post('products/{product}/images/sync', [ProductController::class, 'syncImages']);
 Route::post('products/{product}/zones/sync', [ProductController::class, 'syncZonePrices']);
 
@@ -55,4 +57,3 @@ Route::get('select-warehouse-offers/{warehouseId}', [OrderController::class, 'wa
 Route::get('select-customer-addresses/{customerId}', [OrderController::class, 'customerAddresses']);
 
 Route::get('select-warehouse-keeper/{warehouseId}', [OrderController::class, 'selectWarehouseInfo']);
-

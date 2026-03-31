@@ -64,6 +64,9 @@ class ZoneService
 
     public function delete(Zone $zone)
     {
+        if ($zone->productPrices()->exists() || $zone->id == 1 || $zone->id == 3) {
+            return false;
+        }
         return $zone->delete();
     }
 
