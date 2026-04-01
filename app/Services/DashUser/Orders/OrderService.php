@@ -237,11 +237,11 @@ class OrderService
                         throw new CustomException('العرض غير موجود في المستودع');
                     }
 
-                    $available = $warehouseOffer->quantity - $warehouseOffer->reserved_quantity;
+                    // $available = $warehouseOffer->quantity - $warehouseOffer->reserved_quantity;
 
-                    if ($item['quantity'] > $available) {
-                        throw new CustomException("الكمية غير متوفرة للعرض {$item['offer_id']}");
-                    }
+                    // if ($item['quantity'] > $available) {
+                    //     throw new CustomException("الكمية غير متوفرة للعرض {$item['offer_id']}");
+                    // }
 
                     $offer = $offers->get($item['offer_id']);
 
@@ -286,7 +286,7 @@ class OrderService
                     // =========================
                     // 🔥 RESERVE OFFER
                     // =========================
-                    $warehouseOffer->increment('reserved_quantity', $item['quantity']);
+                    // $warehouseOffer->increment('reserved_quantity', $item['quantity']);
 
                     // =========================
                     // 💰 PRICE
@@ -396,10 +396,10 @@ class OrderService
             foreach ($order->offers as $oldOffer) {
 
                 // ✅ restore offer itself
-                OfferWarehouse::where('warehouse_id', $order->warehouse_id)
-                    ->where('offer_id', $oldOffer->offer_id)
-                    ->lockForUpdate()
-                    ->decrement('reserved_quantity', $oldOffer->quantity);
+                // OfferWarehouse::where('warehouse_id', $order->warehouse_id)
+                //     ->where('offer_id', $oldOffer->offer_id)
+                //     ->lockForUpdate()
+                //     ->decrement('reserved_quantity', $oldOffer->quantity);
 
                 $offer = $offers->get($oldOffer->offer_id);
 
@@ -585,11 +585,11 @@ class OrderService
                         throw new CustomException('العرض غير موجود في المستودع');
                     }
 
-                    $available = $warehouseOffer->quantity - $warehouseOffer->reserved_quantity;
+                    // $available = $warehouseOffer->quantity - $warehouseOffer->reserved_quantity;
 
-                    if ($item['quantity'] > $available) {
-                        throw new CustomException("الكمية غير متوفرة للعرض {$item['offer_id']}");
-                    }
+                    // if ($item['quantity'] > $available) {
+                    //     throw new CustomException("الكمية غير متوفرة للعرض {$item['offer_id']}");
+                    // }
 
                     $offer = $offers->get($item['offer_id']);
 
@@ -634,7 +634,7 @@ class OrderService
                     // =========================
                     // 🔥 RESERVE OFFER
                     // =========================
-                    $warehouseOffer->increment('reserved_quantity', $item['quantity']);
+                    // $warehouseOffer->increment('reserved_quantity', $item['quantity']);
 
                     // =========================
                     // 💰 PRICE
@@ -741,10 +741,10 @@ class OrderService
         foreach ($order->offers as $oldOffer) {
 
             // ✅ restore offer itself
-            OfferWarehouse::where('warehouse_id', $order->warehouse_id)
-                ->where('offer_id', $oldOffer->offer_id)
-                ->lockForUpdate()
-                ->decrement('reserved_quantity', $oldOffer->quantity);
+            // OfferWarehouse::where('warehouse_id', $order->warehouse_id)
+            //     ->where('offer_id', $oldOffer->offer_id)
+            //     ->lockForUpdate()
+            //     ->decrement('reserved_quantity', $oldOffer->quantity);
 
             $offer = $offers->get($oldOffer->offer_id);
 
@@ -814,20 +814,20 @@ class OrderService
 
         foreach ($order->offers as $item) {
 
-            $warehouseOffer = OfferWarehouse::where('warehouse_id', $order->warehouse_id)
-                ->where('offer_id', $item->offer_id)
-                ->lockForUpdate()
-                ->first();
+            // $warehouseOffer = OfferWarehouse::where('warehouse_id', $order->warehouse_id)
+            //     ->where('offer_id', $item->offer_id)
+            //     ->lockForUpdate()
+            //     ->first();
 
-            if (!$warehouseOffer) {
-                continue;
-            }
-            $warehouseOffer->update([
-                'reserved_quantity' => max(
-                    $warehouseOffer->reserved_quantity - $item->quantity,
-                    0
-                ),
-            ]);
+            // if (!$warehouseOffer) {
+            //     continue;
+            // }
+            // $warehouseOffer->update([
+            //     'reserved_quantity' => max(
+            //         $warehouseOffer->reserved_quantity - $item->quantity,
+            //         0
+            //     ),
+            // ]);
 
             $offer = $offers->get($item->offer_id);
 
@@ -902,19 +902,19 @@ class OrderService
             ->keyBy('id');
         foreach ($order->offers as $item) {
 
-            $warehouseOffer = $warehouseOffers->get($item->offer_id);
+            // $warehouseOffer = $warehouseOffers->get($item->offer_id);
 
-            if (!$warehouseOffer) {
-                throw new CustomException('العرض غير موجود');
-            }
+            // if (!$warehouseOffer) {
+            //     throw new CustomException('العرض غير موجود');
+            // }
 
 
-            $available = $warehouseOffer->quantity - $warehouseOffer->reserved_quantity;
+            // $available = $warehouseOffer->quantity - $warehouseOffer->reserved_quantity;
 
-            if ($item->quantity > $available) {
-                throw new CustomException("لا يمكن إعادة الطلب، الكمية غير متوفرة للعرض {$item->offer_id}");
-            }
-            $warehouseOffer->increment('reserved_quantity', $item->quantity);
+            // if ($item->quantity > $available) {
+            //     throw new CustomException("لا يمكن إعادة الطلب، الكمية غير متوفرة للعرض {$item->offer_id}");
+            // }
+            // $warehouseOffer->increment('reserved_quantity', $item->quantity);
 
             //////////////////////////////////////
 
@@ -962,7 +962,7 @@ class OrderService
             // =========================
             // 🔥 RESERVE OFFER
             // =========================
-            $warehouseOffer->increment('reserved_quantity', $item->quantity);
+            // $warehouseOffer->increment('reserved_quantity', $item->quantity);
         }
     }
 
@@ -1018,15 +1018,15 @@ class OrderService
 
         foreach ($order->offers as $item) {
 
-            $warehouseOffer = $warehouseOffers->get($item->offer_id);
+            // $warehouseOffer = $warehouseOffers->get($item->offer_id);
 
-            if (!$warehouseOffer) {
-                throw new CustomException("العرض غير موجود في المستودع");
-            }
+            // if (!$warehouseOffer) {
+            //     throw new CustomException("العرض غير موجود في المستودع");
+            // }
 
             // ✅ remove offer
-            $warehouseOffer->decrement('reserved_quantity', $item->quantity);
-            $warehouseOffer->decrement('quantity', $item->quantity);
+            // $warehouseOffer->decrement('reserved_quantity', $item->quantity);
+            // $warehouseOffer->decrement('quantity', $item->quantity);
 
             $offer = $offers->get($item->offer_id);
 
@@ -1080,10 +1080,10 @@ class OrderService
         foreach ($order->offers as $item) {
 
             // ✅ restore offer
-            OfferWarehouse::where('warehouse_id', $order->warehouse_id)
-                ->where('offer_id', $item->offer_id)
-                ->lockForUpdate()
-                ->increment('quantity', $item->quantity);
+            // OfferWarehouse::where('warehouse_id', $order->warehouse_id)
+            //     ->where('offer_id', $item->offer_id)
+            //     ->lockForUpdate()
+            //     ->increment('quantity', $item->quantity);
 
             $offer = $offers->get($item->offer_id);
 
@@ -1153,7 +1153,7 @@ class OrderService
 
             if ($status == OrderStatus::completed) {
 
-                $this->handleComplete($order);
+                $this->handleCompleteOrder($order);
                 $this->removeFromStock($order);
             }
 
@@ -1455,7 +1455,7 @@ class OrderService
         return $offers->map(fn($p) => [
             'id' => $p?->offer?->id,
             'name' => $p?->offer?->name,
-            'available' => $p->quantity
+            // 'available' => $p->quantity
         ]);
     }
 

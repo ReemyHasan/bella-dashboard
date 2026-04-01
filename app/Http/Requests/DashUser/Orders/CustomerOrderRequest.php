@@ -134,23 +134,23 @@ class CustomerOrderRequest extends FormRequest
             // -----------------------------
             // OFFERS VALIDATION
             // -----------------------------
-            foreach ($this->offers ?? [] as $index => $offer) {
+            // foreach ($this->offers ?? [] as $index => $offer) {
 
-                $warehouseOffer = $warehouseOffers->get($offer['offer_id']);
-                if (!$warehouseOffer) continue;
+            //     $warehouseOffer = $warehouseOffers->get($offer['offer_id']);
+            //     if (!$warehouseOffer) continue;
 
-                $currentQty = $currentOffers->get($offer['offer_id'])->quantity ?? 0;
+            //     $currentQty = $currentOffers->get($offer['offer_id'])->quantity ?? 0;
 
-                $available = $warehouseOffer->quantity - $warehouseOffer->reserved_quantity + $currentQty;
+            //     $available = $warehouseOffer->quantity - $warehouseOffer->reserved_quantity + $currentQty;
 
 
-                if ($offer['quantity'] > $available) {
-                    $validator->errors()->add(
-                        "offers.$index.quantity",
-                        "الكمية المطلوبة من العرض غير متوفرة. المتاح: {$available}"
-                    );
-                }
-            }
+            //     if ($offer['quantity'] > $available) {
+            //         $validator->errors()->add(
+            //             "offers.$index.quantity",
+            //             "الكمية المطلوبة من العرض غير متوفرة. المتاح: {$available}"
+            //         );
+            //     }
+            // }
         });
     }
   

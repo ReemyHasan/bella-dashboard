@@ -96,9 +96,9 @@ class OfferService
     private function formatWarehouses(array $warehouses): array
     {
         return collect($warehouses)
-            ->mapWithKeys(fn($item) => [
-                $item['warehouse_id'] => ['quantity' => $item['quantity']]
-            ])
+            // ->mapWithKeys(fn($item) => [
+            //     $item['warehouse_id'] => ['quantity' => $item['quantity']]
+            // ])
             ->toArray();
     }
     public function syncImages($data, Offer $offer)

@@ -12,9 +12,9 @@ class OfferWarehouseResource extends JsonResource
         return [
             'id' => $this?->warehouse?->id,
             'name' => $this?->warehouse?->name,
-            'quantity' => $this->quantity,
-            'reserved' => $this->reserved_quantity,
-            'available' => $this->quantity - $this->reserved_quantity
+            // 'quantity' => $this->quantity,
+            // 'reserved' => $this->reserved_quantity,
+            // 'available' => $this->quantity - $this->reserved_quantity
         ];
     }
 }

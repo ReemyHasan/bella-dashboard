@@ -61,13 +61,13 @@ class OfferRequest extends FormRequest
 
             'warehouses' => ['nullable', 'array', 'min:1'],
 
-            'warehouses.*.warehouse_id' => [
+           'warehouses.*' => [
                 'required',
                 'exists:warehouses,id',
                 'distinct'
             ],
 
-            'warehouses.*.quantity' => ['required', 'numeric', 'min:0'],
+            // 'warehouses.*.quantity' => ['required', 'numeric', 'min:0'],
         ];
     }
 
