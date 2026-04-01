@@ -184,7 +184,7 @@ class OrderService
                         throw new CustomException("لا يوجد سعر للمنتج في هذه المنطقة");
                     }
 
-                    $price = $zonePrice->price;
+                    $price = $zonePrice->price_after_adjustment ?? $zonePrice->price;
 
                     OrderProduct::create([
                         'customer_order_id' => $order->id,
@@ -533,7 +533,7 @@ class OrderService
                         throw new CustomException("لا يوجد سعر للمنتج في هذه المنطقة");
                     }
 
-                    $price = $zonePrice->price;
+                    $price = $zonePrice->price_after_adjustment ?? $zonePrice->price;
 
                     OrderProduct::create([
                         'customer_order_id' => $order->id,
@@ -1408,7 +1408,7 @@ class OrderService
             'product_id' => $p->product?->id,
             'product_name' => $p->product?->name,
             'product_price' => $p->price,
-
+            'product_price_after_adjustment' => $p->price_after_adjustment,
         ]);
     }
 

@@ -23,6 +23,10 @@ class ProductResource extends JsonResource
 
             'active' => $this->active,
 
+            'adjustment_type' => $this->adjustment_type,
+            'adjustment_value' => $this->adjustment_value,
+            'adjustment_operation' => $this->adjustment_operation,
+
             'main_category' => $this->whenLoaded('mainCategory', function () {
                 return [
                     'id' => $this->mainCategory->id,

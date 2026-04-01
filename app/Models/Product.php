@@ -22,10 +22,15 @@ class Product extends Model
         'precautions',
         'country_of_origin',
         'active',
+        'adjustment_type',
+        'adjustment_value',
+        'adjustment_operation',
+
     ];
 
     protected $casts = [
         'active' => 'boolean',
+        'adjustment_value' => 'decimal:2',
     ];
 
 

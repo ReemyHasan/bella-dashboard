@@ -32,6 +32,10 @@ Route::apiResource('products', ProductController::class);
 
 Route::get('select-products', [ProductController::class, 'selectAvailable']);
 
+Route::post('apply-adjustment-products', [ProductController::class, 'applyAdjustment']);
+Route::post('remove-adjustment-products', [ProductController::class, 'removeAdjustment']);
+
+
 
 
 Route::post('offers/{offer}/images/sync', [OfferController::class, 'syncImages']);

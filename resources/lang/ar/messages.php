@@ -12,6 +12,7 @@ return [
     'deleted_successfully' => 'تم حذف :item بنجاح',
     'updated_successfully' => 'تم تحديث :item بنجاح',
     'restored_successfully' => 'تم استعادة :item بنجاح',
+    'all_updated_successfully' => 'تم تحديث كل :item بنجاح',
 
     'deleted_account_success' => 'تم حذف حسابك بنجاح.',
     'inactive_account' => 'الحساب غير مفعل.',

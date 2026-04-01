@@ -40,6 +40,7 @@ return [
     'deduction' => 'خصم',
     'bonus' => 'مكافأة',
 
+    'products' => 'المنتجات',
 
 
 

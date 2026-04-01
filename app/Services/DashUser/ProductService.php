@@ -148,7 +148,7 @@ class ProductService
         $product->load([
             'images',
             'tags',
-            'zonePrices.zone',
+            'zonePrices.zone.currency',
             'mainCategory',
             'subCategory',
             'mainImage'
@@ -202,5 +202,69 @@ class ProductService
             ->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->paginate($request->input('per_page') ?? PaginationEnum::GeneralPagination->value);
+    }
+
+
+    public function applyAdjustment(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+
+            $products = isset($data['product_ids'])
+                ? Product::with('zonePrices')->whereIn('id', $data['product_ids'])->get()
+                : Product::with('zonePrices')->get();
+
+            foreach ($products as $product) {
+
+                $product->update([
+                    'adjustment_type' => $data['type'],
+                    'adjustment_value' => $data['value'],
+                    'adjustment_operation' => $data['operation'],
+                ]);
+
+                foreach ($product->zonePrices as $zonePrice) {
+
+                    $basePrice = $zonePrice->price;
+
+                    if ($data['type'] === 'percentage') {
+                        $amount = ($basePrice * $data['value']) / 100;
+                    } else {
+                        $amount = $data['value'];
+                    }
+
+                    $newPrice = $data['operation'] === 'increase'
+                        ? $basePrice + $amount
+                        : $basePrice - $amount;
+
+                    $zonePrice->update([
+                        'price_after_adjustment' => max(0, $newPrice)
+                    ]);
+                }
+            }
+        });
+    }
+
+    public function removeAdjustment(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+            $productIds = $data['product_ids'];
+            $products = $productIds
+                ? Product::whereIn('id', $productIds)->get()
+                : Product::all();
+
+            foreach ($products as $product) {
+
+                $product->update([
+                    'adjustment_type' => null,
+                    'adjustment_value' => null,
+                    'adjustment_operation' => null,
+                ]);
+
+                foreach ($product->zonePrices as $zonePrice) {
+                    $zonePrice->update([
+                        'price_after_adjustment' => null
+                    ]);
+                }
+            }
+        });
     }
 }

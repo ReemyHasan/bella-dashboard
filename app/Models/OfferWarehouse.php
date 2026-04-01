@@ -14,8 +14,8 @@ class OfferWarehouse extends Model
     protected $fillable = [
         'offer_id',
         'warehouse_id',
-        'quantity',
-        'reserved_quantity'
+        // 'quantity',
+        // 'reserved_quantity'
 
     ];
     protected $appends = [
@@ -33,8 +33,8 @@ class OfferWarehouse extends Model
         return $this->belongsTo(Warehouse::class);
     }
 
-    public function getAvailableAttribute()
-    {
-        return $this->quantity - $this->reserved_quantity;
-    }
+    // public function getAvailableAttribute()
+    // {
+    //     return $this->quantity - $this->reserved_quantity;
+    // }
 }

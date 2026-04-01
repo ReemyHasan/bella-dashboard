@@ -25,6 +25,8 @@ class ProductZonePriceResource extends JsonResource
             }),
 
             'price' => $this->price,
+            'price_after_adjustment' => $this->price_after_adjustment,
+
             'is_available' => $this->is_available,
         ];
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\V1\Products;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DashUser\Products\AdjustmentRequest;
 use App\Http\Requests\DashUser\Products\ProductImageRequest;
 use App\Http\Requests\DashUser\Products\ProductRequest;
 use App\Http\Requests\DashUser\Products\ProductZonePriceSyncRequest;
@@ -93,7 +94,23 @@ class ProductController extends Controller implements HasMiddleware
     public function productWarehouses(Request $request, Product $product)
     {
         $productWarehouses = $this->productService->productWarehouses($request, $product);
-        // dd($productWarehouses);
         return response()->format($this->returnPaginatedResponse($productWarehouses, ProductWarehouseResource::collection($productWarehouses)), 'messages.success', 200);
+    }
+
+
+    public function applyAdjustment(AdjustmentRequest $request)
+    {
+        $this->productService->applyAdjustment($request->validated());
+        return response()->format(null,  __('messages.all_updated_successfully',  ['item' => __('constants.products')]), 200);
+    }
+
+    public function removeAdjustment(Request $request)
+    {
+        $validated = $request->validate([
+            'product_ids' => ['nullable', 'array'],
+            'product_ids.*' => ['exists:products,id']
+        ]);
+        $this->productService->removeAdjustment($validated);
+        return response()->format(null,  __('messages.all_updated_successfully',  ['item' => __('constants.products')]), 200);
     }
 }
