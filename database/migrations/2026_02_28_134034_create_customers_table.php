@@ -16,9 +16,9 @@ return new class extends Migration
 
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('password');
+            $table->string('password')->nullable();
             $table->string('mobile')->unique();
-            $table->string('user_name')->unique();
+            $table->string('user_name')->nullable();
             $table->string('profile_link')->nullable();
 
             $table->boolean('is_blocked')->default(false);

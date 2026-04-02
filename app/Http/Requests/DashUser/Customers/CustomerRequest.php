@@ -26,8 +26,8 @@ class CustomerRequest extends FormRequest
         return [
             'first_name'     => 'required|string|max:255',
             'last_name'     => 'required|string|max:255',
-            'user_name'     => ['required', 'string', 'max:255', Rule::unique('customers', 'user_name')->ignore($this->customer)],
-            'profile_link'     => 'nullable|string|max:255|url',
+            //'user_name'     => ['required', 'string', 'max:255', Rule::unique('customers', 'user_name')->ignore($this->customer)],
+            //'profile_link'     => 'nullable|string|max:255|url',
             'mobile' => [
                 'required',
                 'string',
@@ -35,15 +35,15 @@ class CustomerRequest extends FormRequest
                     ->ignore($this->customer)
             ],
 
-            'password' => $this->isMethod('post') ? [
-                'required',
-                'string',
-                'min:8',
-                'regex:/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,30}$/',
-                // 'confirmed'
-            ] : [
-                'nullable',
-            ],
+            // 'password' => $this->isMethod('post') ? [
+            //     'required',
+            //     'string',
+            //     'min:8',
+            //     'regex:/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,30}$/',
+            //     // 'confirmed'
+            // ] : [
+            //     'nullable',
+            // ],
 
 
             // Addresses validation

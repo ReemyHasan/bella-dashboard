@@ -22,7 +22,7 @@ class Team extends Model
         'team_leader_percentage',
         'manager_percentage',
         'direct_manager_percentage',
-        'warehouse_man_percentage',
+        // 'warehouse_man_percentage',
     ];
 
     protected $appends = [
@@ -36,7 +36,7 @@ class Team extends Model
         'manager_percentage' => 'decimal:2',
         'direct_manager_percentage' => 'decimal:2',
         // 'delivery_man_percentage' => 'decimal:2',
-        'warehouse_man_percentage' => 'decimal:2',
+        // 'warehouse_man_percentage' => 'decimal:2',
     ];
 
     public function manager()

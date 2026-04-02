@@ -29,7 +29,7 @@ class TeamResource extends JsonResource
             'manager_percentage' => $this->manager_percentage,
             'direct_manager_percentage' => $this->direct_manager_percentage,
             // 'delivery_man_percentage' => $this->delivery_man_percentage,
-            'warehouse_man_percentage' => $this->warehouse_man_percentage,
+            // 'warehouse_man_percentage' => $this->warehouse_man_percentage,
 
             'direct_users'         => $this->whenLoaded("users", function () {
 

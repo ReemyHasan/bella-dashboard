@@ -25,7 +25,7 @@ class ZoneSeeder extends Seeder
             // 'direct_manager_percentage' => 10,
             // 'delivery_man_percentage' => 0,
             // 'warehouse_man_percentage' => 0,
-            'delivery_cost' => 20000,
+            // 'delivery_cost' => 20000,
         ]);
         Tip::insert(
             [
@@ -68,7 +68,7 @@ class ZoneSeeder extends Seeder
             // 'direct_manager_percentage' => 10,
             // 'delivery_man_percentage' => 0,
             // 'warehouse_man_percentage' => 0,
-            'delivery_cost' => 20000,
+            // 'delivery_cost' => 20000,
         ]);
         Tip::insert(
             [
@@ -113,7 +113,7 @@ class ZoneSeeder extends Seeder
             // 'direct_manager_percentage' => 10,
             // 'delivery_man_percentage' => 0,
             // 'warehouse_man_percentage' => 0,
-            'delivery_cost' => 3,
+            // 'delivery_cost' => 3,
         ]);
         Tip::insert(
             [
@@ -154,7 +154,7 @@ class ZoneSeeder extends Seeder
             // 'direct_manager_percentage' => 10,
             // 'delivery_man_percentage' => 0,
             // 'warehouse_man_percentage' => 0,
-            'delivery_cost' => 4,
+            // 'delivery_cost' => 4,
         ]);
         Tip::insert(
             [
@@ -196,7 +196,7 @@ class ZoneSeeder extends Seeder
             // 'direct_manager_percentage' => 10,
             // 'delivery_man_percentage' => 0,
             // 'warehouse_man_percentage' => 0,
-            'delivery_cost' => 6,
+            // 'delivery_cost' => 6,
         ]);
         Tip::insert(
             [
@@ -238,7 +238,7 @@ class ZoneSeeder extends Seeder
             // 'direct_manager_percentage' => 18,
             // 'delivery_man_percentage' => 0,
             // 'warehouse_man_percentage' => 0,
-            'delivery_cost' => 4,
+            // 'delivery_cost' => 4,
         ]);
         Tip::insert(
             [

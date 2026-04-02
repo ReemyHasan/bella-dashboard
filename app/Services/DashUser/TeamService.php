@@ -31,7 +31,7 @@ class TeamService
                 'direct_manager_percentage' => $data['direct_manager_percentage'],
 
                 // 'delivery_man_percentage' => $data['delivery_man_percentage'],
-                'warehouse_man_percentage' => $data['warehouse_man_percentage'],
+                // 'warehouse_man_percentage' => $data['warehouse_man_percentage'],
                 'manager_id' => isset($data['manager_id']) ? $data['manager_id'] : null
             ]);
 
@@ -65,7 +65,7 @@ class TeamService
                 'direct_manager_percentage' => $data['direct_manager_percentage'],
 
                 // 'delivery_man_percentage' => $data['delivery_man_percentage'],
-                'warehouse_man_percentage' => $data['warehouse_man_percentage'],
+                // 'warehouse_man_percentage' => $data['warehouse_man_percentage'],
                 'manager_id' => isset($data['manager_id']) ? $data['manager_id'] : null
             ]);
 

@@ -77,7 +77,7 @@ class TeamRequest extends FormRequest
             'manager_percentage' => 'required|numeric|min:0|max:100',
             'direct_manager_percentage' => 'required|numeric|min:0|max:100',
             // 'delivery_man_percentage' => 'required|numeric|min:0|max:100',
-            'warehouse_man_percentage' => 'required|numeric|min:0|max:100',
+            // 'warehouse_man_percentage' => 'required|numeric|min:0|max:100',
 
 
         ];
@@ -123,7 +123,7 @@ class TeamRequest extends FormRequest
                 $this->manager_percentage +
 
                 // $this->delivery_man_percentage +
-                $this->warehouse_man_percentage +
+                // $this->warehouse_man_percentage +
 
                 $this->direct_manager_percentage;
 

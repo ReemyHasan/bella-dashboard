@@ -29,7 +29,7 @@ class AppUserWithRequestsSeeder extends Seeder
                 'team_leader_percentage' => 10,
                 'manager_percentage' => 5,
                 'direct_manager_percentage' => 10,
-                'warehouse_man_percentage' => 0
+                // 'warehouse_man_percentage' => 0
             ],
             [
                 'name' => 'Team 2',
@@ -38,7 +38,7 @@ class AppUserWithRequestsSeeder extends Seeder
                 'team_leader_percentage' => 10,
                 'manager_percentage' => 5,
                 'direct_manager_percentage' => 10,
-                'warehouse_man_percentage' => 0
+                // 'warehouse_man_percentage' => 0
             ],
             [
                 'name' => 'Team 3',
@@ -47,7 +47,7 @@ class AppUserWithRequestsSeeder extends Seeder
                 'team_leader_percentage' => 10,
                 'manager_percentage' => 5,
                 'direct_manager_percentage' => 10,
-                'warehouse_man_percentage' => 0
+                // 'warehouse_man_percentage' => 0
             ]
         ];
 

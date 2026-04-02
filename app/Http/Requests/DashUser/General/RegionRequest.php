@@ -41,25 +41,45 @@ class RegionRequest extends FormRequest
                 // Rule::unique('regions', 'symbol')->ignore($regionId),
             ],
 
+            'zone_id' => [
+                'required',
+                'exists:zones,id',
+            ],
             'city_id' => [
                 'required',
-                'exists:cities,id',
+                Rule::exists('cities', 'id')->where(function ($query) {
+                    if ($this->zone_id) {
+                        $query->where('zone_id', $this->zone_id);
+                    }
+                }),
             ],
             'warehouse_id' => [
                 'required',
                 Rule::exists('warehouses', 'id')->where(function ($query) {
                     $query->where('active', true);
+
+                    if ($this->zone_id) {
+                        $query->where('zone_id', $this->zone_id);
+                    }
                 }),
             ],
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'city_id.exists' => 'المدينة المختارة لا تتبع للمنطقة المحددة.',
+            'warehouse_id.exists' => 'المستودع يجب أن يكون نشط ويتبع لنفس المنطقة المحددة.',
+        ];
+    }
     public function attributes(): array
     {
         return [
             'name' => 'الاسم',
             'symbol' => 'الرمز',
             'city_id' => 'المدينة',
+            'zone_id' => 'الموقع الجغرافي',
             'delivery_cost' => 'تكلفة التوصيل',
             'warehouse_id' => 'المستودع'
         ];

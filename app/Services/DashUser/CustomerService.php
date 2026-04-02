@@ -32,10 +32,10 @@ class CustomerService
             $customer = Customer::create([
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'],
-                'user_name' => $data['user_name'],
+                //'user_name' => $data['user_name'],
                 'mobile' => $data['mobile'],
-                'password' => $data['password'],
-                'profile_link' => $data['profile_link'],
+                //'password' => $data['password'],
+                //'profile_link' => $data['profile_link'],
                 'created_by_id' => auth()->user()->id,
                 'created_by_type' => DashUser::class,
             ]);
@@ -63,9 +63,9 @@ class CustomerService
         $customer->update([
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
-            'user_name' => $data['user_name'],
+            //'user_name' => $data['user_name'],
             'mobile' => $data['mobile'],
-            'profile_link' => $data['profile_link'],
+            //'profile_link' => $data['profile_link'],
             'updated_by_id' => auth()->user()->id,
             'updated_by_type' => DashUser::class,
         ]);

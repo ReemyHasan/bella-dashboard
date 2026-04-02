@@ -1223,7 +1223,7 @@ class OrderService
         $teamleaderAmount = $amount * $order->teamleader_percentage / 100;
         $managerAmount    = $amount * ($order->manager_percentage ?? 0) / 100;
 
-        $warehouseAmount  = $amount * ($order->warehouse_man_percentage ?? 0) / 100;
+        // $warehouseAmount  = $amount * ($order->warehouse_man_percentage ?? 0) / 100;
 
         // =========================
         // SAVE SNAPSHOT
@@ -1232,11 +1232,11 @@ class OrderService
             'marketer_amount' => $marketerAmount,
             'teamleader_amount' => $teamleaderAmount,
             'manager_amount' => $managerAmount,
-            'warehouse_man_amount' => $warehouseAmount,
+            // 'warehouse_man_amount' => $warehouseAmount,
             'is_financial_processed' => true
         ]);
 
-        $warehouseAmount = $warehouseAmount + ($order->delivery_cost + $order->delivery_additional_cost) * $order->current_exchange_rate;
+        $warehouseAmount = ($order->delivery_cost + $order->delivery_additional_cost) * $order->current_exchange_rate;
         // =========================
         // APPLY BALANCES
         // =========================
@@ -1247,9 +1247,9 @@ class OrderService
             $this->addBalance($order->manager_id, $managerAmount, 'manager_percentage');
         }
 
-        if ($order->warehouse_man_id) {
-            $this->addBalance($order->warehouse_man_id, $warehouseAmount, 'warehouse_man_percentage');
-        }
+        // if ($order->warehouse_man_id) {
+        //     $this->addBalance($order->warehouse_man_id, $warehouseAmount, 'warehouse_man_percentage');
+        // }
     }
 
     private function handleRefund(CustomerOrder $order)
@@ -1264,9 +1264,9 @@ class OrderService
             $this->subtractBalance($order->manager_id, $order->manager_amount, 'refund_manager');
         }
 
-        if ($order->warehouse_man_id) {
-            $this->subtractBalance($order->warehouse_man_id, $order->warehouse_man_amount, 'refund_warehouse');
-        }
+        // if ($order->warehouse_man_id) {
+        //     $this->subtractBalance($order->warehouse_man_id, $order->warehouse_man_amount, 'refund_warehouse');
+        // }
     }
 
     private function addBalance($userId, $amount, $type)

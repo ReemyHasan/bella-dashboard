@@ -22,8 +22,8 @@ return new class extends Migration
             $table->decimal('team_leader_percentage', 5, 2)->default(0);
             $table->decimal('manager_percentage', 5, 2)->default(0);
             $table->decimal('direct_manager_percentage', 5, 2)->default(0);
-            $table->decimal('delivery_man_percentage', 5, 2)->default(0);
-            $table->decimal('warehouse_man_percentage', 5, 2)->default(0);
+            // $table->decimal('delivery_man_percentage', 5, 2)->default(0);
+            // $table->decimal('warehouse_man_percentage', 5, 2)->default(0);
 
             $table->timestamps();
         });
