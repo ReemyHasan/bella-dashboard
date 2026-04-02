@@ -22,6 +22,8 @@ class RegionService
                 'name' => $data['name'],
                 'symbol' => $data['symbol'],
                 'warehouse_id' => $data['warehouse_id'],
+                'delivery_cost' => $data['delivery_cost'],
+
                 'city_id' => $data['city_id']
             ]);
         $region->load('city', 'warehouse');
@@ -37,6 +39,8 @@ class RegionService
                  'name' => $data['name'],
                 'symbol' => $data['symbol'],
                 'warehouse_id' => $data['warehouse_id'],
+                'delivery_cost' => $data['delivery_cost'],
+
                 'city_id' => $data['city_id']
             ]);
         $region->load('city', 'warehouse');

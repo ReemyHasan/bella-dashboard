@@ -32,6 +32,8 @@ class RegionRequest extends FormRequest
                 // Rule::unique('regions', 'name')->ignore($regionId),
             ],
 
+            'delivery_cost' => 'required|numeric|min:0',
+
             'symbol' => [
                 'required',
                 'string',
@@ -58,6 +60,7 @@ class RegionRequest extends FormRequest
             'name' => 'الاسم',
             'symbol' => 'الرمز',
             'city_id' => 'المدينة',
+            'delivery_cost' => 'تكلفة التوصيل',
             'warehouse_id' => 'المستودع'
         ];
     }

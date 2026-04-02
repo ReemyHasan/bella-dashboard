@@ -19,6 +19,8 @@ class RegionResource extends JsonResource
             'name' => $this->name,
             'symbol' => $this->symbol,
             'created_at' => $this->created_at_formatted,
+            'delivery_cost' => $this->delivery_cost,
+
             'city' => $this->whenLoaded('city', fn() => [
                 'id' => $this->city?->id,
                 'name' => $this->city?->name,

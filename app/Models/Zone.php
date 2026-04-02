@@ -20,12 +20,9 @@ class Zone extends Model
         'name',
         'symbol',
 
-        'delivery_cost',
     ];
 
-    protected $casts = [
-        'delivery_cost' => 'decimal:2',
-    ];
+   
 
     public function currency()
     {

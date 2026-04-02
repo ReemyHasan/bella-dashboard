@@ -16,12 +16,16 @@ class Region extends Model
         'warehouse_id',
         'name',
         'symbol',
+        'delivery_cost',
 
     ];
 
     protected $appends = [
         "created_at_formatted",
         "updated_at_formatted"
+    ];
+     protected $casts = [
+        'delivery_cost' => 'decimal:2',
     ];
 
     public function city()

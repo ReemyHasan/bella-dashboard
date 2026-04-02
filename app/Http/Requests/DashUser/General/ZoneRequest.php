@@ -45,7 +45,6 @@ class ZoneRequest extends FormRequest
             ],
 
             
-            'delivery_cost' => 'required|numeric|min:0',
 
             'tips' => 'nullable|array',
             'tips.*.amount' => 'required_with:tips|numeric|min:0',
@@ -62,7 +61,6 @@ class ZoneRequest extends FormRequest
             'symbol' => 'الرمز',
             'currency_id' => 'العملة',
             
-            'delivery_cost' => 'تكلفة التوصيل',
             'tips' => 'العمولة',
             "tips.*" => 'العمولة'
         ];

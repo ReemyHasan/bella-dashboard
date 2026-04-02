@@ -19,7 +19,6 @@ class ZoneResource extends JsonResource
             'name' => $this->name,
             'symbol' => $this->symbol,
             
-            'delivery_cost' => $this->delivery_cost,
             'created_at' => $this->created_at_formatted,
             
             'tips'         => $this->whenLoaded("tips", function () {

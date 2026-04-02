@@ -24,7 +24,6 @@ class ZoneService
                 'symbol' => $data['symbol'],
                 'currency_id' => $data['currency_id'],
 
-                'delivery_cost' => $data['delivery_cost'],
             ]);
             if (!empty($data['tips'])) {
                 $zone->tips()->createMany($data['tips']);
@@ -43,7 +42,6 @@ class ZoneService
                 'symbol' => $data['symbol'],
                 'currency_id' => $data['currency_id'],
 
-                'delivery_cost' => $data['delivery_cost'],
             ]);
 
             if (isset($data['tips'])) {
