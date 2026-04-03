@@ -25,7 +25,8 @@ class VaultService
             'fromVault.owner',
             'toVault.owner',
             'actionBy',
-            'reference'
+            'reference',
+            'balanceUser'
         );
 
         if ($request->direction === 'in') {

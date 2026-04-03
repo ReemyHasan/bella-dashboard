@@ -19,10 +19,11 @@ class UserAccountReportService
         $user = AppUser::findOrFail($filters['user_id']);
 
         $transactions = VaultTransaction::where('to_vault_balance_after', '>=', 0)
-            ->where(function ($q) use ($user) {
-                $q->where('reference_type', CustomerOrder::class)
-                    ->orWhere('reference_type', FinancialAdjustment::class);
-            })
+           
+
+            ->where('balance_user_type', AppUser::class)
+            ->where('balance_user_id',$user->id)
+
             ->where('to_vault_balance_before', '>=', 0)
             ->whereBetween('transaction_date', [$from, $to])
             ->where('action_by_id', $user->id)

@@ -148,11 +148,11 @@ class ReportsService
         $period = CarbonPeriod::create($from, $to);
 
         $statuses = [
-            'pending',
-            'approved',
+            'waiting',
+            'delivering',
+            'new',
             'completed',
             'cancelled',
-            'rejected',
             'refund',
         ];
 
@@ -216,18 +216,35 @@ class ReportsService
                     // 🔥 Deduction
                     'total_deduction' => $items->sum(function ($o) {
 
-                        if ($o->deduction_type == 'percentage') {
-                            $value = ($o->total_price * $o->deduction_amount) / 100;
-                        } else {
-                            $value = $o->deduction_amount;
+                        // ignore non-decrease
+                        if ($o->adjustment_operation !== 'decrease' || empty($o->adjustment_value)) {
+                            return 0;
                         }
 
-                        return $value * $o->current_exchange_rate;
+                        $basePrice = $o->total_price;
+
+                        $amount = $o->adjustment_type === 'percentage'
+                            ? ($basePrice * $o->adjustment_value) / 100
+                            : $o->adjustment_value;
+
+                        return $amount * $o->current_exchange_rate;
                     }),
 
                     // 🔥 Tips
-                    'total_tips' => $items->sum(function ($o) {
-                        return $o->additional_tips * $o->current_exchange_rate;
+                    'total_additions' => $items->sum(function ($o) {
+
+                        // ignore non-increase
+                        if ($o->adjustment_operation !== 'increase' || empty($o->adjustment_value)) {
+                            return 0;
+                        }
+
+                        $basePrice = $o->total_price;
+
+                        $amount = $o->adjustment_type === 'percentage'
+                            ? ($basePrice * $o->adjustment_value) / 100
+                            : $o->adjustment_value;
+
+                        return $amount * $o->current_exchange_rate;
                     }),
                 ];
             })->values()

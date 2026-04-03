@@ -32,6 +32,9 @@ class VaultTransaction extends Model
 
         'to_vault_balance_before',
         'to_vault_balance_after',
+
+        'balance_user_type',
+        'balance_user_id',
         // 'currency',
         // 'reference_number'
 
@@ -86,6 +89,10 @@ class VaultTransaction extends Model
         return $this->morphTo();
     }
     public function reference()
+    {
+        return $this->morphTo();
+    }
+    public function balanceUser()
     {
         return $this->morphTo();
     }

@@ -220,6 +220,9 @@ class FinancialAdjustmentService
             'reference_type' => FinancialAdjustment::class,
             'reference_id' => $adjustment->id,
 
+            'balance_user_type' => DashUser::class,
+            'balance_user_id' => $user->id,
+
             'action_by_type' => get_class(Auth::user()),
             'action_by_id' => Auth::id(),
 
@@ -297,6 +300,9 @@ class FinancialAdjustmentService
             'reference_type' => FinancialAdjustment::class,
             'reference_id' => $adjustment->id,
 
+            
+            'balance_user_type' => AppUser::class,
+            'balance_user_id' => $user->id,
             'action_by_type' => get_class(Auth::user()),
             'action_by_id' => Auth::id(),
 
@@ -366,6 +372,10 @@ class FinancialAdjustmentService
 
             'reference_type' => FinancialAdjustment::class,
             'reference_id' => $adjustment->id,
+
+            
+            'balance_user_type' => AppUser::class,
+            'balance_user_id' => $user->id,
 
             'action_by_type' => get_class(auth()->user()),
             'action_by_id' => auth()->id(),

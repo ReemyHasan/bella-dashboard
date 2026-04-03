@@ -22,29 +22,43 @@ class CustomerOrderResource extends JsonResource
             'customer_mobile' => $this->customer_mobile,
             'marketer_percentage' => $this->marketer_percentage,
             'delivery_cost' => $this->delivery_cost,
-            'delivery_additional_cost' => $this->delivery_additional_cost,
+            // 'delivery_additional_cost' => $this->delivery_additional_cost,
             'teamleader_percentage' => $this->teamleader_percentage,
             'manager_percentage' => $this->manager_percentage,
             'current_exchange_rate' => $this->current_exchange_rate,
 
             'address_details' => $this->address_details,
-            'reject_reason' => $this->reject_reason,
+
             'notes' => $this->notes,
 
 
             'order_status' => $this->order_status,
             'total_base_price' => $this->total_base_price,
 
-            'total_price' => $this->total_price,
+            'company_income' => $this->total_price,
             'additional_tips' => $this->additional_tips,
-            'deduction_type' => $this->deduction_type,
+            'adjustment_type' => $this->adjustment_type,
 
-            'deduction_amount' => $this->deduction_amount,
+
+            'adjustment_operation' => $this->adjustment_operation,
+            'adjustment_value' => $this->adjustment_value,
+
+
+            'final_total_price' => $this->final_total_price,
+            'is_financial_processed' => $this->is_financial_processed,
+
+            'marketer_amount_in_local_currency' => $this->marketer_amount,
+            'teamleader_amount_in_local_currency' => $this->teamleader_amount,
+            'manager_amount_in_local_currency' => $this->manager_amount,
+
             'created_at' => $this->created_at_formatted,
             'updated_at' => $this->updated_at_formatted,
             // 'placed_at' => $this->placed_at_formatted,
-            'approved_at' => $this->approved_at_formatted,
+            'waiting_until' => $this->waiting_until_formatted,
+            'waiting_reason' => $this->waiting_reason,
+
             'cancelled_at' => $this->cancelled_at_formatted,
+            'cancellation_reason' => $this->cancellation_reason,
 
             'marketer' => $this->whenLoaded('marketer', fn() => [
                 'id' => $this->marketer?->id,

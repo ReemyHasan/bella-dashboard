@@ -17,7 +17,7 @@ class UserReportsController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            // new Middleware('permission:view_users_reports', only: ['ordersReport']),
+            new Middleware('permission:view_users_reports', only: ['ordersReport']),
 
         ];
     }

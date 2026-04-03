@@ -103,8 +103,6 @@ class ProductOfferSeeder extends Seeder
                 OfferWarehouse::create([
                     'warehouse_id' => $warehouse->id,
                     'offer_id' => $offer->id,
-                    'quantity' => rand(10, 50),
-                    'reserved_quantity' => 0,
 
                 ]);
             }

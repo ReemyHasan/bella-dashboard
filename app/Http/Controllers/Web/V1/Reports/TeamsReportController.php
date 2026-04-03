@@ -17,7 +17,7 @@ class TeamsReportController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            // new Middleware('permission:view_teams_reports', only: ['teamsHierarchyReport']),
+            new Middleware('permission:view_teams_reports', only: ['teamsHierarchyReport']),
 
         ];
     }

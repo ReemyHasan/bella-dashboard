@@ -18,7 +18,7 @@ class VaultReportsController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            // new Middleware('permission:view_vault_reports', only: ['vaultReport']),
+            new Middleware('permission:view_vault_reports', only: ['vaultReport', 'vaultDetails']),
 
         ];
     }

@@ -26,7 +26,10 @@ class HandleOrderRequest extends FormRequest
 
         return [
             'status' => ['required', Rule::in(array_column(OrderStatus::cases(), 'value'))],
-            'reject_reason' => ['nullable', 'string'],
+            'cancellation_reason' => ['nullable', 'string'],
+            'waiting_reason' => ['nullable', 'string'],
+            'waiting_until' => ['nullable', 'date'],
+
             'notes' => ['nullable', 'string'],
 
         ];
@@ -39,10 +42,24 @@ class HandleOrderRequest extends FormRequest
             $status = $this->status;
 
             if (
-                in_array($status, ['rejected', 'cancelled']) &&
-                empty($this->reject_reason)
+                in_array($status, ['cancelled']) &&
+                empty($this->cancellation_reason)
             ) {
-                $validator->errors()->add('reject_reason', 'سبب الرفض أو الإلغاء مطلوب');
+                $validator->errors()->add('cancellation_reason', 'سبب الإلغاء مطلوب');
+            }
+
+            if (
+                in_array($status, ['waiting']) &&
+                empty($this->waiting_reason)
+            ) {
+                $validator->errors()->add('waiting_reason', 'سبب الانتظار مطلوب');
+            }
+
+            if (
+                in_array($status, ['waiting']) &&
+                empty($this->waiting_until)
+            ) {
+                $validator->errors()->add('waiting_until', 'مدة الانتظار مطلوبة');
             }
         });
     }
@@ -51,7 +68,10 @@ class HandleOrderRequest extends FormRequest
     {
         return [
             'status' => 'حالة الطلب',
-            'reject_reason' => 'سبب الرفض',
+            'cancellation_reason' => 'سبب الإلغاء',
+            'waiting_reason' => 'سبب الانتظار',
+            'waiting_until' => 'مدة الانتظار',
+
             'notes' => 'الملاحظات',
 
 

@@ -4,6 +4,7 @@ namespace App\Services\DashUser\Orders;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaginationEnum;
+use App\Enums\VaultTransactionType;
 use App\Exceptions\CustomException;
 use App\Models\Address;
 use App\Models\AppUser;
@@ -18,6 +19,7 @@ use App\Models\OrderProduct;
 use App\Models\OrderStatusLog;
 use App\Models\ProductWarehouse;
 use App\Models\ProductZonePrice;
+use App\Models\Vault;
 use App\Models\VaultTransaction;
 use App\Models\Warehouse;
 use Illuminate\Support\Facades\Auth;
@@ -38,7 +40,8 @@ class OrderService
     {
         $query = VaultTransaction::with(
             'actionBy',
-            'reference'
+            'reference',
+            'balanceUser'
         );
 
         $query->where(function ($q) use ($vault) {
@@ -114,9 +117,10 @@ class OrderService
             }
 
             $zone = $address->region->city->zone;
+            $region = $address->region;
 
             $orderData += [
-                'delivery_cost' => $zone->delivery_cost,
+                'delivery_cost' => $region->delivery_cost,
                 'currency_id' => $zone->currency_id,
                 'current_exchange_rate' => $zone->currency->exchange_value,
                 'zone_id' => $zone->id,
@@ -128,7 +132,7 @@ class OrderService
 
             $order = CustomerOrder::create([
                 ...$orderData,
-                'order_status' => OrderStatus::pending->value,
+                'order_status' => OrderStatus::new->value,
                 'order_number' => $orderNumber,
                 'created_by_type' => DashUser::class,
                 'created_by_id' => auth()->user()->id,
@@ -317,19 +321,45 @@ class OrderService
 
             $totalPrice = $totalBasePrice;
 
-            // deduction
-            if (!empty($data['deduction_amount'])) {
-                if (($data['deduction_type'] ?? 'fixed') == 'percentage') {
-                    $totalPrice -= ($totalBasePrice * $data['deduction_amount'] / 100);
+            // adjustment
+            if (!empty($data['adjustment_value'])) {
+                if (($data['adjustment_type'] ?? 'fixed') == 'percentage') {
+                    if (($data['adjustment_operation'] ?? 'decrease') == 'increase')
+                        $totalPrice += ($totalBasePrice * $data['adjustment_value'] / 100);
+                    else
+                        $totalPrice -= ($totalBasePrice * $data['adjustment_value'] / 100);
                 } else {
-                    $totalPrice -= $data['deduction_amount'];
+                    if (($data['adjustment_operation'] ?? 'decrease') == 'increase')
+
+                        $totalPrice += $data['adjustment_value'];
+                    else
+                        $totalPrice -= $data['adjustment_value'];
                 }
             }
 
-            // tips
-            if (!empty($data['additional_tips'])) {
-                $totalPrice += $data['additional_tips'];
+            if (!empty($data['adjustment_value'])) {
+
+                $type = $data['adjustment_type'];
+                $operation = $data['adjustment_operation'];
+                $value = (float) $data['adjustment_value'];
+
+                $amount = $type === 'percentage'
+                    ? ($totalBasePrice * $value / 100)
+                    : $value;
+
+                if ($operation === 'increase') {
+                    $totalPrice = $totalBasePrice + $amount;
+                } else {
+                    $totalPrice = $totalBasePrice - $amount;
+                }
+
+                // prevent negative price
+                $totalPrice = max(0, $totalPrice);
             }
+            // // tips
+            // if (!empty($data['additional_tips'])) {
+            //     $totalPrice += $data['additional_tips'];
+            // }
 
             // update order totals
             $order->update([
@@ -342,7 +372,7 @@ class OrderService
             // =========================
             OrderStatusLog::create([
                 'customer_order_id' => $order->id,
-                'status' => OrderStatus::pending->value,
+                'status' => OrderStatus::new->value,
                 'changed_by_type' => get_class($user),
                 'changed_by_id' => $user->id,
             ]);
@@ -354,7 +384,7 @@ class OrderService
 
     public function update(CustomerOrder $order, array $data)
     {
-        if ($order->order_status !== OrderStatus::pending->value) {
+        if ($order->order_status !== OrderStatus::new->value) {
             throw new CustomException('لا يمكن تعديل الطلب بعد مراجعته.');
         }
 
@@ -464,9 +494,10 @@ class OrderService
             }
 
             $zone = $address->region->city->zone;
+            $region = $address->region;
 
             $orderData += [
-                'delivery_cost' => $zone->delivery_cost,
+                'delivery_cost' => $region->delivery_cost,
                 'currency_id' => $zone->currency_id,
                 'zone_id' => $zone->id,
                 'current_exchange_rate' => $zone->currency->exchange_value,
@@ -664,19 +695,25 @@ class OrderService
 
             $totalPrice = $totalBasePrice;
 
-            if (!empty($data['deduction_amount'])) {
-                if (($data['deduction_type'] ?? 'fixed') == 'percentage') {
-                    $totalPrice -= ($totalBasePrice * $data['deduction_amount'] / 100);
+            if (!empty($data['adjustment_value'])) {
+
+                $type = $data['adjustment_type'];
+                $operation = $data['adjustment_operation'];
+                $value = (float) $data['adjustment_value'];
+
+                $amount = $type === 'percentage'
+                    ? ($totalBasePrice * $value / 100)
+                    : $value;
+
+                if ($operation === 'increase') {
+                    $totalPrice = $totalBasePrice + $amount;
                 } else {
-                    $totalPrice -= $data['deduction_amount'];
+                    $totalPrice = $totalBasePrice - $amount;
                 }
-            }
 
-            if (!empty($data['additional_tips'])) {
-                $totalPrice += $data['additional_tips'];
+                // prevent negative price
+                $totalPrice = max(0, $totalPrice);
             }
-
-            $totalPrice += $zone->delivery_cost;
 
 
             $order->update([
@@ -701,8 +738,7 @@ class OrderService
     public function delete(CustomerOrder $order)
     {
         if (!in_array($order->order_status, [
-            OrderStatus::pending->value,
-            OrderStatus::rejected->value,
+            OrderStatus::new->value,
             OrderStatus::cancelled->value
         ])) {
             throw new CustomException('لا يمكن حذف الطلب بعد معالجته.');
@@ -1105,20 +1141,18 @@ class OrderService
 
 
     private array $allowedTransitions = [
-        'pending' => ['approved', 'rejected', 'cancelled'],
 
-        'approved' => ['processing', 'delivering', 'cancelled'],
+        'new' => ['delivering', 'waiting', 'cancelled'],
 
-        'processing' => ['delivering', 'cancelled'],
+        'delivering' => ['waiting', 'cancelled', 'completed', 'refund'],
 
-        'delivering' => ['completed', 'refund'],
+        'waiting' => ['cancelled', 'delivering', 'completed', 'refund'],
 
         'completed' => ['refund'],
 
-        'rejected' => ['pending'],
-        'cancelled' => ['pending'],
-
+        'cancelled' => ['new'],
         'refund' => [],
+
     ];
 
     public function handle(CustomerOrder $order, array $data)
@@ -1128,7 +1162,6 @@ class OrderService
         return DB::transaction(function () use ($order, $status, $data) {
             $currentStatus = OrderStatus::from($order->order_status);
             $reserveStock = $order->is_stock_reserved;
-
             if (
                 !isset($this->allowedTransitions[$currentStatus->value]) ||
                 !in_array($status->value, $this->allowedTransitions[$currentStatus->value])
@@ -1136,20 +1169,6 @@ class OrderService
                 throw new CustomException('تغيير الحالة غير مسموح.');
             }
 
-            if (
-                $currentStatus != OrderStatus::pending &&
-                $status == OrderStatus::approved
-            ) {
-                throw new CustomException('تمت معالجة الطلب مسبقاً');
-            }
-
-            // =========================
-            // ✅ APPROVE
-            // =========================
-            if ($status == OrderStatus::approved) {
-
-                // $this->handleApprove($order);
-            }
 
             if ($status == OrderStatus::completed) {
 
@@ -1171,14 +1190,14 @@ class OrderService
             // ❌ REJECT / CANCEL
             // =========================
             if (
-                in_array($status, [OrderStatus::rejected, OrderStatus::cancelled])
+                in_array($status, [OrderStatus::cancelled])
             ) {
                 $this->releaseStock($order);
                 $reserveStock = false;
             }
 
             if (
-                $status == OrderStatus::pending &&
+                $status == OrderStatus::new &&
                 in_array($currentStatus, [OrderStatus::cancelled])
             ) {
                 $this->reserveStock($order);
@@ -1189,10 +1208,12 @@ class OrderService
             // =========================
             $order->update([
                 'order_status' => $status->value,
-                'reject_reason' => $data['reject_reason'] ?? null,
+                'cancellation_reason' => $data['cancellation_reason'] ?? null,
+                'waiting_reason' => $data['waiting_reason'] ?? null,
+
                 'is_stock_reserved' => $reserveStock,
-                'approved_at' => $status == OrderStatus::approved ? now() : null,
-                'cancelled_at' => in_array($status, [OrderStatus::rejected, OrderStatus::cancelled]) ? now() : null,
+                'cancelled_at' => in_array($status, [OrderStatus::cancelled]) ? now() : null,
+                'waiting_until' => $data['waiting_until'] ?? null
 
             ]);
 
@@ -1210,21 +1231,53 @@ class OrderService
         });
     }
 
+
+    public function handleFinancialProcess(CustomerOrder $order)
+    {
+        if ($order->is_financial_processed) {
+            throw new CustomException('تم بالفعل توزيع الأرباح');
+        }
+
+        return DB::transaction(function () use ($order) {
+            $marketerAmount   = $order->marketer_amount;
+            $teamleaderAmount = $order->teamleader_amount;
+            $managerAmount    = $order->manager_amount;
+
+            $vault = Vault::where('owner_id', $order->warehouse_man_id)->first();
+            if ($vault == null)
+                throw new CustomException('الموزع ليس لديه خزنة, من فضلك أضف له خزنة ثم أعد المحاولة.');
+
+
+
+            $this->addBalance($vault, $order->app_user_id, $marketerAmount, 'marketer_percentage', $order);
+            if ($order->teamleader_id) {
+                $this->addBalance($vault, $order->teamleader_id, $teamleaderAmount, 'teamleader_percentage', $order);
+            }
+
+            if ($order->manager_id) {
+                $this->addBalance($vault, $order->manager_id, $managerAmount, 'manager_percentage', $order);
+            }
+
+            $order->update([
+                'is_financial_processed' => true
+            ]);
+            return $order->refresh();
+        });
+    }
+
     private function handleCompleteOrder(CustomerOrder $order)
     {
         if ($order->is_financial_processed)
             return;
-        $amount = $order->total_base_price * $order->current_exchange_rate; // 🔥 ALWAYS BASE
+        $amount = $order->total_base_price * $order->current_exchange_rate; //  BASE
+        $company_amount = $order->total_price * $order->current_exchange_rate; //  BASE
 
         // =========================
         // CALCULATE SHARES
         // =========================
-        $marketerAmount   = $amount * $order->marketer_percentage / 100;
+        $marketerAmount   = $company_amount * $order->marketer_percentage / 100;
         $teamleaderAmount = $amount * $order->teamleader_percentage / 100;
         $managerAmount    = $amount * ($order->manager_percentage ?? 0) / 100;
-
-        // $warehouseAmount  = $amount * ($order->warehouse_man_percentage ?? 0) / 100;
-
         // =========================
         // SAVE SNAPSHOT
         // =========================
@@ -1232,44 +1285,89 @@ class OrderService
             'marketer_amount' => $marketerAmount,
             'teamleader_amount' => $teamleaderAmount,
             'manager_amount' => $managerAmount,
-            // 'warehouse_man_amount' => $warehouseAmount,
-            'is_financial_processed' => true
         ]);
+        $vault = Vault::where('owner_id', $order->warehouse_man_id)->first();
+        if ($vault == null)
+            throw new CustomException('الموزع ليس لديه خزنة, من فضلك أضف له خزنة ثم أعد المحاولة.');
 
-        $warehouseAmount = ($order->delivery_cost + $order->delivery_additional_cost) * $order->current_exchange_rate;
-        // =========================
-        // APPLY BALANCES
-        // =========================
-        $this->addBalance($order->app_user_id, $marketerAmount, 'marketer_percentage');
-        $this->addBalance($order->teamleader_id, $teamleaderAmount, 'teamleader_percentage');
+        $oldVaultBalance = $vault->balance;
+        $newVaultBalance = $vault->balance + $company_amount;
 
-        if ($order->manager_id) {
-            $this->addBalance($order->manager_id, $managerAmount, 'manager_percentage');
-        }
+        $vault->update([
+            'balance' => $newVaultBalance,
+        ]);
+        $user = auth()->user();
+        VaultTransaction::create([
+            'to_vault_id' => $vault->id,
 
-        // if ($order->warehouse_man_id) {
-        //     $this->addBalance($order->warehouse_man_id, $warehouseAmount, 'warehouse_man_percentage');
-        // }
+            'type' => VaultTransactionType::ORDER_COMPANY_PROFIT->value,
+
+            'amount' => $company_amount,
+
+            'transaction_date' => now(),
+
+            'notes' => 'تعديل على الخزنة من super admin',
+
+            'action_by_type' => get_class($user),
+            'action_by_id' => $user->id,
+
+            'reference_type' => CustomerOrder::class,
+            'reference_id' => $order->id,
+
+            'to_vault_balance_before' => $oldVaultBalance,
+            'to_vault_balance_after' => $newVaultBalance,
+        ]);
     }
 
     private function handleRefund(CustomerOrder $order)
     {
         if (!$order->is_financial_processed)
             return;
+        $company_amount = $order->total_price * $order->current_exchange_rate; //  BASE
 
-        $this->subtractBalance($order->app_user_id, $order->marketer_amount, 'refund_marketer');
-        $this->subtractBalance($order->teamleader_id, $order->teamleader_amount, 'refund_teamleader');
+        $vault = Vault::where('owner_id', $order->warehouse_man_id)->first();
+        if ($vault == null)
+            throw new CustomException('الموزع ليس لديه خزنة, من فضلك أضف له خزنة ثم أعد المحاولة.');
+
+        $oldVaultBalance = $vault->balance;
+        $vaultAmount = $company_amount; // + $order->marketer_amount + $order->teamleader_amount + $order->manager_amount;
+        $newVaultBalance = $vault->balance - $vaultAmount;
+
+        $vault->update([
+            'balance' => $newVaultBalance,
+        ]);
+        $user = auth()->user();
+        VaultTransaction::create([
+            'to_vault_id' => $vault->id,
+
+            'type' => VaultTransactionType::ORDER_REFUND->value,
+
+            'amount' => $vaultAmount,
+
+            'transaction_date' => now(),
+
+            'notes' => 'تعديل على الخزنة من super admin',
+
+            'action_by_type' => get_class($user),
+            'action_by_id' => $user->id,
+
+            'reference_type' => CustomerOrder::class,
+            'reference_id' => $order->id,
+
+            'to_vault_balance_before' => $oldVaultBalance,
+            'to_vault_balance_after' => $newVaultBalance,
+        ]);
+
+        $this->subtractBalance($vault, $order->app_user_id, $order->marketer_amount, 'refund_marketer', $order);
+        if ($order->teamleader_id)
+            $this->subtractBalance($vault, $order->teamleader_id, $order->teamleader_amount, 'refund_teamleader', $order);
 
         if ($order->manager_id) {
-            $this->subtractBalance($order->manager_id, $order->manager_amount, 'refund_manager');
+            $this->subtractBalance($vault, $order->manager_id, $order->manager_amount, 'refund_manager', $order);
         }
-
-        // if ($order->warehouse_man_id) {
-        //     $this->subtractBalance($order->warehouse_man_id, $order->warehouse_man_amount, 'refund_warehouse');
-        // }
     }
 
-    private function addBalance($userId, $amount, $type)
+    private function addBalance($vault, $userId, $amount, $type, $order)
     {
         if (!$userId || $amount <= 0) return;
 
@@ -1282,18 +1380,21 @@ class OrderService
             'balance' => $after
         ]);
 
-        $this->createTransaction($userId, $amount, $before, $after, $type);
+        $vault->update([
+            'balance' => $vault->balance - $amount,
+        ]);
+        $this->createCompleteTransaction($vault, $userId, $amount, $before, $after, $type, $order);
     }
 
-    private function subtractBalance($userId, $amount, $type)
+    private function subtractBalance($vault, $userId, $amount, $type, $order)
     {
         if (!$userId || $amount <= 0) return;
 
         $user = AppUser::lockForUpdate()->find($userId);
 
-        if ($user->balance < $amount) {
-            throw new CustomException('الرصيد غير كافٍ للاسترجاع');
-        }
+        // if ($user->balance < $amount) {
+        //     throw new CustomException('الرصيد غير كافٍ للاسترجاع');
+        // }
 
         $before = $user->balance;
         $after = $before - $amount;
@@ -1302,21 +1403,93 @@ class OrderService
             'balance' => $after
         ]);
 
-        $this->createTransaction($userId, -$amount, $before, $after, $type);
+        $vault->update([
+            'balance' => $vault->balance + $amount,
+        ]);
+        $this->createRefundTransaction($vault, $userId, $amount, $before, $after, $type, $order);
     }
 
-    private function createTransaction($userId, $amount, $before, $after, $type)
+    private function createRefundTransaction($vault, $appUserId, $amount, $before, $after, $type, $order)
     {
+        $user = auth()->user();
+        VaultTransaction::create([
+            'to_vault_id' => $vault->id,
+
+            'type' => VaultTransactionType::ORDER_REFUND->value,
+
+            'amount' => $amount,
+
+            'transaction_date' => now(),
+
+            'notes' => null,
+
+            'action_by_type' => get_class($user),
+            'action_by_id' => $user->id,
+
+            'reference_type' => CustomerOrder::class,
+            'reference_id' => $order->id,
+
+            'to_vault_balance_before' => $vault->balance,
+            'to_vault_balance_after' => $vault->balance + $amount,
+        ]);
         VaultTransaction::create([
             'type' => $type,
             'amount' => abs($amount),
             'transaction_date' => now(),
 
             'reference_type' => CustomerOrder::class,
-            'reference_id' => request()->route('customer_order')->id,
+            'reference_id' => $order->id,
 
-            'action_by_type' => get_class(Auth::user()),
-            'action_by_id' => Auth::id(),
+
+            'balance_user_type' => AppUser::class,
+            'balance_user_id' => $appUserId->id,
+
+            'action_by_type' => get_class($user),
+            'action_by_id' => $user->id,
+
+            'to_vault_balance_before' => $before,
+            'to_vault_balance_after' => $after,
+        ]);
+    }
+
+
+    private function createCompleteTransaction($vault, $appUserId, $amount, $before, $after, $type, $order)
+    {
+        $user = auth()->user();
+        VaultTransaction::create([
+            'to_vault_id' => $vault->id,
+
+            'type' => VaultTransactionType::ORDER_COMPLETE->value,
+
+            'amount' => $amount,
+
+            'transaction_date' => now(),
+
+            'notes' => null,
+
+            'action_by_type' => get_class($user),
+            'action_by_id' => $user->id,
+
+            'reference_type' => CustomerOrder::class,
+            'reference_id' => $order->id,
+
+            'to_vault_balance_before' => $vault->balance,
+            'to_vault_balance_after' => $vault->balance - $amount,
+        ]);
+        VaultTransaction::create([
+            'type' => $type,
+            'amount' => abs($amount),
+            'transaction_date' => now(),
+
+            'reference_type' => CustomerOrder::class,
+            'reference_id' => $order->id,
+
+
+            'balance_user_type' => AppUser::class,
+            'balance_user_id' => $appUserId->id,
+
+            'action_by_type' => get_class($user),
+            'action_by_id' => $user->id,
 
             'to_vault_balance_before' => $before,
             'to_vault_balance_after' => $after,
@@ -1377,22 +1550,34 @@ class OrderService
     }
     public function selectAddressInfo($addressId)
     {
-        $address = Address::with('region.city.zone')->find($addressId);
+        $address = Address::with('region.city.zone', 'region.warehouse.keeper')->find($addressId);
 
         if (!$address) {
             throw new CustomException('العنوان غير موجود');
         }
 
         $zone = $address->region->city->zone;
+        $region = $address->region;
+        $warehouse = $address->region->warehouse;
+
 
         return [
-            'delivery_cost' => $zone->delivery_cost,
+            'delivery_cost' => $region->delivery_cost,
             'currency_id' => $zone->currency_id,
             'currency_name' => $zone->currency?->name,
             'currency_symbol' => $zone->currency?->symbol,
             'current_exchange_rate' => $zone->currency?->exchange_value,
             'zone_id' => $zone->id,
-            'zone_name' => $zone->name . '(' . $zone->symbol . ')'
+            'zone_name' => $zone->name . '(' . $zone->symbol . ')',
+            'region_id' => $region->id,
+            'region_name' => $region->name . '(' . $region->symbol . ')',
+            'warehouse_id' => $warehouse?->id,
+            'warehouse_name' => $warehouse?->name,
+
+            'warehouse_keeper' => [
+                'id' => $warehouse?->keeper_id,
+                'name' => $warehouse->keeper?->first_name . ' ' . $warehouse->keeper?->last_name . ' (' . $warehouse->keeper?->user_name . ')',
+            ],
         ];
     }
 
@@ -1472,25 +1657,5 @@ class OrderService
             'extra_details' => $address->pivot->extra_details,
             'is_main' => (bool)$address->pivot->is_main,
         ]);
-    }
-
-
-    public function selectWarehouseInfo($warehouseId)
-    {
-
-        $warehouse = Warehouse::with('keeper')->find($warehouseId);
-
-        if (!$warehouse) {
-            throw new CustomException('المستودع غير موجود');
-        }
-
-        $requiredData = [
-            'warehouse_keeper' => [
-                'id' => $warehouse?->keeper_id,
-                'name' => $warehouse->keeper?->first_name . ' ' . $warehouse->keeper?->last_name . ' (' . $warehouse->keeper?->user_name . ')',
-            ],
-        ];
-
-        return $requiredData;
     }
 }

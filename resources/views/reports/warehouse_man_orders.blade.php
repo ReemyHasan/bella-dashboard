@@ -146,7 +146,7 @@
                 <th>عدد الطلبات</th>
                 <th>إجمالي السعر</th>
                 <th>الخصومات</th>
-                <th>الإكراميات</th>
+                <th>الإضافات</th>
             </tr>
         </thead>
         <tbody>
@@ -158,7 +158,7 @@
                 <td>{{ $man['orders_count'] }}</td>
                 <td>{{ number_format($man['total_price'], 2) }}</td>
                 <td>{{ number_format($man['total_deduction'], 2) }}</td>
-                <td>{{ number_format($man['total_tips'], 2) }}</td>
+                <td>{{ number_format($man['total_additions'], 2) }}</td>
             </tr>
             @endforeach
             @else

@@ -22,7 +22,7 @@ class SalesReportController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:view_sales_reports', only: ['salesReport']),
+            new Middleware('permission:view_sales_reports', only: ['salesReport', 'subTeamMarketersReport', 'marketerDailyReport', 'marketerOrdersReport']),
 
         ];
     }

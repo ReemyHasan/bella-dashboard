@@ -54,6 +54,12 @@ class VaultTransactionResource extends JsonResource
                 'name' => $this->actionBy?->first_name . ' ' . $this->actionBy?->last_name . ' (' . $this->actionBy?->user_name . ')',
             ]),
 
+            'to_user' => $this->whenLoaded('balanceUser', fn() => [
+                'id' => $this->balanceUser?->id,
+                'type' => get_class($this->balanceUser) == 'App\Models\DashUser' ? 'Dashboard User' :  'Marketer',
+                'name' => $this->balanceUser?->first_name . ' ' . $this->balanceUser?->last_name . ' (' . $this->balanceUser?->user_name . ')',
+            ]),
+
             'created_at' => $this->created_at_formatted,
             'updated_at' => $this->updated_at_formatted,
             'transaction_date' => $this->transaction_date_formatted,

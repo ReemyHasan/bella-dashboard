@@ -55,29 +55,29 @@ return new class extends Migration
             $table->foreignId('warehouse_id')->constrained();
 
             $table->enum('order_status', [
-                'pending',
-                'approved',
-                'processing',
+                'new',
                 'delivering',
-                'completed',
-                'rejected',
+                'waiting',
                 'cancelled',
+                'completed',
                 'refund'
-            ])->default('pending');
+            ])->default('new');
 
 
-            $table->decimal('deduction_amount', 10, 2)->default(0);
-            $table->enum('deduction_type', ['fixed', 'percentage'])->nullable();
+            // $table->decimal('deduction_amount', 10, 2)->default(0);
+            // $table->enum('deduction_type', ['fixed', 'percentage'])->nullable();
 
             $table->decimal('current_exchange_rate', 10, 4)->default(1);
 
             $table->foreignId('currency_id')->constrained();
 
-            $table->string('reject_reason')->nullable();
+            $table->string('cancellation_reason')->nullable();
+            $table->string('waiting_reason')->nullable();
+
             $table->text('notes')->nullable();
 
             $table->timestamp('placed_at')->nullable();
-            $table->timestamp('approved_at')->nullable();
+            $table->timestamp('waiting_until')->nullable();
             $table->timestamp('delivered_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
 
@@ -95,6 +95,10 @@ return new class extends Migration
             $table->boolean('is_financial_processed')->default(false);
             $table->boolean('is_stock_reserved')->default(false);
 
+
+            $table->enum('adjustment_type', ['percentage', 'fixed'])->nullable();
+            $table->decimal('adjustment_value', 10, 2)->nullable();
+            $table->enum('adjustment_operation', ['increase', 'decrease'])->nullable();
             $table->timestamps();
         });
     }

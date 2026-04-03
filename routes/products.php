@@ -60,4 +60,4 @@ Route::get('select-warehouse-offers/{warehouseId}', [OrderController::class, 'wa
 
 Route::get('select-customer-addresses/{customerId}', [OrderController::class, 'customerAddresses']);
 
-Route::get('select-warehouse-keeper/{warehouseId}', [OrderController::class, 'selectWarehouseInfo']);
+// Route::get('select-warehouse-keeper/{warehouseId}', [OrderController::class, 'selectWarehouseInfo']);

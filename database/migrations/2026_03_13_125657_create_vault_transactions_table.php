@@ -28,6 +28,8 @@ return new class extends Migration
 
             $table->morphs('action_by');
             $table->nullableMorphs('reference');
+            $table->nullableMorphs('balance_user');
+
 
             $table->timestamp('transaction_date')->nullable();
 

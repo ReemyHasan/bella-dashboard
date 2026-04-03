@@ -40,15 +40,31 @@ class CustomerOrderRequest extends FormRequest
             'app_user_id' => ['nullable', Rule::exists('app_users', 'id')],
             'warehouse_man_id' => ['nullable', Rule::exists('warehouses', 'keeper_id')
                 ->where(fn($q) => $q->where('id', $this->warehouse_id)),],
-            'warehouse_man_additional_cost' => ['nullable', 'numeric', 'min:0'],
+            // 'warehouse_man_additional_cost' => ['nullable', 'numeric', 'min:0'],
 
             'warehouse_id' => ['required', 'exists:warehouses,id'],
 
             'additional_tips' => ['nullable', 'numeric', 'min:0'],
 
-            'deduction_amount' => ['nullable', 'numeric', 'min:0'],
-            'deduction_type' => ['nullable', 'in:fixed,percentage'],
 
+            'adjustment_type' => [
+                'nullable',
+                'in:percentage,fixed',
+                'required_with:adjustment_operation,adjustment_value',
+            ],
+
+            'adjustment_operation' => [
+                'nullable',
+                'in:increase,decrease',
+                'required_with:adjustment_type,adjustment_value',
+            ],
+
+            'adjustment_value' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'required_with:adjustment_type,adjustment_operation',
+            ],
             'notes' => ['nullable', 'string'],
 
             // PRODUCTS
@@ -153,7 +169,7 @@ class CustomerOrderRequest extends FormRequest
             // }
         });
     }
-  
+
     public function attributes(): array
     {
         return [
@@ -175,6 +191,11 @@ class CustomerOrderRequest extends FormRequest
             'deduction_amount' => 'الخصم',
             'deduction_type' => 'نوع الخصم',
             'notes' => 'ملاحظات',
+
+
+            'adjustment_type' => 'نوع التعديل',
+            'adjustment_operation' => 'إضافة أو خصم',
+            'adjustment_value' => 'قيمة الإضافة أو الخصم',
 
 
             'products' => 'المنتجات',

@@ -22,8 +22,8 @@ class OrdersWarehouseManExport implements FromCollection, WithHeadings, WithStyl
                 'name' => $man['name'],
                 'orders' => $man['orders_count'],
                 'total_price' => round($man['total_price'], 2),
-                'deduction' => round($man['total_deduction'], 2),
-                'tips' => round($man['total_tips'], 2),
+                'total_deduction' => round($man['total_deduction'], 2),
+                'total_additions' => round($man['total_additions'], 2),
             ];
         }
     }
@@ -41,7 +41,7 @@ class OrdersWarehouseManExport implements FromCollection, WithHeadings, WithStyl
             'عدد الطلبات',
             'إجمالي السعر',
             'الخصومات',
-            'الإكراميات',
+            'الإضافات',
         ];
     }
     public function styles(Worksheet $sheet)

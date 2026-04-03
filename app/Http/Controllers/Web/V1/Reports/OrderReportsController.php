@@ -22,7 +22,7 @@ class OrderReportsController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            // new Middleware('permission:view_orders_reports', only: ['ordersReport', 'ordersWarehouseManReport' , 'itemsReport']),
+            new Middleware('permission:view_orders_reports', only: ['ordersReport', 'ordersWarehouseManReport' , 'itemsReport']),
 
         ];
     }

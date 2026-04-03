@@ -131,11 +131,11 @@ class OrderController extends Controller implements HasMiddleware
         return response()->format($returned, 'messages.success', 200);
     }
 
-     public function selectWarehouseInfo($warehouseId)
-    {
+    //  public function selectWarehouseInfo($warehouseId)
+    // {
 
-        $returned = $this->orderService->selectWarehouseInfo($warehouseId);
-        return response()->format($returned, 'messages.success', 200);
-    }
+    //     $returned = $this->orderService->selectWarehouseInfo($warehouseId);
+    //     return response()->format($returned, 'messages.success', 200);
+    // }
 
 }

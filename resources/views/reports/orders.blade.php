@@ -141,12 +141,13 @@
     <table>
         <thead>
             <tr>
+
                 <th>التاريخ</th>
                 <th>قيد الانتظار</th>
-                <th>تمت الموافقة</th>
+                <th>قيد التوصيل</th>
+                <th>جديد</th>
                 <th>مكتمل</th>
                 <th>ملغي</th>
-                <th>مرفوض</th>
                 <th>مرتجع</th>
             </tr>
         </thead>
@@ -156,11 +157,11 @@
             @foreach($data as $row)
             <tr>
                 <td>{{ $row['date'] }}</td>
-                <td>{{ $row['pending'] }}</td>
-                <td>{{ $row['approved'] }}</td>
+                <td>{{ $row['waiting'] }}</td>
+                <td>{{ $row['delivering'] }}</td>
+                <td>{{ $row['new'] }}</td>
                 <td>{{ $row['completed'] }}</td>
                 <td>{{ $row['cancelled'] }}</td>
-                <td>{{ $row['rejected'] }}</td>
                 <td>{{ $row['refund'] }}</td>
             </tr>
             @endforeach

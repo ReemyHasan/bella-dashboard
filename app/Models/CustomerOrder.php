@@ -22,7 +22,7 @@ class CustomerOrder extends Model
         'marketer_percentage',
         'warehouse_man_id',
         'delivery_cost',
-        'delivery_additional_cost',
+        // 'delivery_additional_cost',
         'teamleader_id',
         'teamleader_percentage',
         'manager_id',
@@ -32,14 +32,14 @@ class CustomerOrder extends Model
         'total_base_price',
         'total_price',
         'additional_tips',
-        'deduction_amount',
-        'deduction_type',
+        // 'deduction_amount',
+        // 'deduction_type',
         'current_exchange_rate',
         'currency_id',
-        'reject_reason',
+        'cancellation_reason',
         'notes',
         'placed_at',
-        'approved_at',
+        'waiting_until',
         'delivered_at',
         'cancelled_at',
 
@@ -57,7 +57,15 @@ class CustomerOrder extends Model
         'is_stock_reserved',
         'team_id',
         'zone_id',
-        'sub_team_id'
+        'sub_team_id',
+        'waiting_reason',
+
+
+
+        'adjustment_type',
+        'adjustment_operation',
+        'adjustment_value',
+
 
     ];
 
@@ -67,7 +75,7 @@ class CustomerOrder extends Model
         'current_exchange_rate' => 'decimal:4',
         'manager_percentage' => 'decimal:2',
         'delivery_cost' => 'decimal:2',
-        'deduction_amount' => 'decimal:2',
+        'adjustment_value' => 'decimal:2',
         'total_price' => 'decimal:2',
         'total_base_price' => 'decimal:2',
         'additional_tips' => 'decimal:2',
@@ -75,17 +83,22 @@ class CustomerOrder extends Model
         'marketer_amount' => 'decimal:2',
         'teamleader_amount' => 'decimal:2',
         'manager_amount' => 'decimal:2',
-        'warehouse_man_amount' => 'decimal:2',
+        // 'warehouse_man_amount' => 'decimal:2',
     ];
     protected $appends = [
         "created_at_formatted",
         "updated_at_formatted",
         "placed_at_formatted",
-        "approved_at_formatted",
+        "waiting_until_formatted",
         "delivered_at_formatted",
         "cancelled_at_formatted",
         "reviewed_at_formatted",
     ];
+
+     public function getFinalTotalPriceAttribute()
+    {
+        return $this->total_price + $this->additional_tips + $this->delivery_cost;
+    }
 
     public function getPlacedAtFormattedAttribute()
     {
@@ -93,10 +106,10 @@ class CustomerOrder extends Model
             ? showDateTime($this->placed_at)
             : null;
     }
-    public function getApprovedAtFormattedAttribute()
+    public function getWaitingUntilFormattedAttribute()
     {
-        return $this->approved_at
-            ? showDateTime($this->approved_at)
+        return $this->waiting_until
+            ? showDateTime($this->waiting_until)
             : null;
     }
 

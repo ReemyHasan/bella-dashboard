@@ -23,10 +23,10 @@ class OrdersReportExport implements FromCollection, WithHeadings, WithStyles
         return [
             'التاريخ',
             'قيد الانتظار',
-            'تمت الموافقة',
+            'قيد التوصيل',
+            'جديد',
             'مكتمل',
             'ملغي',
-            'مرفوض',
             'مرتجع',
         ];
     }
