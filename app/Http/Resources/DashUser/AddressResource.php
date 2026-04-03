@@ -18,14 +18,14 @@ class AddressResource extends JsonResource
             'id'          => $this->id,
             'name' => $this->name,
             'created_at' => $this->created_at_formatted,
-            'delivery_man' => $this->whenLoaded('deliveryMan', fn() => [
-                'id' => $this->deliveryMan?->id,
-                'name' => $this->deliveryMan?->first_name . ' ' . $this->deliveryMan?->last_name . ' (' . $this->deliveryMan?->user_name . ')',
-            ]),
-            'alter_delivery_man' => $this->whenLoaded('alterDeliveryMan', fn() => [
-                'id' => $this->alterDeliveryMan?->id,
-                'name' => $this->alterDeliveryMan?->first_name . ' ' . $this->alterDeliveryMan?->last_name . ' (' . $this->alterDeliveryMan?->user_name . ')',
-            ]),
+            // 'delivery_man' => $this->whenLoaded('deliveryMan', fn() => [
+            //     'id' => $this->deliveryMan?->id,
+            //     'name' => $this->deliveryMan?->first_name . ' ' . $this->deliveryMan?->last_name . ' (' . $this->deliveryMan?->user_name . ')',
+            // ]),
+            // 'alter_delivery_man' => $this->whenLoaded('alterDeliveryMan', fn() => [
+            //     'id' => $this->alterDeliveryMan?->id,
+            //     'name' => $this->alterDeliveryMan?->first_name . ' ' . $this->alterDeliveryMan?->last_name . ' (' . $this->alterDeliveryMan?->user_name . ')',
+            // ]),
             'region' => $this->whenLoaded('region', fn() => [
                 'id' => $this->region?->id,
                 'name' => $this->region?->name,

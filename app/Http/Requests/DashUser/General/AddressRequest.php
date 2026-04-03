@@ -37,14 +37,14 @@ class AddressRequest extends FormRequest
                 'exists:regions,id',
             ],
 
-            'delivery_man_id' => [
-                'nullable',
-                'exists:app_users,id',
-            ],
-            'alter_delivery_man_id' => [
-                'nullable',
-                'exists:app_users,id',
-            ],
+            // 'delivery_man_id' => [
+            //     'nullable',
+            //     'exists:app_users,id',
+            // ],
+            // 'alter_delivery_man_id' => [
+            //     'nullable',
+            //     'exists:app_users,id',
+            // ],
 
 
         ];

@@ -19,15 +19,15 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->foreignId('delivery_man_id')
-                ->nullable()
-                ->constrained('app_users')
-                ->nullOnDelete();
+            // $table->foreignId('delivery_man_id')
+            //     ->nullable()
+            //     ->constrained('app_users')
+            //     ->nullOnDelete();
 
-            $table->foreignId('alter_delivery_man_id')
-                ->nullable()
-                ->constrained('app_users')
-                ->nullOnDelete();
+            // $table->foreignId('alter_delivery_man_id')
+            //     ->nullable()
+            //     ->constrained('app_users')
+            //     ->nullOnDelete();
 
             $table->timestamps();
         });
