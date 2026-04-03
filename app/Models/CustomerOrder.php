@@ -145,7 +145,7 @@ class CustomerOrder extends Model
 
     public function customer()
     {
-        return $this->belongsTo(AppUser::class, 'customer_id');
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 
     public function team()
