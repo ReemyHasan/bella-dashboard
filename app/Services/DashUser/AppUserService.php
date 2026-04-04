@@ -72,7 +72,7 @@ class AppUserService
                 $user->addresses()->attach($attachData);
             }
 
-            $user->load(['roles', 'permissions', 'addresses']);
+            $user->load(['roles', 'permissions', 'addresses', 'team', 'subTeam.team']);
             return $user;
         });
     }
@@ -89,7 +89,7 @@ class AppUserService
             'status' => $data['status'],
             'team_id' => $data['subteam_id'] ? null : $data['team_id'],
             'subteam_id' => $data['subteam_id'],
-            'warehouse_id' => $data['warehouse_id'],
+            'warehouse_id' => $data['warehouse_id'] ?? null,
             'balance' => $data['balance'],
             'profile_link' => $data['profile_link'],
 
@@ -117,7 +117,7 @@ class AppUserService
             $user->addresses()->sync($attachData);
         }
 
-        $user->load(['roles', 'permissions', 'addresses']);
+        $user->load(['roles', 'permissions', 'addresses', 'team', 'subTeam.team']);
 
         return $user;
     }

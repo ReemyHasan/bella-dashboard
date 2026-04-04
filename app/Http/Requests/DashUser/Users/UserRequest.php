@@ -37,7 +37,7 @@ class UserRequest extends FormRequest
             'last_name'     => 'required|string|max:255',
             'user_name'     => 'required|string|max:255',
             'profile_link'     => 'nullable|string|max:255|url',
-            'balance' => 'required|numeric',
+            'balance' => 'nullable|numeric',
 
             'password' => $this->isMethod('post') ? [
                 'required',

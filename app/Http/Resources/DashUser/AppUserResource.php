@@ -93,7 +93,7 @@ class AppUserResource extends JsonResource
 
     private function resolveTeam(): ?array
     {
-        if ($this->relationLoaded('subTeam.team') && $this->subTeam) {
+        if ($this->relationLoaded('subTeam') && $this->subTeam) {
             return [
                 'id' => $this->subTeam?->team?->id,
                 'name' => $this->subTeam?->team?->name,

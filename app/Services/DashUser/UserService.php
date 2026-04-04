@@ -38,7 +38,7 @@ class UserService
                 'status'        => $data['status'],
                 'password'      => $data['password'],
                 'profile_link'      => $data['profile_link'],
-                'balance' => $data['balance'],
+                'balance' => isset($data['balance']) ? $data['balance'] : null,
 
             ]);
 
@@ -65,7 +65,7 @@ class UserService
             'mobile'    => $data['mobile'],
             'status'        => $data['status'],
             'profile_link'      => $data['profile_link'],
-            'balance' => $data['balance'],
+            'balance' => isset($data['balance']) ? $data['balance'] : null,
 
         ]);
         $roleIds = $data['roles'] ?? [];
