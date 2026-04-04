@@ -27,7 +27,7 @@ class TeamResource extends JsonResource
             'marketer_percentage' => $this->marketer_percentage,
             'team_leader_percentage' => $this->team_leader_percentage,
             'manager_percentage' => $this->manager_percentage,
-            'direct_manager_percentage' => $this->direct_manager_percentage,
+            // 'direct_manager_percentage' => $this->direct_manager_percentage,
             // 'delivery_man_percentage' => $this->delivery_man_percentage,
             // 'warehouse_man_percentage' => $this->warehouse_man_percentage,
 

@@ -98,11 +98,14 @@ class OrderService
 
             $orderData = [
                 'teamleader_id' => $isDirectTeam ? $team->manager_id : $teamleaderId,
-                'manager_id' => $isDirectTeam ? null : $team->manager_id,
+                // 'manager_id' => $isDirectTeam ? null : $team->manager_id,
+                'manager_id' =>  $team->manager_id,
 
                 'marketer_percentage' => $team->marketer_percentage,
                 'teamleader_percentage' => $team->team_leader_percentage,
-                'manager_percentage' => $isDirectTeam ? 0 : $team->manager_percentage,
+                // 'manager_percentage' => $isDirectTeam ? 0 : $team->manager_percentage,
+                'manager_percentage' =>  $team->manager_percentage,
+
                 'is_stock_reserved' => true,
                 'team_id' => $team->id,
                 'sub_team_id' => $user->subteam_id
@@ -476,11 +479,14 @@ class OrderService
 
             $orderData = [
                 'teamleader_id' => $isDirectTeam ? $team->manager_id : $teamleaderId,
-                'manager_id' => $isDirectTeam ? null : $team->manager_id,
+                // 'manager_id' => $isDirectTeam ? null : $team->manager_id,
+                'manager_id' =>  $team->manager_id,
 
                 'marketer_percentage' => $team->marketer_percentage,
                 'teamleader_percentage' => $team->team_leader_percentage,
-                'manager_percentage' => $isDirectTeam ? 0 : $team->manager_percentage,
+                // 'manager_percentage' => $isDirectTeam ? 0 : $team->manager_percentage,
+                'manager_percentage' =>  $team->manager_percentage,
+
                 'is_stock_reserved' => true,
                 'team_id' => $team->id,
                 'sub_team_id' => $user->subteam_id
@@ -1538,13 +1544,15 @@ class OrderService
             ];
         }
 
-        $isDirectTeam = $user->subTeam?->is_direct;
+        // $isDirectTeam = $user->subTeam?->is_direct;
 
         $requiredData = [
 
             'marketer_percentage' => $team->marketer_percentage,
             'teamleader_percentage' => $team->team_leader_percentage,
-            'manager_percentage' => $isDirectTeam ? null : $team->manager_percentage
+            // 'manager_percentage' => $isDirectTeam ? null : $team->manager_percentage
+            'manager_percentage' => $team->manager_percentage
+
         ];
 
         return array_merge($requiredData, $teamArr);

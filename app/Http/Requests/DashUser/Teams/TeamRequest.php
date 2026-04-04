@@ -75,7 +75,7 @@ class TeamRequest extends FormRequest
             'marketer_percentage' => 'required|numeric|min:0|max:100',
             'team_leader_percentage' => 'required|numeric|min:0|max:100',
             'manager_percentage' => 'required|numeric|min:0|max:100',
-            'direct_manager_percentage' => 'required|numeric|min:0|max:100',
+            // 'direct_manager_percentage' => 'nullable|numeric|min:0|max:100',
             // 'delivery_man_percentage' => 'required|numeric|min:0|max:100',
             // 'warehouse_man_percentage' => 'required|numeric|min:0|max:100',
 

@@ -26,9 +26,9 @@ class TeamService
                 'active' => $data['active'],
                 'marketer_percentage' => $data['marketer_percentage'],
 
-                'team_leader_percentage' => $data['team_leader_percentage'],
-                'manager_percentage' => $data['manager_percentage'],
-                'direct_manager_percentage' => $data['direct_manager_percentage'],
+                'team_leader_percentage' => $data['team_leader_percentage'] ?? 0,
+                'manager_percentage' => $data['manager_percentage'] ?? 0,
+                'direct_manager_percentage' => $data['direct_manager_percentage'] ?? 0,
 
                 // 'delivery_man_percentage' => $data['delivery_man_percentage'],
                 // 'warehouse_man_percentage' => $data['warehouse_man_percentage'],
@@ -60,9 +60,9 @@ class TeamService
                 'active' => $data['active'],
                 'marketer_percentage' => $data['marketer_percentage'],
 
-                'team_leader_percentage' => $data['team_leader_percentage'],
-                'manager_percentage' => $data['manager_percentage'],
-                'direct_manager_percentage' => $data['direct_manager_percentage'],
+                'team_leader_percentage' => $data['team_leader_percentage'] ?? 0,
+                'manager_percentage' => $data['manager_percentage'] ?? 0,
+                'direct_manager_percentage' => $data['direct_manager_percentage'] ?? 0,
 
                 // 'delivery_man_percentage' => $data['delivery_man_percentage'],
                 // 'warehouse_man_percentage' => $data['warehouse_man_percentage'],
