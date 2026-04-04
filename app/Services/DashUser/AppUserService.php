@@ -238,4 +238,31 @@ class AppUserService
 
         return $users;
     }
+
+
+    public static function inactiveMarketers($request, $months = 1)
+    {
+        $query = AppUser::with(['roles', 'team', 'subTeam.team']);
+
+        return $query
+
+            ->where('status', 'active')
+
+            ->whereDoesntHave('roles', function ($q) {
+                $q->whereIn('name', ['Team Manager', 'Team Leader']);
+            })
+
+            // 🔹 Only marketers (optional if you have flag)
+            // ->where('is_marketer', true)
+
+            // 🔹 No orders in last X months
+            ->whereDoesntHave('orders', function ($q) use ($months) {
+                $q->where('created_at', '>=', now()->subMonths($months));
+            })
+            // ->where('join_date', '<=', now()->subMonths($months))
+            ->filterBy($request->all())
+            ->sortBy($request->get('sort', ['created_at' => 'desc']))
+            ->latest()
+            ->paginate(PaginationEnum::GeneralPagination->value);
+    }
 }

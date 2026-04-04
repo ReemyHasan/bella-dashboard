@@ -18,7 +18,7 @@ class AppUserController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:view_all_app_users', only: ['index']),
+            new Middleware('permission:view_all_app_users', only: ['index', 'inactiveMarketers']),
             new Middleware('permission:view_app_user_by_id', only: ['show']),
             new Middleware('permission:create_app_user', only: ['store']),
             new Middleware('permission:update_app_user', only: ['update', 'changeStatus', 'setPassword']),
@@ -32,6 +32,12 @@ class AppUserController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $appUsers = $this->appUserService->list($request);
+        return response()->format($this->returnPaginatedResponse($appUsers, AppUserResource::collection($appUsers)), 'messages.success', 200);
+    }
+
+     public function inactiveMarketers(Request $request)
+    {
+        $appUsers = $this->appUserService->inactiveMarketers($request);
         return response()->format($this->returnPaginatedResponse($appUsers, AppUserResource::collection($appUsers)), 'messages.success', 200);
     }
 

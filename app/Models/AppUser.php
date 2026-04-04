@@ -221,4 +221,9 @@ class AppUser extends Authenticatable
     {
         return $this->hasOne(Warehouse::class, 'keeper_id');
     }
+
+    public function orders()
+    {
+        return $this->hasMany(CustomerOrder::class, 'app_user_id');
+    }
 }

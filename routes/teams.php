@@ -24,3 +24,4 @@ Route::patch('app-users/{user}/status', [AppUserController::class, 'changeStatus
 
 Route::apiResource('app-users', AppUserController::class);
 Route::get('select-app-users', [AppUserController::class, 'selectAvailable']);
+Route::get('inactive-marketers', [AppUserController::class, 'inactiveMarketers']);
