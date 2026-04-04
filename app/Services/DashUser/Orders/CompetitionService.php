@@ -7,6 +7,7 @@ use App\Enums\PaginationEnum;
 use App\Exceptions\CustomException;
 use App\Models\AppUser;
 use App\Models\Competition;
+use App\Models\CompetitionParticipant;
 use Illuminate\Support\Facades\DB;
 
 class CompetitionService
@@ -20,6 +21,18 @@ class CompetitionService
         ])->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
+    }
+
+    public function leaderboard(Competition $competition, $request)
+    {
+        return CompetitionParticipant::with([
+            'user'
+        ])
+            ->where('competition_id', $competition->id)
+            ->filterBy($request->all())
+            ->sortBy($request->get('sort', ['created_at' => 'desc']))
+            ->latest()
+            ->paginate(PaginationEnum::GeneralPagination->value);
     }
 
     public function create(array $data)

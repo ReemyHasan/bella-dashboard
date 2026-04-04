@@ -1282,6 +1282,7 @@ class OrderService
         // SAVE SNAPSHOT
         // =========================
         $order->update([
+            'order_status' => OrderStatus::completed->value,
             'marketer_amount' => $marketerAmount,
             'teamleader_amount' => $teamleaderAmount,
             'manager_amount' => $managerAmount,

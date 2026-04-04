@@ -68,6 +68,7 @@ Route::get('select-customer-addresses/{customerId}', [OrderController::class, 'c
 
 
 Route::get('competitions/{competition}/activate', [CompetitionController::class, 'activate']);
+Route::get('competitions/{competition}/leaderboard', [CompetitionController::class, 'leaderboard']);
 
 Route::apiResource('competitions', CompetitionController::class);
 

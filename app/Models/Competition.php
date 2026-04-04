@@ -169,4 +169,15 @@ class Competition extends Model
             default => null,
         };
     }
+    public function participants()
+    {
+        return $this->hasMany(CompetitionParticipant::class);
+    }
+
+    public function leaderboard()
+    {
+        return $this->participants()
+            ->with('user')
+            ->orderByDesc('score');
+    }
 }

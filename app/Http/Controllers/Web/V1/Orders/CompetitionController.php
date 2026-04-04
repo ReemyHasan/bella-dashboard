@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\V1\Orders;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DashUser\Orders\CompetitionRequest;
+use App\Http\Resources\DashUser\Orders\CompetitionParticipantResource;
 use App\Http\Resources\DashUser\Orders\CompetitionResource;
 use App\Models\Competition;
 use App\Services\DashUser\Orders\CompetitionService;
@@ -32,6 +33,12 @@ class CompetitionController extends Controller implements HasMiddleware
     {
         $competitions = $this->competitionService->list($request);
         return response()->format($this->returnPaginatedResponse($competitions, CompetitionResource::collection($competitions)), 'messages.success', 200);
+    }
+
+    public function leaderboard(Request $request, Competition $competition)
+    {
+        $competitions = $this->competitionService->leaderboard($competition, $request);
+        return response()->format($this->returnPaginatedResponse($competitions, CompetitionParticipantResource::collection($competitions)), 'messages.success', 200);
     }
 
     public function store(CompetitionRequest $request)
