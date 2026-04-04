@@ -54,11 +54,11 @@ class AppUserRequest extends FormRequest
             // 'is_delivery_man' => 'nullable|boolean',
             // 'is_warehouse_man' => 'nullable|boolean',
             'team_id' => [
-                'required',
+                'nullable',
                 'exists:teams,id',
             ],
             'subteam_id' => [
-                'required',
+                'nullable',
                 Rule::exists('sub_teams', 'id')
                     ->where(function ($query) {
                         $query->where('team_id', $this->team_id);
@@ -69,7 +69,7 @@ class AppUserRequest extends FormRequest
                 'nullable',
                 'exists:warehouses,id',
             ],
-            'addresses' => 'required|array|min:1',
+            'addresses' => 'nullable|array|min:0',
 
             'addresses.*.id' => [
                 'required',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\DashUser\Orders;
 
+use App\Enums\CompetitionStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -84,10 +85,26 @@ class CustomerOrderRequest extends FormRequest
                     ->where(fn($q) => $q->where('warehouse_id', $this->warehouse_id)),
             ],
             'offers.*.quantity' => ['required', 'integer', 'min:1'],
+
+            'is_target' => [
+                'nullable',
+                'boolean'
+            ],
+
+            'competition_id' => ['nullable', Rule::exists('competitions', 'id')->where(function ($query) {
+                $query->where('status', CompetitionStatus::active->value);
+            }),],
+
         ];
     }
 
 
+    public function messages(): array
+    {
+        return [
+            'competition_id.exists' => 'المسابقة المختارة غير صالحة أو غير نشطة.',
+        ];
+    }
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
@@ -206,6 +223,9 @@ class CustomerOrderRequest extends FormRequest
             'offers' => 'العروض',
             'offers.*.offer_id' => 'العرض',
             'offers.*.quantity' => 'الكمية',
+
+            'is_target' => 'تابع لهدف تسويقي',
+            'competition_id' => 'الهدف التسويقي'
 
 
         ];

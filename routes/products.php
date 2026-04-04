@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\V1\Orders\CompetitionController;
 use App\Http\Controllers\Web\V1\Orders\OrderController;
 use App\Http\Controllers\Web\V1\Products\OfferController;
 use App\Http\Controllers\Web\V1\Products\MainCategoryController;
@@ -46,6 +47,8 @@ Route::apiResource('offers', OfferController::class);
 
 Route::get('customer-orders/{customer_order}/transactions', [OrderController::class, 'transactions']);
 Route::post('customer-orders/{customer_order}/handle', [OrderController::class, 'handle']);
+Route::get('customer-orders/{customer_order}/share-profits', [OrderController::class, 'handleFinancialProcess']);
+
 Route::apiResource('customer-orders', OrderController::class);
 
 
@@ -61,3 +64,11 @@ Route::get('select-warehouse-offers/{warehouseId}', [OrderController::class, 'wa
 Route::get('select-customer-addresses/{customerId}', [OrderController::class, 'customerAddresses']);
 
 // Route::get('select-warehouse-keeper/{warehouseId}', [OrderController::class, 'selectWarehouseInfo']);
+
+
+
+Route::get('competitions/{competition}/activate', [CompetitionController::class, 'activate']);
+
+Route::apiResource('competitions', CompetitionController::class);
+
+Route::get('select-competitions', [CompetitionController::class, 'selectAvailable']);

@@ -172,8 +172,8 @@ class PermissionSeeder extends Seeder
             ['name' => 'view_vault_by_id', 'name_ar' => 'عرض خزنة', 'guard_name' => 'dash_user_guard', 'group' => 'الخزنة'],
             ['name' => 'view_all_vaults', 'name_ar' => 'عرض الخزنات', 'guard_name' => 'dash_user_guard', 'group' => 'الخزنة'],
 
-            
-            
+
+
             ['name' => 'update_company_vault', 'name_ar' => 'تحديث خزنة الشركة', 'guard_name' => 'dash_user_guard', 'group' => 'الخزنة'],
             ['name' => 'update_not_company_vault', 'name_ar' => 'تحديث خزنة غير الشركة', 'guard_name' => 'dash_user_guard', 'group' => 'الخزنة'],
 
@@ -230,6 +230,19 @@ class PermissionSeeder extends Seeder
             ['name' => 'view_order_by_id', 'name_ar' => 'عرض طلب زبون', 'guard_name' => 'dash_user_guard', 'group' => 'طلبات الزبائن'],
             ['name' => 'view_all_orders', 'name_ar' => 'عرض طلبات الزبائن', 'guard_name' => 'dash_user_guard', 'group' => 'طلبات الزبائن'],
             ['name' => 'handle_order', 'name_ar' => 'تأكيد أو رفض طلب زبون', 'guard_name' => 'dash_user_guard', 'group' => 'طلبات الزبائن'],
+
+
+
+            // ================== competitions ==================
+            ['name' => 'create_competition', 'name_ar' => 'إدخال هدف تسويقي', 'guard_name' => 'dash_user_guard', 'group' => 'الأهداف التسويقية'],
+            ['name' => 'update_competition', 'name_ar' => 'تحديث هدف تسويقي', 'guard_name' => 'dash_user_guard', 'group' => 'الأهداف التسويقية'],
+            ['name' => 'delete_competition', 'name_ar' => 'حذف هدف تسويقي', 'guard_name' => 'dash_user_guard', 'group' => 'الأهداف التسويقية'],
+
+            ['name' => 'view_competition_by_id', 'name_ar' => 'عرض هدف تسويقي', 'guard_name' => 'dash_user_guard', 'group' => 'الأهداف التسويقية'],
+            ['name' => 'view_all_competitions', 'name_ar' => 'عرض الأهداف التسويقية', 'guard_name' => 'dash_user_guard', 'group' => 'الأهداف التسويقية'],
+            ['name' => 'change_status_competition', 'name_ar' => 'تأكيد أو رفض هدف تسويقي', 'guard_name' => 'dash_user_guard', 'group' => 'الأهداف التسويقية'],
+
+
 
 
             // ================== Other ==================

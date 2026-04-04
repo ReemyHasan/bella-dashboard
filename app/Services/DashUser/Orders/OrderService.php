@@ -1442,7 +1442,7 @@ class OrderService
 
 
             'balance_user_type' => AppUser::class,
-            'balance_user_id' => $appUserId->id,
+            'balance_user_id' => $appUserId,
 
             'action_by_type' => get_class($user),
             'action_by_id' => $user->id,
@@ -1486,7 +1486,7 @@ class OrderService
 
 
             'balance_user_type' => AppUser::class,
-            'balance_user_id' => $appUserId->id,
+            'balance_user_id' => $appUserId,
 
             'action_by_type' => get_class($user),
             'action_by_id' => $user->id,

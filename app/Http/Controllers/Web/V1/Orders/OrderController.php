@@ -81,6 +81,21 @@ class OrderController extends Controller implements HasMiddleware
         );
     }
 
+    public function handleFinancialProcess(CustomerOrder $customer_order)
+    {
+
+        $customer_order = $this->orderService->handleFinancialProcess(
+            $customer_order
+        );
+
+        return response()->format(
+            new CustomerOrderResource($customer_order),
+            __('messages.handled_successfully', ['item' => __('constants.customer_order')]),
+            200
+        );
+    }
+
+
     public function selectMarketerInfo($marketeId)
     {
 
@@ -124,7 +139,7 @@ class OrderController extends Controller implements HasMiddleware
         return response()->format($returned, 'messages.success', 200);
     }
 
-      public function customerAddresses($customerId)
+    public function customerAddresses($customerId)
     {
 
         $returned = $this->orderService->customerAddresses($customerId);

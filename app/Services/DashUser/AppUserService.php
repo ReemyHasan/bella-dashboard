@@ -40,7 +40,7 @@ class AppUserService
                 'join_date' => $data['join_date'],
                 'status' => $data['status'],
                 'team_id' => $data['subteam_id'] ? null : $data['team_id'],
-                'subteam_id' => $data['subteam_id'],
+                'subteam_id' => $data['subteam_id'] ?? null,
                 'warehouse_id' => $data['warehouse_id'],
                 'balance' => $data['balance'],
                 'profile_link' => $data['profile_link'],
@@ -62,13 +62,16 @@ class AppUserService
 
             $attachData = [];
 
-            foreach ($data['addresses'] as $address) {
-                $attachData[$address['id']] = [
-                    'is_main' => $address['is_main']
-                ];
+            if (isset($data['addresses'])) {
+                foreach ($data['addresses'] as $address) {
+                    $attachData[$address['id']] = [
+                        'is_main' => $address['is_main']
+                    ];
+                }
+
+                $user->addresses()->attach($attachData);
             }
 
-            $user->addresses()->attach($attachData);
             $user->load(['roles', 'permissions', 'addresses']);
             return $user;
         });
@@ -101,15 +104,19 @@ class AppUserService
         //     $this->syncUserPermissionsFromRoles($user, $roleIds);
         // }
 
+
         $attachData = [];
 
-        foreach ($data['addresses'] as $address) {
-            $attachData[$address['id']] = [
-                'is_main' => $address['is_main']
-            ];
+        if (isset($data['addresses'])) {
+            foreach ($data['addresses'] as $address) {
+                $attachData[$address['id']] = [
+                    'is_main' => $address['is_main']
+                ];
+            }
+
+            $user->addresses()->sync($attachData);
         }
 
-        $user->addresses()->sync($attachData);
         $user->load(['roles', 'permissions', 'addresses']);
 
         return $user;
@@ -189,19 +196,27 @@ class AppUserService
     public function selectAvailable(
         $team = null,
         $subTeam = null,
-        $onlyUnassignedTeam = false,
-        $isWarehouseMan = false,
-        $isDeliveryMan = false
+        $onlyUnassignedTeam = null,
+        $isWarehouseMan = null,
+        $isTeamManager = null,
+        $isSubTeamLeader = null
     ) {
 
         $users = AppUser::query()
 
+            ->when($isTeamManager, function ($query) {
+                $query->whereHas('roles', function ($q) {
+                    $q->where('name', 'Team Manager');
+                });
+            })
+            ->when($isSubTeamLeader, function ($query) {
+                $query->whereHas('roles', function ($q) {
+                    $q->where('name', 'Team Leader');
+                });
+            })
             ->when($onlyUnassignedTeam, function ($query) {
                 $query->whereNull('team_id')->whereNull('subteam_id');
             })
-            // ->when($onlyUnassignedSubTeam, function ($query) {
-            //     $query->whereNull('subteam_id');
-            // })
             ->when(!is_null($team), function ($query) use ($team) {
                 $query->where('team_id', $team);
             })->when(!is_null($subTeam), function ($query) use ($subTeam) {
@@ -209,9 +224,6 @@ class AppUserService
             })->when(!is_null($isWarehouseMan), function ($query) use ($isWarehouseMan) {
                 $query->where('is_warehouse_man', $isWarehouseMan);
             })
-            // ->when(!is_null($isDeliveryMan), function ($query) use ($isDeliveryMan) {
-            //     $query->where('is_delivery_man', $isDeliveryMan);
-            // })
             ->where('status', DashUserStatus::ACTIVE->value)->orderBy('id')->get([
                 'id',
                 'subteam_id',

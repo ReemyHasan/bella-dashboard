@@ -46,6 +46,7 @@ class CustomerOrderResource extends JsonResource
 
             'final_total_price' => $this->final_total_price,
             'is_financial_processed' => $this->is_financial_processed,
+            //'is_target' => $this->is_target,
 
             'marketer_amount_in_local_currency' => $this->marketer_amount,
             'teamleader_amount_in_local_currency' => $this->teamleader_amount,

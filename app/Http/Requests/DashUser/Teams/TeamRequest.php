@@ -37,7 +37,7 @@ class TeamRequest extends FormRequest
                 'exists:app_users,id',
             ],
 
-            'sub_teams' => 'required|array|min:1',
+            'sub_teams' => 'nullable|array|min:0',
 
             'sub_teams.*.id' => [
                 'nullable',

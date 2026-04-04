@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\CustomerOrderObserver;
 use App\Traits\HasFilters;
 use App\Traits\HasFormattedTimestamps;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+#[ObservedBy([CustomerOrderObserver::class])]
 class CustomerOrder extends Model
 {
 
@@ -65,6 +68,8 @@ class CustomerOrder extends Model
         'adjustment_type',
         'adjustment_operation',
         'adjustment_value',
+        'is_target',
+        'competition_id'
 
 
     ];
@@ -83,6 +88,8 @@ class CustomerOrder extends Model
         'marketer_amount' => 'decimal:2',
         'teamleader_amount' => 'decimal:2',
         'manager_amount' => 'decimal:2',
+        'is_target' => 'boolean',
+
         // 'warehouse_man_amount' => 'decimal:2',
     ];
     protected $appends = [
@@ -95,7 +102,7 @@ class CustomerOrder extends Model
         "reviewed_at_formatted",
     ];
 
-     public function getFinalTotalPriceAttribute()
+    public function getFinalTotalPriceAttribute()
     {
         return $this->total_price + $this->additional_tips + $this->delivery_cost;
     }
@@ -205,5 +212,10 @@ class CustomerOrder extends Model
     public function reviewedBy()
     {
         return $this->belongsTo(DashUser::class, 'reviewed_by');
+    }
+
+    public function competition()
+    {
+        return $this->belongsTo(Competition::class, 'competition_id');
     }
 }
