@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('order_number')->unique();
 
-            $table->foreignId('customer_id')->constrained('app_users');
+            $table->foreignId('customer_id')->constrained('customers');
 
             $table->foreignId('address_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('team_id')->nullable()->constrained('teams')->nullOnDelete();

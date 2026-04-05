@@ -124,9 +124,6 @@ class AppUserWithRequestsSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'join_date' => now(),
                 'status' => DashUserStatus::ACTIVE->value,
-                'is_delivery_man' => true,
-                'is_warehouse_man' => true,
-                'warehouse_id' =>  1,
                 'team_id' => 1,
                 'subteam_id' => 1,
 
@@ -140,8 +137,6 @@ class AppUserWithRequestsSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'join_date' => now(),
                 'status' => DashUserStatus::ACTIVE->value,
-                'is_warehouse_man' => false,
-                'warehouse_id' =>  1,
                 'team_id' => 1,
                 'subteam_id' => 1,
 
@@ -155,9 +150,20 @@ class AppUserWithRequestsSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'join_date' => now(),
                 'status' => DashUserStatus::ACTIVE->value,
-                'is_delivery_man' => true,
-                'is_warehouse_man' => false,
-                'warehouse_id' =>  1,
+                'team_id' => 1,
+                'subteam_id' => 1,
+
+
+            ],
+
+            [
+                'first_name' => 'محمد',
+                'last_name' => 'علي',
+                'user_name' => 'ali.mon',
+                'mobile' => '0993333333',
+                'password' => Hash::make('password'),
+                'join_date' => now(),
+                'status' => DashUserStatus::ACTIVE->value,
                 'team_id' => 1,
                 'subteam_id' => 1,
 

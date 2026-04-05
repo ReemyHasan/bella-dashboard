@@ -39,7 +39,7 @@ class CustomerOrderRequest extends FormRequest
             'customer_mobile' => ['required', 'string', 'max:20'],
 
             'app_user_id' => ['nullable', Rule::exists('app_users', 'id')],
-            'warehouse_man_id' => ['nullable', Rule::exists('warehouses', 'keeper_id')
+            'warehouse_man_id' => ['required', Rule::exists('warehouses', 'keeper_id')
                 ->where(fn($q) => $q->where('id', $this->warehouse_id)),],
             // 'warehouse_man_additional_cost' => ['nullable', 'numeric', 'min:0'],
 

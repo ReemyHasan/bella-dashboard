@@ -1244,14 +1244,18 @@ class OrderService
             throw new CustomException('تم بالفعل توزيع الأرباح');
         }
 
-        return DB::transaction(function () use ($order) {
+        if ($order->order_status != OrderStatus::completed->value) {
+            throw new CustomException('لا يمكن توزيع الربح قبل إتمام الطلب.');
+        }
+        $vault = Vault::where('owner_id', $order->warehouse_man_id)->first();
+        if ($vault == null || $order->warehouse_man_id == null)
+            throw new CustomException('الموزع ليس لديه خزنة, من فضلك أضف له خزنة ثم أعد المحاولة.');
+
+
+        return DB::transaction(function () use ($order, $vault) {
             $marketerAmount   = $order->marketer_amount;
             $teamleaderAmount = $order->teamleader_amount;
             $managerAmount    = $order->manager_amount;
-
-            $vault = Vault::where('owner_id', $order->warehouse_man_id)->first();
-            if ($vault == null)
-                throw new CustomException('الموزع ليس لديه خزنة, من فضلك أضف له خزنة ثم أعد المحاولة.');
 
 
 

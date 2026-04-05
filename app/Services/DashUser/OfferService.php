@@ -189,7 +189,7 @@ class OfferService
         $offer->load([
             'images',
             'tags',
-            'zonePrices.zone',
+            'zonePrices.zone.currency',
             'offerProducts.product.mainImage',
             'offerWarehouses.warehouse'
         ]);
