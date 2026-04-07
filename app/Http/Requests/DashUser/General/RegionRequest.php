@@ -63,6 +63,29 @@ class RegionRequest extends FormRequest
                     }
                 }),
             ],
+
+            'addresses' => 'nullable|array|min:0',
+
+            'addresses.*.id' => [
+                'nullable',
+                Rule::exists('addresses', 'id')
+                    ->where(fn($q) => $q->where('region_id', $regionId)),
+            ],
+            'addresses.*.name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'addresses_removed' => [
+                'nullable',
+                'array'
+            ],
+            'addresses_removed.*' => [
+                Rule::exists('addresses', 'id')
+                    ->where(fn($q) => $q->where('region_id', $regionId)),
+            ],
+
+
         ];
     }
 
@@ -81,7 +104,16 @@ class RegionRequest extends FormRequest
             'city_id' => 'المدينة',
             'zone_id' => 'الموقع الجغرافي',
             'delivery_cost' => 'تكلفة التوصيل',
-            'warehouse_id' => 'المستودع'
+            'warehouse_id' => 'المستودع',
+
+
+            'addresses' => 'العناوين',
+            'addresses.*.name' => 'اسم العنوان',
+            'addresses.*.id' => 'العنوان',
+            'addresses_removed' => 'العناوين المراد حذفها',
+            'addresses_removed.*' => 'العنوان المراد حذفه',
+
+
         ];
     }
 }

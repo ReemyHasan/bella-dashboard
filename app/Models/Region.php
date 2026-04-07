@@ -24,7 +24,7 @@ class Region extends Model
         "created_at_formatted",
         "updated_at_formatted"
     ];
-     protected $casts = [
+    protected $casts = [
         'delivery_cost' => 'decimal:2',
     ];
 
@@ -35,5 +35,10 @@ class Region extends Model
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
     }
 }
