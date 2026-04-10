@@ -35,7 +35,7 @@ class AppUserController extends Controller implements HasMiddleware
         return response()->format($this->returnPaginatedResponse($appUsers, AppUserResource::collection($appUsers)), 'messages.success', 200);
     }
 
-     public function inactiveMarketers(Request $request)
+    public function inactiveMarketers(Request $request)
     {
         $appUsers = $this->appUserService->inactiveMarketers($request);
         return response()->format($this->returnPaginatedResponse($appUsers, AppUserResource::collection($appUsers)), 'messages.success', 200);
@@ -112,6 +112,14 @@ class AppUserController extends Controller implements HasMiddleware
         $message = $this->appUserService->handleStatusChange($user, $validated['action']);
 
         return response()->format(null, $message, 200);
+    }
+
+    public function marketerBalance($id)
+    {
+
+        $returned = $this->appUserService->marketerBalance($id);
+
+        return response()->format($returned, 'messages.success', 200);
     }
 
     // public function updatePermissions(UpdatePermissionsRequest $request, AppUser $user)

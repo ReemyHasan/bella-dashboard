@@ -22,6 +22,8 @@ Route::patch('app-users/{user}/password', [AppUserController::class, 'setPasswor
 Route::patch('app-users/{user}/status', [AppUserController::class, 'changeStatus']);
 // Route::post('app-users/{user}/update-permissions', 'updatePermissions');
 
+Route::get('marketer-balance/{id}', [AppUserController::class, 'marketerBalance']);
+
 Route::apiResource('app-users', AppUserController::class);
 Route::get('select-app-users', [AppUserController::class, 'selectAvailable']);
 Route::get('inactive-marketers', [AppUserController::class, 'inactiveMarketers']);

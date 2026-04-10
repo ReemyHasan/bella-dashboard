@@ -99,8 +99,15 @@ class VaultController extends Controller implements HasMiddleware
 
         $returnedData = $vaults->map(fn($vault) => [
             'key' => $vault?->id,
-            'value' => $vault->id == 1 ? 'خزنة الشركة' : $vault->owner?->first_name . ' ' . $vault->owner?->last_name . ' (' . $vault->balance . ')',
+            'value' => $vault->id == 1 ? 'خزنة الشركة'. ' (' . $vault->balance . ')' : $vault->owner?->first_name . ' ' . $vault->owner?->last_name . ' (' . $vault->balance . ')',
         ]);
+        return response()->format($returnedData, 'messages.success', 200);
+    }
+
+
+    public function marketerVault($id)
+    {
+        $returnedData = $this->vaultService->marketerVault($id);
         return response()->format($returnedData, 'messages.success', 200);
     }
 }

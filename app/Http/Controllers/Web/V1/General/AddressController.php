@@ -70,4 +70,11 @@ class AddressController extends Controller implements HasMiddleware
         ]);
         return response()->format($returnedData, 'messages.success', 200);
     }
+
+    public function marketerAddresses($marketerId)
+    {
+
+        $returned = $this->addressService->marketerAddresses($marketerId);
+        return response()->format($returned, 'messages.success', 200);
+    }
 }

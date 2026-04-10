@@ -22,9 +22,9 @@ class WarehouseService
             ->latest();
 
         // If user doesn't have full_view permission
-        if (!$user->hasPermission('full_view_warehouses')) {
-            $query->where('keeper_id', $user->id);
-        }
+        // if (!$user->hasPermission('full_view_warehouses')) {
+        //     $query->where('keeper_id', $user->id);
+        // }
 
         return $query->paginate(PaginationEnum::GeneralPagination->value);
     }
@@ -32,9 +32,9 @@ class WarehouseService
     public function warehouseProducts($request, Warehouse $warehouse)
     {
         $user = Auth::user();
-        if (!$user->hasPermission('full_view_warehouses') && $warehouse->keeper_id !== $user->id) {
-            abort(403, __('messages.unauthorized_action'));
-        }
+        // if (!$user->hasPermission('full_view_warehouses') && $warehouse->keeper_id !== $user->id) {
+        //     abort(403, __('messages.unauthorized_action'));
+        // }
         return ProductWarehouse::with(
             [
                 'product.mainCategory',

@@ -52,7 +52,7 @@ class CashRequestRequest extends FormRequest
                 'required_without:address_id'
             ],
 
-            'cash_request_reason' => ['required', 'string'],
+            'cash_request_reason' => ['nullable', 'string'],
 
             'delivery_cost' => ['nullable', 'numeric', 'min:0'],
             // 'additional_delivery_cost' => ['nullable', 'numeric', 'min:0'],

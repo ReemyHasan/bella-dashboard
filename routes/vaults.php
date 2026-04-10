@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 
 
 
+Route::get('vault-by-marketer/{id}', [VaultController::class, 'marketerVault']);
+
 Route::patch('vaults/{vault}/update-vault-balance', [VaultController::class, 'updateUserBalance']);
 Route::get('vaults/{vault}/transactions', [VaultController::class, 'transactions']);
 Route::patch('vaults/update-company-balance', [VaultController::class, 'updateCompanyBalance']);

@@ -129,4 +129,13 @@ class VaultService
 
         return $vaults;
     }
+
+    public function marketerVault($id)
+    {
+        $vault = Vault::where('owner_id', $id)->firstOrFail();
+        return [
+            'id' => $vault->id,
+            'balance' => $vault->balance
+        ];
+    }
 }

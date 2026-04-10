@@ -13,7 +13,8 @@ class AddressService
     {
         return Address::with(
             // 'deliveryMan', 'alterDeliveryMan', 
-            'region')->filterBy($request->all())
+            'region'
+        )->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
     }
@@ -68,7 +69,8 @@ class AddressService
 
             $address->load(
                 // 'deliveryMan', 'alterDeliveryMan', 
-                'region');
+                'region'
+            );
 
             return $address;
         });
@@ -112,7 +114,8 @@ class AddressService
             // }
             $address->load(
                 // 'deliveryMan', 'alterDeliveryMan', 
-                'region');
+                'region'
+            );
 
             return $address;
         });
@@ -121,7 +124,8 @@ class AddressService
     {
         $address->load(
             // 'deliveryMan', 'alterDeliveryMan',
-             'region.city.zone');
+            'region.city.zone'
+        );
         return $address;
     }
 
@@ -143,5 +147,18 @@ class AddressService
         ]);
 
         return $addresses;
+    }
+
+    public function marketerAddresses($marketerId)
+    {
+
+        $marketer = AppUser::find($marketerId);
+
+        return $marketer->addresses->map(fn($address) =>
+        [
+            'id' => $address->id,
+            'address' => $address->full_address ?? $address->name ?? '',
+            'is_main' => (bool)$address->pivot->is_main,
+        ]);
     }
 }

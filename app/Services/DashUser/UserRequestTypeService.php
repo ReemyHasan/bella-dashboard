@@ -43,9 +43,14 @@ class UserRequestTypeService
 
     public function delete(UserRequestType $userRequestType)
     {
-        if ($userRequestType->requests()->exists())
+        if (in_array($userRequestType->id,[1,2,3]))
+            throw new CustomException("لا يمكن حذف هذا النوع من الطلبات, انها أنواع أساسية.");
+
+         if ($userRequestType->requests()->exists())
             throw new CustomException("هذا النوع مستخدم في طلبات موجودة, يتعذر حذفه.");
 
+
+        
         return $userRequestType->delete();
     }
 

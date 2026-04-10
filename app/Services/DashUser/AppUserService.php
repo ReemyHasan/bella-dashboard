@@ -5,8 +5,6 @@ namespace App\Services\DashUser;
 use App\Enums\DashUserStatus;
 use App\Enums\PaginationEnum;
 use App\Models\AppUser;
-use App\Models\SubTeam;
-use App\Models\Team;
 use Illuminate\Support\Facades\DB;
 
 class AppUserService
@@ -264,5 +262,10 @@ class AppUserService
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()
             ->paginate(PaginationEnum::GeneralPagination->value);
+    }
+    public function marketerBalance($id)
+    {
+        $user = AppUser::where('id', $id)->select('id', 'balance')->firstOrFail();
+        return $user->balance;
     }
 }

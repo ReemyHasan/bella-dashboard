@@ -52,6 +52,7 @@ Route::get('select-regions', [RegionController::class, 'selectAvailable']);
 Route::apiResource('addresses', AddressController::class);
 
 Route::get('select-addresses', [AddressController::class, 'selectAvailable']);
+Route::get('select-marketer-addresses/{marketerId}', [AddressController::class, 'marketerAddresses']);
 
 Route::apiResource('messages', MessageController::class);
 
