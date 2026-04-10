@@ -47,17 +47,23 @@ class AppUserRequestController extends Controller implements HasMiddleware
 
         return response()->format(null,  __('messages.reviewed_successfully',  ['item' => __('constants.app_user_request')]), 200);
     }
-    public function handle(Request $appUserRequest, AppUserRequest $request)
+
+     public function handle(Request $request, AppUserRequest $app_user_request)
     {
-        $validated = $appUserRequest->validate([
-            'notes' => ['nullable', 'string', 'max:2000']
+        $validated = $request->validate([
+            'status' => ['required', 'in:approved,rejected'],
+            'notes' => ['nullable', 'string']
         ]);
 
-        $this->appUserRequestService->handle(
-            $request,
-            $validated['notes'] ?? null
+        $app_user_request = $this->appUserRequestService->handle(
+            $app_user_request,
+            $validated
         );
 
-        return response()->format(null,  __('messages.handled_successfully',  ['item' => __('constants.app_user_request')]), 200);
+        return response()->format(
+            new AppUserRequestResource($app_user_request),
+            __('messages.handled_successfully', ['item' => __('constants.app_user_request')]),
+            200
+        );
     }
 }

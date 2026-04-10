@@ -25,13 +25,20 @@ class AppUserRequestResource extends JsonResource
                 'id' => $this->userRequestType?->id,
                 'name' => $this->userRequestType?->name
             ]),
-
+            'status' => $this->status,
+            'requested_by' => $this->whenLoaded('requestedBy', fn() => [
+                'id' => $this->requestedBy?->id,
+                'type' => get_class($this->requestedBy) == 'App\Models\DashUser' ? 'Dashboard User' :  'Marketer',
+                'name' => $this->requestedBy?->first_name . ' ' . $this->requestedBy?->last_name . ' (' . $this->requestedBy?->user_name . ')',
+            ]),
             'created_at' => $this->created_at_formatted,
             'updated_at' => $this->updated_at_formatted,
             'read_at' => $this->read_at_formatted,
             'handled_at' => $this->handled_at_formatted,
-
-
+            'reviewed_by' => $this->whenLoaded('reviewedBy', fn() => [
+                'id' => $this->reviewedBy?->id,
+                'name' => $this->reviewedBy?->first_name . ' ' . $this->reviewedBy?->last_name . ' (' . $this->reviewedBy?->user_name . ')',
+            ])
         ];
     }
 }

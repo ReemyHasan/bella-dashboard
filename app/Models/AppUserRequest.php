@@ -18,7 +18,11 @@ class AppUserRequest extends Model
         'content',
         'notes',
         'read_at',
-        'handled_at'
+        'handled_at',
+        'status',
+        'requested_by_id',
+        'requested_by_type',
+        'reviewed_by',
     ];
     protected $appends = [
         "created_at_formatted",
@@ -48,5 +52,14 @@ class AppUserRequest extends Model
     public function userRequestType()
     {
         return $this->belongsTo(UserRequestType::class, 'user_request_type_id');
+    }
+
+    public function requestedBy()
+    {
+        return $this->morphTo();
+    }
+    public function reviewedBy()
+    {
+        return $this->belongsTo(DashUser::class, 'reviewed_by');
     }
 }

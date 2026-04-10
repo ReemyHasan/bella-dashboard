@@ -31,7 +31,7 @@ Route::get('select-user-request-types', [UserRequestTypeController::class, 'sele
 
 
 Route::patch('user-requests/{request}/mark-as-read', [AppUserRequestController::class, 'markAsRead']);
-Route::patch('user-requests/{request}/handle', [AppUserRequestController::class, 'handle']);
+Route::patch('user-requests/{app_user_request}/handle', [AppUserRequestController::class, 'handle']);
 
 Route::apiResource('user-requests', AppUserRequestController::class)->only('index', 'show');
 

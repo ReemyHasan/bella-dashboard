@@ -179,13 +179,17 @@ class AppUserWithRequestsSeeder extends Seeder
                 'app_user_id' => $user->id,
                 'user_request_type_id' => 1,
                 'content' => 'طلب سلفة مالية بقيمة 200000 ليرة.',
+                'requested_by_id' => 1,
+                'requested_by_type' => AppUser::class,
             ]);
 
             AppUserRequest::create([
                 'app_user_id' => $user->id,
                 'user_request_type_id' => 2,
                 'content' => 'طلب إجازة لمدة ثلاثة أيام.',
-                'read_at' => now()
+                'read_at' => now(),
+                'requested_by_id' => 1,
+                'requested_by_type' => AppUser::class,
             ]);
 
             AppUserRequest::create([
@@ -194,7 +198,9 @@ class AppUserWithRequestsSeeder extends Seeder
                 'content' => 'طلب تعديل رقم الهاتف.',
                 'read_at' => now(),
                 'handled_at' => now(),
-                'notes' => 'تم تعديل الرقم بنجاح'
+                'notes' => 'تم تعديل الرقم بنجاح',
+                'requested_by_id' => 1,
+                'requested_by_type' => AppUser::class,
             ]);
         }
     }
