@@ -26,7 +26,7 @@ class UserPasswordRequest extends FormRequest
                 'required',
                 'string',
                 'min:8',
-                'regex:/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,30}$/',
+                // 'regex:/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,30}$/',
                 'confirmed'
             ],
         ];

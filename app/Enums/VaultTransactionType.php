@@ -4,7 +4,7 @@ namespace App\Enums;
 
 enum VaultTransactionType: string
 {
-    case CASH_REQUEST = 'cash_request';
+    case CASH_REQUEST = 'cash_request_complete';
     case BONUS = 'bonus';
     case DEDUCTION = 'deduction';
     case TRANSFER = 'transfer';
@@ -12,6 +12,7 @@ enum VaultTransactionType: string
     case ORDER_COMPANY_PROFIT = 'order_company_revenue';
     case ORDER_REFUND = 'order_refund';
     case ORDER_COMPLETE = 'order_complete';
+    case CASH_REQUEST_APPROVED = 'cash_request_approve';
 
 
 

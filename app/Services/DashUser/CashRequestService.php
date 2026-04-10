@@ -10,9 +10,12 @@ use App\Models\AppUser;
 use App\Models\CashRequest;
 use App\Models\Currency;
 use App\Models\DashUser;
+use App\Models\Vault;
 use App\Models\VaultTransaction;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
+use function PHPUnit\Framework\isNull;
 
 class CashRequestService
 {
@@ -136,28 +139,34 @@ class CashRequestService
             $this->changeStatus(
                 $cashRequest,
                 $status,
-                $data['delivered_by'] ?? null,
                 $data['notes'] ?? null
             ),
         };
     }
 
-    public function approve(CashRequest $cashRequest, float $approvedAmount, ?string $notes = null)
+    public function approve(CashRequest $cashRequest, float $approvedAmount, $delivered_by, ?string $notes = null)
     {
         if ($cashRequest->status !== CashRequestStatus::PENDING->value) {
             throw new CustomException('لا يمكن الموافقة على الطلب.');
         }
 
-        return DB::transaction(function () use ($cashRequest, $approvedAmount, $notes) {
+        $targetBalance = $cashRequest->requestedFor?->balance; 
+
+        if ($targetBalance < $approvedAmount) {
+            throw new CustomException("لا يمكن الموافقة على الطلب, الرصيد في محفظة المستخدم أقل من المطلوب : {$targetBalance}.");
+        }
+        return DB::transaction(function () use ($cashRequest, $approvedAmount, $notes, $delivered_by) {
 
             $cashRequest->update([
                 'approved_amount' => $approvedAmount,
+                'delivered_by' => $delivered_by ?? $cashRequest->delivered_by,
                 'review_notes' => $notes,
                 'reviewed_by' => Auth::id(),
                 'reviewed_at' => now(),
                 'status' => CashRequestStatus::APPROVED->value,
             ]);
 
+            $this->transferFromUserToVault($cashRequest);
             return $cashRequest->refresh();
         });
     }
@@ -180,7 +189,7 @@ class CashRequestService
         });
     }
 
-    public function changeStatus(CashRequest $cashRequest, CashRequestStatus $status, ?int $deliveredBy = null, ?string $notes = null)
+    public function changeStatus(CashRequest $cashRequest, CashRequestStatus $status, ?string $notes = null)
     {
         $allowedTransitions = [
             CashRequestStatus::APPROVED->value => [
@@ -216,16 +225,12 @@ class CashRequestService
             throw new CustomException('تغيير الحالة غير مسموح.');
         }
 
-        return DB::transaction(function () use ($cashRequest, $status, $deliveredBy, $notes) {
+        return DB::transaction(function () use ($cashRequest, $status, $notes) {
 
 
             $updateData = [
                 'status' => $status->value
             ];
-
-            if ($deliveredBy) {
-                $updateData['delivered_by'] = $deliveredBy;
-            }
 
             if ($notes) {
                 $updateData['notes'] = $notes;
@@ -233,12 +238,13 @@ class CashRequestService
 
             if ($status === CashRequestStatus::DELIVERED) {
                 $updateData['delivered_at'] = now();
+                $this->addTransaction($cashRequest);
+
             }
 
             $cashRequest->update($updateData);
-            if ($status === CashRequestStatus::IN_TRANSIT) {
-                $this->addTransaction($cashRequest);
-            }
+            // if ($status === CashRequestStatus::IN_TRANSIT) {
+            // }
 
             return $cashRequest->refresh();
         });
@@ -297,6 +303,71 @@ class CashRequestService
             'from_vault_balance_before' => $fromBalanceBefore,
             'from_vault_balance_after' => $fromBalanceAfter,
 
+        ]);
+    }
+
+    private function transferFromUserToVault(CashRequest $cashRequest)
+    {
+        $user = Auth::user();
+
+        $target = $cashRequest->requestedFor; // AppUser or DashUser
+        // $vault = Vault::lockForUpdate()->findOrFail($cashRequest->delivered_by);
+        $fromVault = $cashRequest->fromVault()->lockForUpdate()->first();
+
+        $requestedAmount = $cashRequest->approved_amount;
+        $exchangeValue = $cashRequest->current_exchange_value;
+
+        $amount = $requestedAmount * $exchangeValue;
+
+        // 🔴 Check user balance
+        if ($target->balance < $amount) {
+            throw new CustomException('رصيد المستخدم غير كافٍ.');
+        }
+
+        $userBalanceBefore = $target->balance;
+        $userBalanceAfter = $userBalanceBefore - $amount;
+
+        $vaultBalanceBefore = $fromVault->balance;
+        $vaultBalanceAfter = $vaultBalanceBefore + $amount;
+
+        // ✅ Update balances
+        $target->update([
+            'balance' => $userBalanceAfter
+        ]);
+
+        $fromVault->update([
+            'balance' => $vaultBalanceAfter
+        ]);
+
+        // 🧾 Transaction (User → Vault)
+        VaultTransaction::create([
+            'to_vault_id' => $fromVault->id,
+
+            
+            'balance_user_type' => AppUser::class,
+            'balance_user_id' => $user->id,
+
+            'type' => VaultTransactionType::CASH_REQUEST_APPROVED->value,
+
+            'amount' => $amount,
+
+            'transaction_date' => now(),
+
+            'reason' => $cashRequest->cash_request_reason,
+            'notes' => "نقل المبلغ من محفظة المستخدم لخزنة الموزع.",
+
+            'reference_type' => CashRequest::class,
+            'reference_id' => $cashRequest->id,
+
+            'action_by_type' => get_class($user),
+            'action_by_id' => $user->id,
+
+            'from_vault_balance_before' => $userBalanceBefore,
+            'from_vault_balance_after' => $userBalanceAfter,
+
+
+            'to_vault_balance_before' => $vaultBalanceBefore,
+            'to_vault_balance_after' => $vaultBalanceAfter,
         ]);
     }
 }

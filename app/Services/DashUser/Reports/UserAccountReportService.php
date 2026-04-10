@@ -3,8 +3,6 @@
 namespace App\Services\DashUser\Reports;
 
 use App\Models\AppUser;
-use App\Models\CustomerOrder;
-use App\Models\FinancialAdjustment;
 use App\Models\VaultTransaction;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -18,15 +16,12 @@ class UserAccountReportService
 
         $user = AppUser::findOrFail($filters['user_id']);
 
-        $transactions = VaultTransaction::where('to_vault_balance_after', '>=', 0)
-           
+        $transactions = VaultTransaction::where('balance_user_type', AppUser::class)
+            ->where('balance_user_id', $user->id)
 
-            ->where('balance_user_type', AppUser::class)
-            ->where('balance_user_id',$user->id)
-
-            ->where('to_vault_balance_before', '>=', 0)
+            // ->where('to_vault_balance_before', '>=', 0)
             ->whereBetween('transaction_date', [$from, $to])
-            ->where('action_by_id', $user->id)
+            // ->where('action_by_id', $user->id)
             ->orderBy('transaction_date')
             ->get()
             ->map(function ($trx) use ($user) {

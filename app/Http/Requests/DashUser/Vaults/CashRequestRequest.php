@@ -34,8 +34,7 @@ class CashRequestRequest extends FormRequest
             'delivered_by' => [
                 'required',
                 Rule::exists('app_users', 'id')->where(function ($query) {
-                    $query->where('is_delivery_man', true)
-                        ->orWhere('is_warehouse_man', true);
+                    $query->where('is_warehouse_man', true);
                 }),
             ],
             'currency_id' => ['required', 'exists:currencies,id'],
@@ -61,6 +60,61 @@ class CashRequestRequest extends FormRequest
         ];
     }
 
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+
+            $deliveredBy = $this->input('delivered_by');
+            $vaultId = $this->input('from_vault_id');
+            if (!$deliveredBy || !$vaultId) {
+                return;
+            }
+
+            $vaultExists = \App\Models\Vault::where('id', $vaultId)
+                ->where('owner_id', $deliveredBy)
+                ->exists();
+
+            if (!$vaultExists) {
+                $validator->errors()->add(
+                    'from_vault_id',
+                    'الخزنة المختارة لا تتبع لهذا الموصل.'
+                );
+            }
+        });
+    }
+
+    public function messages(): array
+    {
+        return [
+            'from_vault_id.required' => 'يجب اختيار الخزنة.',
+            'from_vault_id.exists' => 'الخزنة غير موجودة.',
+
+            'requested_amount.required' => 'المبلغ مطلوب.',
+            'requested_amount.numeric' => 'المبلغ يجب أن يكون رقم.',
+            'requested_amount.min' => 'المبلغ يجب أن يكون أكبر من صفر.',
+
+            'requested_for_type.required' => 'يجب تحديد نوع المستلم.',
+            'requested_for_type.in' => 'نوع المستلم غير صحيح.',
+
+            'requested_for_id.required' => 'يجب تحديد المستلم.',
+            'requested_for_id.integer' => 'المستلم غير صالح.',
+
+            'delivered_by.required' => 'يجب اختيار الموصل.',
+            'delivered_by.exists' => 'الموصل غير موجود أو ليس مندوب مستودع.',
+
+            'currency_id.required' => 'يجب اختيار العملة.',
+            'currency_id.exists' => 'العملة غير موجودة.',
+
+            'payment_method_id.required' => 'يجب اختيار طريقة الدفع.',
+            'payment_method_id.exists' => 'طريقة الدفع غير موجودة.',
+
+            'address_id.required_without' => 'يجب إدخال عنوان أو تفاصيل العنوان.',
+            'address_details.required_without' => 'يجب إدخال عنوان أو تفاصيل العنوان.',
+
+            'delivery_cost.numeric' => 'تكلفة التوصيل يجب أن تكون رقم.',
+            'delivery_cost.min' => 'تكلفة التوصيل لا يمكن أن تكون سالبة.',
+        ];
+    }
     public function attributes(): array
     {
         return [
@@ -85,4 +139,4 @@ class CashRequestRequest extends FormRequest
 
         ];
     }
-}   
+}
