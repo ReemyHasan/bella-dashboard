@@ -76,6 +76,100 @@ class OrderService
         return 'ORD-' . $date . '-' . str_pad($sequence, 6, '0', STR_PAD_LEFT);
     }
 
+    private function resolvePercentages($user, $team, $teamleaderId, $isDirectTeam)
+    {
+        $marketerId = $user->id;
+        $managerId = $team->manager_id;
+
+        $teamLeaderFinalId = $isDirectTeam ? $managerId : $teamleaderId;
+
+        $marketerPercentage = $team->marketer_percentage;
+        $teamLeaderPercentage = $team->team_leader_percentage;
+        $managerPercentage = $team->manager_percentage;
+
+        // =========================
+        // 🔥 CASE HANDLING
+        // =========================
+
+        // 4️⃣ marketer = manager
+        if ($marketerId == $managerId) {
+            return [
+                'teamleader_id' => null,
+                'manager_id' => $managerId,
+
+                'marketer_percentage' => $marketerPercentage + $managerPercentage,
+                'teamleader_percentage' => 0,
+                'manager_percentage' => 0,
+            ];
+        }
+
+        // 3️⃣ marketer = team leader
+        if ($marketerId == $teamLeaderFinalId) {
+            return [
+                'teamleader_id' => $teamLeaderFinalId,
+                'manager_id' => $managerId,
+
+                'marketer_percentage' => $marketerPercentage + $teamLeaderPercentage,
+                'teamleader_percentage' => 0,
+                'manager_percentage' => $managerPercentage,
+            ];
+        }
+
+        // 2️⃣ direct subteam (leader = manager)
+        if ($isDirectTeam && $teamLeaderFinalId == $managerId) {
+            return [
+                'teamleader_id' => $managerId,
+                'manager_id' => $managerId,
+
+                'marketer_percentage' => $marketerPercentage,
+                'teamleader_percentage' => $teamLeaderPercentage,
+                'manager_percentage' => 0, // avoid double paying
+            ];
+        }
+
+        // 1️⃣ normal case
+        return [
+            'teamleader_id' => $teamLeaderFinalId,
+            'manager_id' => $managerId,
+
+            'marketer_percentage' => $marketerPercentage,
+            'teamleader_percentage' => $teamLeaderPercentage,
+            'manager_percentage' => $managerPercentage,
+        ];
+    }
+
+    private function calculateAmounts($baseAmount, $resolved, $data)
+    {
+        $marketerAmount = $baseAmount * $resolved['marketer_percentage'] / 100;
+        $teamLeaderAmount = $baseAmount * $resolved['teamleader_percentage'] / 100;
+        $managerAmount = $baseAmount * $resolved['manager_percentage'] / 100;
+
+        // 🔥 Apply adjustment ONLY to marketer
+        if (!empty($data['adjustment_value'])) {
+
+            $type = $data['adjustment_type'];        // percentage | fixed
+            $operation = $data['adjustment_operation']; // increase | decrease
+            $value = (float) $data['adjustment_value'];
+
+            $adjustment = $type == 'percentage'
+                ? ($baseAmount * $value / 100)
+                : $value * $data['current_exchange_rate'];
+
+            if ($operation == 'increase') {
+                $marketerAmount += $adjustment;
+            } else {
+                $marketerAmount -= $adjustment;
+            }
+
+            $marketerAmount = max(0, $marketerAmount);
+        }
+
+        return [
+            'marketer_amount' => round($marketerAmount, 2),
+            'teamleader_amount' => round($teamLeaderAmount, 2),
+            'manager_amount' => round($managerAmount, 2),
+        ];
+    }
     public function create(array $data)
     {
         $user = Auth::user();
@@ -96,23 +190,18 @@ class OrderService
 
             $isDirectTeam = $user->subTeam?->is_direct;
 
-            $orderData = [
-                'teamleader_id' => $isDirectTeam ? $team->manager_id : $teamleaderId,
-                // 'manager_id' => $isDirectTeam ? null : $team->manager_id,
-                'manager_id' =>  $team->manager_id,
+            $resolved = $this->resolvePercentages(
+                $user,
+                $team,
+                $teamleaderId,
+                $isDirectTeam
+            );
 
-                'marketer_percentage' => $team->marketer_percentage,
-                'teamleader_percentage' => $team->team_leader_percentage,
-                // 'manager_percentage' => $isDirectTeam ? 0 : $team->manager_percentage,
-                'manager_percentage' =>  $team->manager_percentage,
-
+            $orderData = array_merge($resolved, [
                 'is_stock_reserved' => true,
                 'team_id' => $team->id,
-                'sub_team_id' => $user->subteam_id
-
-
-            ];
-
+                'sub_team_id' => $user->subteam_id,
+            ]);
             $address = Address::with('region.city.zone')->find($data['address_id']);
 
             if (!$address) {
@@ -324,22 +413,6 @@ class OrderService
 
             $totalPrice = $totalBasePrice;
 
-            // adjustment
-            if (!empty($data['adjustment_value'])) {
-                if (($data['adjustment_type'] ?? 'fixed') == 'percentage') {
-                    if (($data['adjustment_operation'] ?? 'decrease') == 'increase')
-                        $totalPrice += ($totalBasePrice * $data['adjustment_value'] / 100);
-                    else
-                        $totalPrice -= ($totalBasePrice * $data['adjustment_value'] / 100);
-                } else {
-                    if (($data['adjustment_operation'] ?? 'decrease') == 'increase')
-
-                        $totalPrice += $data['adjustment_value'];
-                    else
-                        $totalPrice -= $data['adjustment_value'];
-                }
-            }
-
             if (!empty($data['adjustment_value'])) {
 
                 $type = $data['adjustment_type'];
@@ -359,16 +432,21 @@ class OrderService
                 // prevent negative price
                 $totalPrice = max(0, $totalPrice);
             }
-            // // tips
-            // if (!empty($data['additional_tips'])) {
-            //     $totalPrice += $data['additional_tips'];
-            // }
 
-            // update order totals
+            $baseAmount = $totalBasePrice * $orderData['current_exchange_rate'];
+
+            $amounts = $this->calculateAmounts($baseAmount, $resolved, $data);
+
             $order->update([
                 'total_base_price' => $totalBasePrice,
                 'total_price' => max($totalPrice, 0),
+
+                ...$amounts
             ]);
+            // $order->update([
+            //     'total_base_price' => $totalBasePrice,
+            //     'total_price' => max($totalPrice, 0),
+            // ]);
 
             // =========================
             // ✅ STATUS LOG
@@ -428,11 +506,6 @@ class OrderService
 
             foreach ($order->offers as $oldOffer) {
 
-                // ✅ restore offer itself
-                // OfferWarehouse::where('warehouse_id', $order->warehouse_id)
-                //     ->where('offer_id', $oldOffer->offer_id)
-                //     ->lockForUpdate()
-                //     ->decrement('reserved_quantity', $oldOffer->quantity);
 
                 $offer = $offers->get($oldOffer->offer_id);
 
@@ -477,21 +550,20 @@ class OrderService
             $teamleaderId = $user->subTeam?->team_leader_id;
             $isDirectTeam = $user->subTeam?->is_direct;
 
-            $orderData = [
-                'teamleader_id' => $isDirectTeam ? $team->manager_id : $teamleaderId,
-                // 'manager_id' => $isDirectTeam ? null : $team->manager_id,
-                'manager_id' =>  $team->manager_id,
 
-                'marketer_percentage' => $team->marketer_percentage,
-                'teamleader_percentage' => $team->team_leader_percentage,
-                // 'manager_percentage' => $isDirectTeam ? 0 : $team->manager_percentage,
-                'manager_percentage' =>  $team->manager_percentage,
 
+            $resolved = $this->resolvePercentages(
+                $user,
+                $team,
+                $teamleaderId,
+                $isDirectTeam
+            );
+
+            $orderData = array_merge($resolved, [
                 'is_stock_reserved' => true,
                 'team_id' => $team->id,
-                'sub_team_id' => $user->subteam_id
-
-            ];
+                'sub_team_id' => $user->subteam_id,
+            ]);
 
             $address = Address::with('region.city.zone')->find($data['address_id']);
 
@@ -722,9 +794,15 @@ class OrderService
             }
 
 
+            $baseAmount = $totalBasePrice * $orderData['current_exchange_rate'];
+
+            $amounts = $this->calculateAmounts($baseAmount, $resolved, $data);
+
             $order->update([
                 'total_base_price' => $totalBasePrice,
                 'total_price' => max($totalPrice, 0),
+
+                ...$amounts
             ]);
 
             return $order->fresh()->load([
@@ -1279,24 +1357,9 @@ class OrderService
     {
         if ($order->is_financial_processed)
             return;
-        $amount = $order->total_base_price * $order->current_exchange_rate; //  BASE
+        // $amount = $order->total_base_price * $order->current_exchange_rate; //  BASE
         $company_amount = $order->total_price * $order->current_exchange_rate; //  BASE
 
-        // =========================
-        // CALCULATE SHARES
-        // =========================
-        $marketerAmount   = $company_amount * $order->marketer_percentage / 100;
-        $teamleaderAmount = $amount * $order->teamleader_percentage / 100;
-        $managerAmount    = $amount * ($order->manager_percentage ?? 0) / 100;
-        // =========================
-        // SAVE SNAPSHOT
-        // =========================
-        $order->update([
-            'order_status' => OrderStatus::completed->value,
-            'marketer_amount' => $marketerAmount,
-            'teamleader_amount' => $teamleaderAmount,
-            'manager_amount' => $managerAmount,
-        ]);
         $vault = Vault::where('owner_id', $order->warehouse_man_id)->first();
         if ($vault == null)
             throw new CustomException('الموزع ليس لديه خزنة, من فضلك أضف له خزنة ثم أعد المحاولة.');
