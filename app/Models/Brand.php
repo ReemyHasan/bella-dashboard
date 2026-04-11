@@ -7,15 +7,14 @@ use App\Traits\HasFormattedTimestamps;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SubCategory extends Model
+class Brand extends Model
 {
     use HasFactory, HasFilters, HasFormattedTimestamps;
 
     protected $fillable = [
         'name',
         'image_path',
-        'active',
-        'main_category_id'
+        'active'
     ];
     protected $appends = [
         "created_at_formatted",
@@ -24,11 +23,6 @@ class SubCategory extends Model
     protected $casts = [
         'active' => 'boolean',
     ];
-
-    public function mainCategory()
-    {
-        return $this->belongsTo(MainCategory::class);
-    }
 
     public function products()
     {

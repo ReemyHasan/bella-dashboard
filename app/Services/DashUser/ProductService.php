@@ -19,7 +19,8 @@ class ProductService
             'mainCategory',
             'subCategory',
             'mainImage',
-            'zonePrices.zone.currency'
+            'zonePrices.zone.currency',
+            'brand'
         ])->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
@@ -36,7 +37,8 @@ class ProductService
             }
             $product->load(
                 'mainCategory',
-                'subCategory'
+                'subCategory',
+                'brand'
             );
             return $product;
         });
@@ -53,7 +55,8 @@ class ProductService
             $product->load(
                 'mainCategory',
                 'subCategory',
-                'mainImage'
+                'mainImage',
+                'brand'
             );
             return $product;
         });
@@ -106,7 +109,8 @@ class ProductService
             $product->load(
                 'mainCategory',
                 'subCategory',
-                'mainImage'
+                'mainImage',
+                'brand'
             );
             return $product;
         });
@@ -138,7 +142,8 @@ class ProductService
             $product->load(
                 'mainCategory',
                 'subCategory',
-                'mainImage'
+                'mainImage',
+                'brand'
             );
             return $product;
         });
@@ -151,7 +156,8 @@ class ProductService
             'zonePrices.zone.currency',
             'mainCategory',
             'subCategory',
-            'mainImage'
+            'mainImage',
+            'brand'
         ]);
         return $product;
     }

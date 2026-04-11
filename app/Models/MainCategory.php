@@ -20,7 +20,12 @@ class MainCategory extends Model
         "created_at_formatted",
         "updated_at_formatted"
     ];
-     protected $casts = [
+    protected $casts = [
         'active' => 'boolean',
     ];
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

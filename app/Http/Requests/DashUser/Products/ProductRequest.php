@@ -31,6 +31,8 @@ class ProductRequest extends FormRequest
                     $query->where('main_category_id', $this->main_category_id);
                 })],
 
+            'brand_id' => ['nullable', 'exists:brands,id'],
+
             'name' => [
                 'required',
                 'string',

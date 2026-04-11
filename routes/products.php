@@ -2,12 +2,16 @@
 
 use App\Http\Controllers\Web\V1\Orders\CompetitionController;
 use App\Http\Controllers\Web\V1\Orders\OrderController;
+use App\Http\Controllers\Web\V1\Products\BrandController;
 use App\Http\Controllers\Web\V1\Products\OfferController;
 use App\Http\Controllers\Web\V1\Products\MainCategoryController;
 use App\Http\Controllers\Web\V1\Products\ProductController;
 use App\Http\Controllers\Web\V1\Products\SubCategoryController;
 use Illuminate\Support\Facades\Route;
 
+Route::apiResource('brands', BrandController::class);
+
+Route::get('select-brands', [BrandController::class, 'selectAvailable']);
 
 
 Route::apiResource('main-categories', MainCategoryController::class);

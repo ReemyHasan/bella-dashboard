@@ -47,5 +47,6 @@ return [
     'refund_manager' => ' إرجاع نسبة مدير الفريق الرئيسي',
     'refund_teamleader' => 'إرجاع نسبة قائد الفريق',
     'refund_marketer' => 'إرجاع نسبة المسوق',
-    'competition' => 'الهدف التسويقي'
+    'competition' => 'الهدف التسويقي',
+    'brand' => 'الماركة'
 ];

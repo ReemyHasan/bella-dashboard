@@ -25,6 +25,7 @@ class Product extends Model
         'adjustment_type',
         'adjustment_value',
         'adjustment_operation',
+        'brand_id',
 
     ];
 
@@ -41,6 +42,10 @@ class Product extends Model
     public function subCategory()
     {
         return $this->belongsTo(SubCategory::class);
+    }
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
     }
     public function images()
     {

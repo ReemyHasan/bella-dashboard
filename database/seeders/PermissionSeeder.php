@@ -260,6 +260,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'view_users_reports', 'name_ar' => 'عرض تقارير كشف حسابات المستخدمين', 'guard_name' => 'dash_user_guard', 'group' => 'التقارير'],
 
 
+            // ================== Brand ==================
+            ['name' => 'delete_brand', 'name_ar' => 'حذف ماركة', 'guard_name' => 'dash_user_guard', 'group' => 'الماركة'],
+            ['name' => 'view_brand_by_id', 'name_ar' => 'عرض ماركة', 'guard_name' => 'dash_user_guard', 'group' => 'الماركة'],
+            ['name' => 'view_all_brands', 'name_ar' => 'عرض الماركات', 'guard_name' => 'dash_user_guard', 'group' => 'الماركة'],
+            ['name' => 'create_brand', 'name_ar' => 'إدخال ماركة', 'guard_name' => 'dash_user_guard', 'group' => 'الماركة'],
+            ['name' => 'update_brand', 'name_ar' => 'تحديث ماركة', 'guard_name' => 'dash_user_guard', 'group' => 'الماركة'],
+
         ];
 
         foreach ($permissions as $permission) {

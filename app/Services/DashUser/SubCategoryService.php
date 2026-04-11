@@ -3,6 +3,7 @@
 namespace App\Services\DashUser;
 
 use App\Enums\PaginationEnum;
+use App\Exceptions\CustomException;
 use App\Models\SubCategory;
 use App\Traits\HandlesImageUpload;
 use Illuminate\Support\Facades\DB;
@@ -77,6 +78,9 @@ class SubCategoryService
 
     public function delete(SubCategory $subCategory)
     {
+        if ($subCategory->products()->exists()) {
+            throw new CustomException('لا يمكن حذف الفئة الفرعية, يوجد منتجات مرتبطة به.');
+        }
         $this->deleteImage($subCategory->image_path);
         return $subCategory->delete();
     }
