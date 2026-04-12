@@ -28,7 +28,7 @@ class FinancialAdjustmentService
         return DB::transaction(function () use ($data, $user) {
 
             $financialAdjustment = FinancialAdjustment::create([
-                'from_vault_id' => 1,
+                // 'from_vault_id' => 1,
                 'amount' => $data['amount'],
                 'type' => $data['type'],
                 'reason' => $data['reason'] ?? null,
@@ -57,7 +57,7 @@ class FinancialAdjustmentService
         return DB::transaction(function () use ($financialAdjustment, $data) {
 
             $financialAdjustment->update([
-                'from_vault_id' => 1,
+                // 'from_vault_id' => 1,
                 'amount' => $data['amount'],
                 'type' => $data['type'],
                 'reason' => $data['reason'] ?? null,
