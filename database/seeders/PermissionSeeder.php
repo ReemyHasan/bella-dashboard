@@ -267,6 +267,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'create_brand', 'name_ar' => 'إدخال ماركة', 'guard_name' => 'dash_user_guard', 'group' => 'الماركة'],
             ['name' => 'update_brand', 'name_ar' => 'تحديث ماركة', 'guard_name' => 'dash_user_guard', 'group' => 'الماركة'],
 
+             // ================== Balance Trasfer Request ==================
+            ['name' => 'view_balance_transfer_request_by_id', 'name_ar' => 'عرض طلب نقل رصيد', 'guard_name' => 'dash_user_guard', 'group' => 'طلب نقل رصيد'],
+            ['name' => 'view_all_balance_transfer_requests', 'name_ar' => 'عرض طلبات نقل رصيد', 'guard_name' => 'dash_user_guard', 'group' => 'طلب نقل رصيد'],
+            ['name' => 'handle_balance_transfer_request', 'name_ar' => 'تأكيد أو إلغاء طلب نقل رصيد', 'guard_name' => 'dash_user_guard', 'group' => 'طلب نقل رصيد'],
+
+
+
         ];
 
         foreach ($permissions as $permission) {

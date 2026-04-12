@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\V1\Vaults\AppUserRequestController;
+use App\Http\Controllers\Web\V1\Vaults\BalanceTransferRequestController;
 use App\Http\Controllers\Web\V1\Vaults\PaymentMethodController;
 use App\Http\Controllers\Web\V1\Vaults\UserRequestTypeController;
 use App\Http\Controllers\Web\V1\Vaults\VaultController;
@@ -45,3 +46,9 @@ Route::apiResource('cash-requests', CashRequestController::class);
 
 Route::post('financial-adjustments/{financial_adjustment}/handle', [FinancialAdjustmentController::class, 'handle']);
 Route::apiResource('financial-adjustments', FinancialAdjustmentController::class);
+
+
+
+
+Route::post('balance-transfer-requests/{balance_transfer_request}/handle', [BalanceTransferRequestController::class, 'handle']);
+Route::apiResource('balance-transfer-requests', BalanceTransferRequestController::class)->only('index', 'show');

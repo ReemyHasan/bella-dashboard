@@ -34,7 +34,8 @@ class DatabaseSeeder extends Seeder
             ///////////////To Remove
             AppUserWithRequestsSeeder::class,
             CustomerAddressSeeder::class,
-            ProductOfferSeeder::class
+            ProductOfferSeeder::class,
+            BalanceTransferRequestSeeder::class
 
         ]);
     }
