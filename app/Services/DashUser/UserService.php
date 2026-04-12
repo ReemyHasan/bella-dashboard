@@ -172,4 +172,10 @@ class UserService
 
         return $users;
     }
+
+    public function userBalance($id)
+    {
+        $user = DashUser::where('id', $id)->select('id', 'balance')->firstOrFail();
+        return $user->balance;
+    }
 }

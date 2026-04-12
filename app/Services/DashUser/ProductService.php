@@ -35,6 +35,18 @@ class ProductService
             if (!empty($data['tags'])) {
                 $product->tags()->sync($data['tags']);
             }
+
+            if (!empty($data['warehouses'])) {
+                foreach ($data['warehouses'] as $warehouse) {
+                    ProductWarehouse::create([
+                        'product_id' => $product->id,
+                        'warehouse_id' => $warehouse['warehouse_id'],
+                        'quantity' => $warehouse['quantity'],
+                        'reserved_quantity' => 0,
+                    ]);
+                }
+            }
+
             $product->load(
                 'mainCategory',
                 'subCategory',

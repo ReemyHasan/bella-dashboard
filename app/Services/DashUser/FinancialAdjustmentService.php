@@ -150,241 +150,142 @@ class FinancialAdjustmentService
     private function processAdjustment(FinancialAdjustment $adjustment)
     {
         $target = $adjustment->requestedFor;
-
-        if ($target instanceof DashUser) {
-            $this->handleDashUserAdjustment($adjustment, $target);
-            return;
-        }
-
-        if ($target instanceof AppUser) {
-            $this->handleAppUserAdjustment($adjustment, $target);
-            return;
-        }
-    }
-
-
-    private function handleDashUserAdjustment(FinancialAdjustment $adjustment, DashUser $user)
-    {
-        $fromVault = $adjustment->fromVault()->lockForUpdate()->first();
-
-        if (!$fromVault) {
-            throw new CustomException('الخزنة المصدر غير موجودة.');
-        }
+        $requester = $adjustment->requestedBy;
 
         $amount = $adjustment->amount;
 
-        $userBefore = $user->balance;
-        $vaultBefore = $fromVault->balance;
+        $targetBefore = $target->balance;
+        $requesterBefore = $requester->balance ?? null;
 
-        if ($adjustment->type == 'bonus') {
+        $isDashUser = $adjustment->requested_by_type == DashUser::class;
+        $isBonus = $adjustment->type == 'bonus';
 
-            if ($vaultBefore < $amount) {
-                throw new CustomException('الرصيد غير كافٍ في الخزنة المصدر.');
+        // =========================
+        // ✅ CASE 1: DASH USER
+        // =========================
+        if ($isDashUser) {
+
+            if ($isBonus) {
+                $targetAfter = $targetBefore + $amount;
+            } else {
+                if ($targetBefore < $amount) {
+                    throw new CustomException("الرصيد غير كافٍ {$targetBefore}.");
+                }
+
+                $targetAfter = $targetBefore - $amount;
             }
 
-            $userAfter = $userBefore + $amount;
-            $vaultAfter = $vaultBefore - $amount;
+            $target->update([
+                'balance' => $targetAfter
+            ]);
 
-            $transactionType = VaultTransactionType::BONUS->value;
-        } else {
+            VaultTransaction::create([
+                'balance_user_type' => get_class($target),
+                'balance_user_id' => $target->id,
 
-            if ($userBefore < $amount) {
-                throw new CustomException('الرصيد غير كافٍ.');
-            }
+                'type' => $isBonus
+                    ? VaultTransactionType::BONUS->value
+                    : VaultTransactionType::DEDUCTION->value,
 
-            $userAfter = $userBefore - $amount;
-            $vaultAfter = $vaultBefore + $amount;
+                'amount' => $amount,
+                'transaction_date' => now(),
 
-            $transactionType = VaultTransactionType::DEDUCTION->value;
+                'reference_type' => FinancialAdjustment::class,
+                'reference_id' => $adjustment->id,
+
+                'action_by_type' => get_class(Auth::user()),
+                'action_by_id' => Auth::id(),
+
+                'to_vault_balance_before' => $targetBefore,
+                'to_vault_balance_after' => $targetAfter,
+            ]);
+
+            return;
         }
 
-        $user->update([
-            'balance' => $userAfter
+        // =========================
+        // ✅ CASE 2: APP USER
+        // =========================
+
+        if (!$requester) {
+            throw new CustomException('مقدم الطلب غير موجود.');
+        }
+
+        if ($isBonus) {
+            // requester → target
+
+            if ($requesterBefore < $amount) {
+                throw new CustomException("رصيد مقدم الطلب غير كافٍ {$requesterBefore}.");
+            }
+
+            $requesterAfter = $requesterBefore - $amount;
+            $targetAfter = $targetBefore + $amount;
+        } else {
+            // target → requester
+
+            if ($targetBefore < $amount) {
+                throw new CustomException("الرصيد غير كافٍ {$targetBefore}.");
+            }
+
+            $requesterAfter = $requesterBefore + $amount;
+            $targetAfter = $targetBefore - $amount;
+        }
+
+        // ✅ Update balances
+        $requester->update([
+            'balance' => $requesterAfter
         ]);
 
-        $fromVault->update([
-            'balance' => $vaultAfter
+        $target->update([
+            'balance' => $targetAfter
         ]);
 
+        // =========================
+        // ✅ TRANSACTION 1 (Requester)
+        // =========================
         VaultTransaction::create([
+            'balance_user_type' => get_class($requester),
+            'balance_user_id' => $requester->id,
 
-            'from_vault_id' => $fromVault->id,
+            'type' => $isBonus
+                ? VaultTransactionType::TRANSFER_OUT->value
+                : VaultTransactionType::TRANSFER_IN->value,
 
-            'type' => $transactionType,
             'amount' => $amount,
             'transaction_date' => now(),
 
-            'reason' => $adjustment->reason,
-            'notes' => $adjustment->notes,
-
             'reference_type' => FinancialAdjustment::class,
             'reference_id' => $adjustment->id,
-
-            'balance_user_type' => DashUser::class,
-            'balance_user_id' => $user->id,
 
             'action_by_type' => get_class(Auth::user()),
             'action_by_id' => Auth::id(),
 
-            'from_vault_balance_before' => $vaultBefore,
-            'from_vault_balance_after' => $vaultAfter,
-
-            'to_vault_balance_before' => $userBefore,
-            'to_vault_balance_after' => $userAfter,
-        ]);
-    }
-
-    private function handleAppUserAdjustment(FinancialAdjustment $adjustment, AppUser $user)
-    {
-        if ($user->is_warehouse_man) {
-            return $this->handleWarehouseManAdjustment($adjustment, $user);
-        }
-
-        return $this->handleNormalAppUserAdjustment($adjustment, $user);
-    }
-
-    private function handleNormalAppUserAdjustment(FinancialAdjustment $adjustment, AppUser $user)
-    {
-        $fromVault = $adjustment->fromVault()->lockForUpdate()->first();
-
-        if (!$fromVault) {
-            throw new CustomException('الخزنة المصدر غير موجودة.');
-        }
-
-        $amount = $adjustment->amount;
-
-        $userBefore = $user->balance;
-        $vaultBefore = $fromVault->balance;
-
-        if ($adjustment->type == 'bonus') {
-
-            if ($vaultBefore < $amount) {
-                throw new CustomException('الرصيد غير كافٍ في الخزنة المصدر.');
-            }
-
-            $userAfter = $userBefore + $amount;
-            $vaultAfter = $vaultBefore - $amount;
-
-            $transactionType = VaultTransactionType::BONUS->value;
-        } else {
-
-            if ($userBefore < $amount) {
-                throw new CustomException('الرصيد غير كافٍ.');
-            }
-
-            $userAfter = $userBefore - $amount;
-            $vaultAfter = $vaultBefore + $amount;
-
-            $transactionType = VaultTransactionType::DEDUCTION->value;
-        }
-
-        $user->update([
-            'balance' => $userAfter
+            'to_vault_balance_before' => $requesterBefore,
+            'to_vault_balance_after' => $requesterAfter,
         ]);
 
-        $fromVault->update([
-            'balance' => $vaultAfter
-        ]);
-
+        // =========================
+        // ✅ TRANSACTION 2 (Target)
+        // =========================
         VaultTransaction::create([
+            'balance_user_type' => get_class($target),
+            'balance_user_id' => $target->id,
 
-            'from_vault_id' => $fromVault->id,
+            'type' => $isBonus
+                ? VaultTransactionType::BONUS->value
+                : VaultTransactionType::DEDUCTION->value,
 
-            'type' => $transactionType,
             'amount' => $amount,
             'transaction_date' => now(),
-
-            'reason' => $adjustment->reason,
-            'notes' => $adjustment->notes,
 
             'reference_type' => FinancialAdjustment::class,
             'reference_id' => $adjustment->id,
 
-            
-            'balance_user_type' => AppUser::class,
-            'balance_user_id' => $user->id,
             'action_by_type' => get_class(Auth::user()),
             'action_by_id' => Auth::id(),
 
-            'from_vault_balance_before' => $vaultBefore,
-            'from_vault_balance_after' => $vaultAfter,
-
-            'to_vault_balance_before' => $userBefore,
-            'to_vault_balance_after' => $userAfter,
-        ]);
-    }
-
-    private function handleWarehouseManAdjustment(FinancialAdjustment $adjustment, AppUser $user)
-    {
-        $fromVault = $adjustment->fromVault()->lockForUpdate()->first();
-
-        if (!$fromVault) {
-            throw new CustomException('الخزنة المصدر غير موجودة.');
-        }
-
-        $amount = $adjustment->amount;
-
-        $vaultBefore = $fromVault->balance;
-        $balanceBefore = $user->balance;
-
-        if ($adjustment->type == 'bonus') {
-
-            if ($vaultBefore < $amount) {
-                throw new CustomException('الرصيد غير كافٍ في الخزنة المصدر.');
-            }
-
-            // vault → user balance
-            $vaultAfter = $vaultBefore - $amount;
-            $balanceAfter = $balanceBefore + $amount;
-
-            $transactionType = VaultTransactionType::BONUS->value;
-        } else {
-
-            if ($balanceBefore < $amount) {
-                throw new CustomException('الرصيد غير كافٍ.');
-            }
-
-            // user balance → vault
-            $vaultAfter = $vaultBefore + $amount;
-            $balanceAfter = $balanceBefore - $amount;
-
-            $transactionType = VaultTransactionType::DEDUCTION->value;
-        }
-
-        $fromVault->update([
-            'balance' => $vaultAfter
-        ]);
-
-        $user->update([
-            'balance' => $balanceAfter
-        ]);
-
-        VaultTransaction::create([
-
-            'from_vault_id' => $fromVault->id,
-
-            'type' => $transactionType,
-            'amount' => $amount,
-            'transaction_date' => now(),
-
-            'reason' => $adjustment->reason,
-            'notes' => $adjustment->notes,
-
-            'reference_type' => FinancialAdjustment::class,
-            'reference_id' => $adjustment->id,
-
-            
-            'balance_user_type' => AppUser::class,
-            'balance_user_id' => $user->id,
-
-            'action_by_type' => get_class(auth()->user()),
-            'action_by_id' => auth()->id(),
-
-            'from_vault_balance_before' => $vaultBefore,
-            'from_vault_balance_after' => $vaultAfter,
-
-            'to_vault_balance_before' => $balanceBefore,
-            'to_vault_balance_after' => $balanceAfter,
+            'to_vault_balance_before' => $targetBefore,
+            'to_vault_balance_after' => $targetAfter,
         ]);
     }
 }

@@ -27,7 +27,7 @@ class FinancialAdjustmentRequest extends FormRequest
             // 'vault_id' => ['required', 'exists:vaults,id'],
 
             'amount' => ['required', 'numeric', 'min:1'],
-            'type' => ['required', 'in:bonus, deduction'],
+            'type' => ['required', 'in:bonus,deduction'],
 
             'requested_for_type' => ['required', 'in:dash_user,app_user'],
             'requested_for_id' => ['required', 'integer'],

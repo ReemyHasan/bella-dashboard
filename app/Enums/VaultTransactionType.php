@@ -14,6 +14,7 @@ enum VaultTransactionType: string
     case ORDER_COMPLETE = 'order_complete';
     case CASH_REQUEST_APPROVED = 'cash_request_approve';
 
-
-
+        // ✅ New types
+    case TRANSFER_IN = 'transfer_in';
+    case TRANSFER_OUT = 'transfer_out';
 }

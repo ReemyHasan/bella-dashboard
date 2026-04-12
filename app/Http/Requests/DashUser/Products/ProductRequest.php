@@ -24,7 +24,7 @@ class ProductRequest extends FormRequest
     {
         $productId = $this->route('product')?->id;
 
-        return [
+        $rules =  [
             'main_category_id' => ['required', 'exists:main_categories,id'],
             'sub_category_id'  => ['nullable', Rule::exists('sub_categories', 'id')
                 ->where(function ($query) {
@@ -53,6 +53,23 @@ class ProductRequest extends FormRequest
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:tags,id'],
         ];
+        if ($this->isMethod('post')) {
+            $rules['warehouses'] = ['nullable', 'array'];
+
+            $rules['warehouses.*.warehouse_id'] = [
+                'required',
+                'exists:warehouses,id',
+                'distinct'
+            ];
+
+            $rules['warehouses.*.quantity'] = [
+                'required',
+                'integer',
+                'min:0'
+            ];
+        }
+
+        return $rules;
     }
 
     public function attributes(): array

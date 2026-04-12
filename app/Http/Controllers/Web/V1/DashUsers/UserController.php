@@ -109,7 +109,7 @@ class UserController extends Controller implements HasMiddleware
     }
 
 
-     public function selectAvailable(Request $request)
+    public function selectAvailable(Request $request)
     {
         $role = $request->input('role');
         $users = $this->userService->selectAvailable(
@@ -122,5 +122,13 @@ class UserController extends Controller implements HasMiddleware
 
         ]);
         return response()->format($returnedData, 'messages.success', 200);
+    }
+
+    public function userBalance($id)
+    {
+
+        $returned = $this->userService->userBalance($id);
+
+        return response()->format($returned, 'messages.success', 200);
     }
 }
