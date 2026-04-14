@@ -20,7 +20,8 @@ class CityService
         return DB::transaction(function () use ($data) {
             $city = City::create([
                 'name' => $data['name'],
-                'symbol' => $data['symbol'],
+                'symbol' => $data['symbol']
+                    ?? generateUniqueSymbol('CI', City::class),
                 'zone_id' => $data['zone_id']
             ]);
             return $city;
@@ -32,7 +33,7 @@ class CityService
         return DB::transaction(function () use ($city, $data) {
             $city->update([
                 'name' => $data['name'],
-                'symbol' => $data['symbol'],
+                'symbol' => $data['symbol'] ?? $city->symbol,
                 'zone_id' => $data['zone_id']
             ]);
 

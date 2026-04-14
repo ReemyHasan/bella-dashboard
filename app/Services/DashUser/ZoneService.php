@@ -21,7 +21,8 @@ class ZoneService
         return DB::transaction(function () use ($data) {
             $zone = Zone::create([
                 'name' => $data['name'],
-                'symbol' => $data['symbol'],
+                'symbol' => $data['symbol']
+                    ?? generateUniqueSymbol('ZO', Zone::class),
                 'currency_id' => $data['currency_id'],
 
             ]);
@@ -39,7 +40,7 @@ class ZoneService
         return DB::transaction(function () use ($zone, $data) {
             $zone->update([
                 'name' => $data['name'],
-                'symbol' => $data['symbol'],
+                'symbol' => $data['symbol'] ?? $zone->symbol, 
                 'currency_id' => $data['currency_id'],
 
             ]);

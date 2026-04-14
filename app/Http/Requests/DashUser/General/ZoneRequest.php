@@ -33,7 +33,7 @@ class ZoneRequest extends FormRequest
             ],
 
             'symbol' => [
-                'required',
+                'nullable',
                 'string',
                 'max:10',
                 Rule::unique('zones', 'symbol')->ignore($zoneId),

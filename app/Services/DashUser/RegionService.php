@@ -21,7 +21,8 @@ class RegionService
         return DB::transaction(function () use ($data) {
             $region = Region::create([
                 'name' => $data['name'],
-                'symbol' => $data['symbol'],
+                'symbol' => $data['symbol']
+                    ?? generateUniqueSymbol('RE', Region::class),
                 'warehouse_id' => $data['warehouse_id'],
                 'delivery_cost' => $data['delivery_cost'],
 
@@ -44,7 +45,7 @@ class RegionService
         return DB::transaction(function () use ($region, $data) {
             $region->update([
                 'name' => $data['name'],
-                'symbol' => $data['symbol'],
+                'symbol' => $data['symbol'] ?? $region->symbol,
                 'warehouse_id' => $data['warehouse_id'],
                 'delivery_cost' => $data['delivery_cost'],
 

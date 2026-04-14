@@ -35,7 +35,7 @@ class RegionRequest extends FormRequest
             'delivery_cost' => 'required|numeric|min:0',
 
             'symbol' => [
-                'required',
+                'nullable',
                 'string',
                 'max:10',
                 // Rule::unique('regions', 'symbol')->ignore($regionId),

@@ -33,7 +33,7 @@ class CityRequest extends FormRequest
             ],
 
             'symbol' => [
-                'required',
+                'nullable',
                 'string',
                 'max:10',
                 Rule::unique('cities', 'symbol')->ignore($cityId),
@@ -46,7 +46,7 @@ class CityRequest extends FormRequest
 
         ];
     }
-   
+
     public function attributes(): array
     {
         return [

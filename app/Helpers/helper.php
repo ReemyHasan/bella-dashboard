@@ -39,7 +39,18 @@ function saveFile($file, string $directory): string
     return $file->store($directory, 'public');
 }
 
+function generateUniqueSymbol(
+    string $prefix,
+    string $model,
+    string $column = 'symbol',
+    int $length = 4
+): string {
+    do {
+        $symbol = $prefix . '-' . strtoupper(Str::random(2)) . rand(10, 99);
+    } while ($model::where($column, $symbol)->exists());
 
+    return $symbol;
+}
 // function getPublicFileUrl(?string $path): ?string
 // {
 //     if (!$path || !Storage::disk('opt_uploads')->exists($path)) {
