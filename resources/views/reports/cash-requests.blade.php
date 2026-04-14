@@ -2,7 +2,7 @@
 <html dir="rtl" lang="ar">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Sold OR Stagnant Products Report Export</title>
+    <title>Cash Requests Report Export</title>
     <style>
         body {
             font-family: "amiri", sans-serif;
@@ -136,7 +136,7 @@
 </head>
 <body>
 
-    <h2>تقرير المنتجات الراكدة والمباعة</h2>
+    <h2>تقرير طلبات الرصيد</h2>
 
     <div class="section-title">تفاصيل التقرير</div>
 
@@ -144,9 +144,20 @@
     <table border="1" width="100%">
         <thead>
             <tr>
-                <th>المنتج</th>
-                <th>الكمية الكلية المباعة</th>
+                <th>رقم الطلب</th>
+                <th>طريقة الدفع</th>
+                <th>المسوق</th>
+                <th>الموبايل</th>
+
+                <th>التبعية</th>
+                <th>ملاحظات المسوق</th>
+                <th>الموزع</th>
+                <th>المبلغ المطلوب</th>
+                <th>المبلغ الموافق عليه</th>
+                <th>رصيد خزنة المسوق الحالة</th>
                 <th>الحالة</th>
+                <th>التاريخ</th>
+
             </tr>
         </thead>
         <tbody>
@@ -154,9 +165,21 @@
 
             @foreach($data as $product)
             <tr>
-                <td>{{ $product['product_name'] }}</td>
-                <td>{{ $product['total_sold'] }}</td>
-                <td>{{ $product['status'] == 'sold' ? 'مباعة' : 'راكدة' }}</td>
+                <td>{{ $product['id'] }}</td>
+                <td>{{ $product['payment_method'] }}</td>
+                <td>{{ $product['requested_for'] }}</td>
+                <td>{{ $product['mobile'] }}</td>
+                <td>{{ $product['team'] .'-'. $product['subteam'] }}</td>
+                <td>{{ $product['notes'] }}</td>
+                <td>{{ $product['delivered_by'] }}</td>
+                <td>{{ $product['requested_amount'] }}</td>
+                <td>{{ $product['approved_amount'] }}</td>
+                <td>{{ $product['from_vault_balance'] }}</td>
+
+                <td>{{ $product['status'] }}</td>
+                <td>{{ $product['created_at'] }}</td>
+
+
             </tr>
             @endforeach
             @else

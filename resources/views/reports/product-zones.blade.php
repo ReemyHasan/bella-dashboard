@@ -2,7 +2,7 @@
 <html dir="rtl" lang="ar">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Warehouses Report Export</title>
+    <title>Product Zones Report Export</title>
     <style>
         body {
             font-family: "amiri", sans-serif;

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\V1\Reports\FinancialReportController;
 use App\Http\Controllers\Web\V1\Reports\OrderReportsController;
 use App\Http\Controllers\Web\V1\Reports\ProductReportsController;
 use App\Http\Controllers\Web\V1\Reports\SalesReportController;
@@ -9,6 +10,8 @@ use App\Http\Controllers\Web\V1\Reports\WarehouseReportController;
 use App\Http\Controllers\Web\V1\Reports\UserReportsController;
 
 use Illuminate\Support\Facades\Route;
+
+Route::get('reports/cash-requests', [FinancialReportController::class, 'cashRequestReport']);
 
 Route::get('reports/sold-stagnant-products', [ProductReportsController::class, 'soldAndStagnantProductsReport']);
 

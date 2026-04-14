@@ -75,7 +75,7 @@ class ProductReportsController extends Controller implements HasMiddleware
     {
         $html = view('reports.product-zones', ['data' => $this->transformForExport($data)])->render();
         $pdf = LaravelMpdfDz::loadHTML($html);
-        $fileName = 'product_' . now()->format('Y-m-d_h:i') . '_report.pdf';
+        $fileName = 'product_zone_prices_' . now()->format('Y-m-d_h:i') . '_report.pdf';
 
         return $pdf->download($fileName);
     }
@@ -116,7 +116,7 @@ class ProductReportsController extends Controller implements HasMiddleware
     {
         $html = view('reports.sold-stagnant-products', ['data' => $data])->render();
         $pdf = LaravelMpdfDz::loadHTML($html);
-        $fileName = 'product_' . now()->format('Y-m-d_h:i') . '_report.pdf';
+        $fileName = 'sold_stagnant_products_' . now()->format('Y-m-d_h:i') . '_report.pdf';
 
         return $pdf->download($fileName);
     }
