@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Web\V1\Reports;
 use App\Exports\WarehouseReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DashUser\Reports\WarehouseReportRequest;
-use App\Services\DashUser\Reports\ReportsService;
+use App\Services\DashUser\Reports\WarehouseReportService;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Maatwebsite\Excel\Facades\Excel;
@@ -17,12 +17,12 @@ class WarehouseReportController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:view_warehouses_reports', only: ['index']),
+            new Middleware('permission:view_warehouses_reports', only: ['warehouseReport']),
 
         ];
     }
 
-    public function __construct(private ReportsService $service) {}
+    public function __construct(private WarehouseReportService $service) {}
 
     public function warehouseReport(WarehouseReportRequest $request)
     {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\V1\Reports\OrderReportsController;
+use App\Http\Controllers\Web\V1\Reports\ProductReportsController;
 use App\Http\Controllers\Web\V1\Reports\SalesReportController;
 use App\Http\Controllers\Web\V1\Reports\TeamsReportController;
 use App\Http\Controllers\Web\V1\Reports\VaultReportsController;
@@ -14,6 +15,8 @@ Route::get('reports/sales', [SalesReportController::class, 'salesReport']);
 Route::get('reports/marketers-orders', [SalesReportController::class, 'subTeamMarketersReport']);
 Route::get('reports/marketers-daily', [SalesReportController::class, 'marketerDailyReport']);
 Route::get('reports/marketer-one-day', [SalesReportController::class, 'marketerOrdersReport']);
+
+Route::get('reports/product-zone-prices', [ProductReportsController::class, 'productZoneReport']);
 
 Route::get('reports/warehouses', [WarehouseReportController::class, 'warehouseReport']);
 Route::get('reports/teams', [TeamsReportController::class, 'teamsHierarchyReport']);

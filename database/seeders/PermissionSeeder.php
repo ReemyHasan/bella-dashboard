@@ -259,6 +259,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'view_orders_reports', 'name_ar' => 'عرض تقارير الطلبات', 'guard_name' => 'dash_user_guard', 'group' => 'التقارير'],
             ['name' => 'view_vault_reports', 'name_ar' => 'عرض تقارير الخزنات', 'guard_name' => 'dash_user_guard', 'group' => 'التقارير'],
             ['name' => 'view_users_reports', 'name_ar' => 'عرض تقارير كشف حسابات المستخدمين', 'guard_name' => 'dash_user_guard', 'group' => 'التقارير'],
+            ['name' => 'view_products_reports', 'name_ar' => 'عرض تقارير أسعار المنتجات في المناطق', 'guard_name' => 'dash_user_guard', 'group' => 'التقارير'],
 
 
             // ================== Brand ==================
