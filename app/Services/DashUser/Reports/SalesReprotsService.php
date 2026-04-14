@@ -3,6 +3,7 @@
 namespace App\Services\DashUser\Reports;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaginationEnum;
 use App\Models\AppUser;
 use App\Models\CustomerOrder;
 use App\Models\SubTeam;
@@ -249,5 +250,65 @@ class SalesReprotsService
 
             'orders' => $orders,
         ];
+    }
+
+    public function detailedOrdersReport(array $filters)
+    {
+        $query = CustomerOrder::query()
+            ->with([
+                'customer:id,first_name,last_name',
+                'address:id,name',
+                'marketer:id,first_name,last_name,user_name,team_id,subteam_id,mobile',
+                'marketer.team:id,name',
+                'marketer.subTeam',
+                'marketer.subTeam.team:id,name',
+                'warehouseMan:id,first_name,last_name,user_name,mobile',
+                'products.product:id,name',
+                'offers.offer:id,name',
+                'currency'
+            ])
+
+            // =========================
+            // DATE FILTER
+            // =========================
+            ->when($filters['from'] ?? null, function ($q, $from) {
+                $q->whereDate('placed_at', '>=', $from);
+            })
+            ->when($filters['to'] ?? null, function ($q, $to) {
+                $q->whereDate('placed_at', '<=', $to);
+            })
+
+            // =========================
+            // STATUS
+            // =========================
+            ->when($filters['order_status'] ?? null, function ($q, $status) {
+                $q->where('order_status', $status);
+            })
+
+            // =========================
+            // TEAM
+            // =========================
+            ->when($filters['team_id'] ?? null, function ($q, $teamId) {
+                $q->where('team_id', $teamId);
+            })
+
+            // =========================
+            // SUB TEAM
+            // =========================
+            ->when($filters['sub_team_id'] ?? null, function ($q, $subTeamId) {
+                $q->where('sub_team_id', $subTeamId);
+            })
+
+            // =========================
+            // MARKETER
+            // =========================
+            ->when($filters['marketer_id'] ?? null, function ($q, $userId) {
+                $q->where('app_user_id', $userId);
+            });
+
+        $paginated = $query->latest()->paginate(PaginationEnum::GeneralPagination->value);
+
+
+        return $paginated;
     }
 }

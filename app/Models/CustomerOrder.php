@@ -65,8 +65,8 @@ class CustomerOrder extends Model
 
 
 
-        'adjustment_type',
-        'adjustment_operation',
+        'adjustment_type', //percentage,fixed
+        'adjustment_operation', ////increase,decrease
         'adjustment_value',
         'is_target',
         'competition_id'

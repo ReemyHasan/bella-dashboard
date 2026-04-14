@@ -13,6 +13,8 @@ use App\Http\Controllers\Web\V1\General\ZoneController;
 use Illuminate\Support\Facades\Route;
 
 
+Route::get('charts/financial-summary', [ChartsController::class, 'financialSummaryReport']);
+
 Route::get('charts/main', [ChartsController::class, 'main']);
 Route::get('charts/top-10', [ChartsController::class, 'tables']);
 Route::get('charts/line-bar-charts', [ChartsController::class, 'lineAndBarCharts']);

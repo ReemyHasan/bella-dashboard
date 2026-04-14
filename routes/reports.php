@@ -11,6 +11,8 @@ use App\Http\Controllers\Web\V1\Reports\UserReportsController;
 
 use Illuminate\Support\Facades\Route;
 
+Route::get('reports/detailed-reports', [SalesReportController::class, 'detailedOrdersReport']);
+
 Route::get('reports/cash-requests', [FinancialReportController::class, 'cashRequestReport']);
 
 Route::get('reports/sold-stagnant-products', [ProductReportsController::class, 'soldAndStagnantProductsReport']);

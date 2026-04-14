@@ -9,7 +9,8 @@ use App\Exports\SubTeamMarketersExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DashUser\Reports\SalesReportRequest;
 use App\Services\DashUser\Reports\SalesReprotsService;
-use App\Services\DashUser\ReportsService;
+use App\Http\Requests\DashUser\Reports\DetailedOrdersReportRequest;
+use App\Http\Resources\DashUser\Orders\DetailedOrderReportResource;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -209,5 +210,15 @@ class SalesReportController extends Controller implements HasMiddleware
         $fileName = 'marketer_orders_' . now()->format('Y-m-d_h:i') . '_report.pdf';
 
         return $pdf->download($fileName);
+    }
+
+
+    public function detailedOrdersReport(DetailedOrdersReportRequest $request)
+    {
+
+        $result = $this->service->detailedOrdersReport($request->validated());
+
+
+        return response()->format($this->returnPaginatedResponse($result, DetailedOrderReportResource::collection($result)), 'تم جلب التقرير بنجاح', 200);
     }
 }

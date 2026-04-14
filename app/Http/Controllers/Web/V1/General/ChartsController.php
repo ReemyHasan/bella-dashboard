@@ -217,4 +217,64 @@ class ChartsController extends Controller implements HasMiddleware
             'orders_by_zone' => $zoneChart,
         ], 'messages.success');
     }
+
+    public function financialSummaryReport(Request $request)
+    {
+        
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        $query = CustomerOrder::query()
+
+            // =========================
+            // FILTERS
+            // =========================
+            ->when(
+                $from,
+                fn($q) =>
+                $q->whereDate('placed_at', '>=', $from)
+            )
+            ->when(
+                $to,
+                fn($q) =>
+                $q->whereDate('placed_at', '<=', $to)
+            )
+
+            // =========================
+            // EXCLUDE STATUSES
+            // =========================
+            ->whereNotIn('order_status', ['cancelled', 'refund']);
+
+        // =========================
+        // CALCULATE
+        // =========================
+        $result = $query->selectRaw("
+        SUM(total_price * current_exchange_rate) as total_price_sum,
+
+        SUM(total_base_price * current_exchange_rate) as total_base_price_sum,
+
+        SUM(
+            (
+                CASE
+                    WHEN adjustment_type = 'percentage'
+                        THEN total_base_price * (adjustment_value / 100)
+                    ELSE adjustment_value
+                END
+            )
+            *
+            CASE
+                WHEN adjustment_operation = 'decrease' THEN -1
+                ELSE 1
+            END
+            *
+            current_exchange_rate
+        ) as total_adjustment_sum
+    ")->first();
+
+        return response()->format([
+            'total_price' => (float) ($result->total_price_sum ?? 0),
+            'total_base_price' => (float) ($result->total_base_price_sum ?? 0),
+            'total_adjustment' => (float) ($result->total_adjustment_sum ?? 0),
+        ], 'messages.success');
+    }
 }
