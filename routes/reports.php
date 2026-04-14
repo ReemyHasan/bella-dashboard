@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\V1\Reports\UserReportsController;
 
 use Illuminate\Support\Facades\Route;
 
+Route::get('reports/sold-stagnant-products', [ProductReportsController::class, 'soldAndStagnantProductsReport']);
 
 Route::get('reports/sales', [SalesReportController::class, 'salesReport']);
 Route::get('reports/marketers-orders', [SalesReportController::class, 'subTeamMarketersReport']);

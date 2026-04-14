@@ -2,7 +2,11 @@
 
 namespace App\Services\DashUser\Reports;
 
+use App\Models\OrderOffer;
+use App\Models\OrderProduct;
+use App\Models\Product;
 use App\Models\ProductZonePrice;
+use Illuminate\Support\Facades\DB;
 
 class ProductReportService
 {
@@ -54,5 +58,76 @@ class ProductReportService
                 ];
             })
             ->values();
+    }
+
+    public function soldAndStagnantProductsReport(array $filters)
+    {
+        $from = $filters['from'] ?? null;
+        $to   = $filters['to'] ?? null;
+        $statusFilter = $filters['status'] ?? null;
+
+        // =========================
+        // 1. Direct product sales
+        // =========================
+        $directSales = OrderProduct::query()
+            ->selectRaw('product_id, SUM(quantity) as total_sold')
+            ->whereHas('order', function ($q) use ($from, $to) {
+                $q->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
+                    ->when($to, fn($q) => $q->whereDate('created_at', '<=', $to));
+            })
+            ->groupBy('product_id');
+
+        // =========================
+        // 2. Offer-based sales
+        // =========================
+        $offerSales = OrderOffer::query()
+            ->join('offer_products', 'order_offers.offer_id', '=', 'offer_products.offer_id')
+            ->selectRaw('offer_products.product_id, SUM(order_offers.quantity * offer_products.quantity) as total_sold')
+            ->whereHas('order', function ($q) use ($from, $to) {
+                $q->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
+                    ->when($to, fn($q) => $q->whereDate('created_at', '<=', $to));
+            })
+            ->groupBy('offer_products.product_id');
+
+        // =========================
+        // 3. Merge sales
+        // =========================
+        $sales = DB::query()
+            ->fromSub($directSales->unionAll($offerSales), 'sales')
+            ->selectRaw('product_id, SUM(total_sold) as total_sold')
+            ->groupBy('product_id')
+            ->pluck('total_sold', 'product_id');
+
+        // =========================
+        // 4. Products
+        // =========================
+        $products = Product::query()
+            ->select('id', 'name')
+            ->get();
+
+        // =========================
+        // 5. Build report
+        // =========================
+        $result = $products->map(function ($product) use ($sales) {
+
+            $sold = (int) ($sales[$product->id] ?? 0);
+
+            return [
+                'product_id'   => $product->id,
+                'product_name' => $product->name,
+                'total_sold'   => $sold,
+                'status'       => $sold > 0 ? 'sold' : 'stagnant',
+            ];
+        });
+
+        if ($statusFilter == 'sold') {
+            $result = $result->filter(fn($item) => $item['total_sold'] > 0);
+        }
+
+        if ($statusFilter == 'stagnant') {
+            $result = $result->filter(fn($item) => $item['total_sold'] == 0);
+        }
+
+        return $result->values();
     }
 }

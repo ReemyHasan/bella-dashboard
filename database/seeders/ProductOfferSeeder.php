@@ -52,7 +52,7 @@ class ProductOfferSeeder extends Seeder
         ];
 
         foreach ($offers as $offer) {
-            Offer::create([
+            $offerItem = Offer::create([
                 'name' => $offer['name'],
                 'symbol' => $offer['symbol'],
                 'description' => 'Offer description',
@@ -60,6 +60,18 @@ class ProductOfferSeeder extends Seeder
                 'marketing_description' => 'Best deal',
                 'active' => true,
             ]);
+            $offerItem->products()->sync(
+                [
+                    [
+                        'product_id' => 1,
+                        'quantity' => 1
+                    ],
+                    [
+                        'product_id' => 2,
+                        'quantity' => 2
+                    ]
+                ]
+            );
         }
 
         $zones = Zone::all();
