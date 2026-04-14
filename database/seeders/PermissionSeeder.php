@@ -43,6 +43,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'create_warehouse', 'name_ar' => 'إدخال مستودع', 'guard_name' => 'dash_user_guard', 'group' => 'المستودع'],
             ['name' => 'update_warehouse', 'name_ar' => 'تحديث مستودع', 'guard_name' => 'dash_user_guard', 'group' => 'المستودع'],
             ['name' => 'full_view_warehouses', 'name_ar' => 'رؤية جميع المستودعات', 'guard_name' => 'dash_user_guard', 'group' => 'المستودع'],
+            ['name' => 'update_warehouse_products_directly', 'name_ar' => 'تحديث مباشر على منتجات المستودع', 'guard_name' => 'dash_user_guard', 'group' => 'المستودع'],
 
             // ================== Create Handover Request ==================
             ['name' => 'create_handover_request', 'name_ar' => 'إضافة طلب مناقلة', 'guard_name' => 'dash_user_guard', 'group' => 'المناقلات'],

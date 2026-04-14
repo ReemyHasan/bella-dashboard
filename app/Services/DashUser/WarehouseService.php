@@ -3,6 +3,7 @@
 namespace App\Services\DashUser;
 
 use App\Enums\PaginationEnum;
+use App\Exceptions\CustomException;
 use App\Models\AppUser;
 use App\Models\DashUser;
 use App\Models\ProductWarehouse;
@@ -138,7 +139,7 @@ class WarehouseService
     public function selectAvailable($zone = null, $is_main = null)
     {
 
-        $cities = Warehouse::when(!is_null($zone), function ($query) use ($zone) {
+        $warehouses = Warehouse::when(!is_null($zone), function ($query) use ($zone) {
             $query->where('zone_id', $zone);
         })->when(!is_null($is_main), function ($query) use ($is_main) {
             $query->where('is_main', $is_main);
@@ -150,6 +151,60 @@ class WarehouseService
             'zone_id'
         ]);
 
-        return $cities;
+        return $warehouses;
+    }
+
+    public function updateWarehouseProducts(
+        Warehouse $warehouse,
+        array $items,
+        array $deletedItems = []
+    ) {
+        DB::transaction(function () use ($warehouse, $items, $deletedItems) {
+
+            $items = collect($items)->keyBy('product_id');
+
+            $existing = ProductWarehouse::where('warehouse_id', $warehouse->id)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('product_id');
+
+            if (!empty($deletedItems)) {
+
+                $toDelete = $existing->only($deletedItems);
+
+                foreach ($toDelete as $productWarehouse) {
+
+                    // 🔒 Optional safety check
+                    if ($productWarehouse->reserved_quantity > 0) {
+                        throw new CustomException('لا يمكن حذف منتج لديه كمية محجوزة.');
+                    }
+
+                    $productWarehouse->delete();
+                }
+            }
+
+            foreach ($items as $productId => $item) {
+
+                if ($existing->has($productId)) {
+
+                    $productWarehouse = $existing[$productId];
+
+                    // Optional: skip if same quantity
+                    if ($productWarehouse->quantity != $item['quantity']) {
+                        $productWarehouse->update([
+                            'quantity' => $item['quantity']
+                        ]);
+                    }
+
+                    continue;
+                }
+
+                ProductWarehouse::create([
+                    'warehouse_id' => $warehouse->id,
+                    'product_id'   => $productId,
+                    'quantity'     => $item['quantity'],
+                ]);
+            }
+        });
     }
 }

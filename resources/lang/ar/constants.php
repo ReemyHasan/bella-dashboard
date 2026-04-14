@@ -49,5 +49,6 @@ return [
     'refund_marketer' => 'إرجاع نسبة المسوق',
     'competition' => 'الهدف التسويقي',
     'brand' => 'الماركة',
-    'balance_transfer_request' => 'طلب نقل رصيد'
+    'balance_transfer_request' => 'طلب نقل رصيد',
+    'warehouse_products' => 'منتجات المستودع'
 ];

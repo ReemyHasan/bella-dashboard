@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\V1\Warehouses;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DashUser\Warehouses\UpdateWarehouseProductsRequest;
 use App\Http\Requests\DashUser\Warehouses\WarehouseRequest;
 use App\Http\Resources\DashUser\ProductResource;
 use App\Http\Resources\DashUser\WarehouseProductResource;
@@ -25,6 +26,8 @@ class WarehouseController extends Controller implements HasMiddleware
             new Middleware('permission:create_warehouse', only: ['store']),
             new Middleware('permission:update_warehouse', only: ['update']),
             new Middleware('permission:delete_warehouse', only: ['destroy']),
+            new Middleware('permission:update_warehouse_products_directly', only: ['updateProducts']),
+
 
         ];
     }
@@ -81,5 +84,20 @@ class WarehouseController extends Controller implements HasMiddleware
             'value' => $warehouse?->name
         ]);
         return response()->format($returnedData, 'messages.success', 200);
+    }
+
+    public function updateProducts(
+        UpdateWarehouseProductsRequest $request,
+        Warehouse $warehouse
+    ) {
+
+
+        $this->warehouseService->updateWarehouseProducts(
+            $warehouse,
+            $request->input('items', []),
+            $request->input('deleted_items', [])
+        );
+
+        return response()->format(null,  __('messages.updated_successfully',  ['item' => __('constants.warehouse_products')]), 200);
     }
 }

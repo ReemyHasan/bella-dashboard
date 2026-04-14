@@ -5,7 +5,7 @@ use App\Http\Controllers\Web\V1\Warehouses\WarehouseController;
 use App\Http\Controllers\Web\V1\Warehouses\WarehouseHandoverController;
 use Illuminate\Support\Facades\Route;
 
-
+Route::put('warehouses/{warehouse}/products', [WarehouseController::class, 'updateProducts']);
 Route::get('warehouses/{warehouse}/products', [WarehouseController::class, 'warehouseProducts']);
 
 Route::apiResource('warehouses', WarehouseController::class);
