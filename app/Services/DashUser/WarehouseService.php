@@ -170,7 +170,7 @@ class WarehouseService
 
             if (!empty($deletedItems)) {
 
-                $toDelete = $existing->only($deletedItems);
+                $toDelete = $existing->whereIn('product_id', $deletedItems);
 
                 foreach ($toDelete as $productWarehouse) {
 
