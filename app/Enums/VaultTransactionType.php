@@ -17,4 +17,27 @@ enum VaultTransactionType: string
         // ✅ New types
     case TRANSFER_IN = 'transfer_in';
     case TRANSFER_OUT = 'transfer_out';
+
+    case refund_marketer = 'refund_marketer';
+    case refund_teamleader = 'refund_teamleader';
+    case refund_manager = 'refund_manager';
+    public function label(): string
+    {
+        return match ($this) {
+            self::CASH_REQUEST          => 'طلب نقدي مكتمل',
+            self::CASH_REQUEST_APPROVED => 'طلب نقدي موافق عليه',
+            self::BONUS                 => 'مكافأة',
+            self::DEDUCTION             => 'خصم',
+            self::TRANSFER              => 'تحويل',
+            self::TRANSFER_IN           => 'تحويل وارد',
+            self::TRANSFER_OUT          => 'تحويل صادر',
+            self::ADJUSTMENT            => 'تعديل',
+            self::ORDER_COMPLETE        => 'إتمام طلب',
+            self::ORDER_REFUND          => 'استرجاع طلب',
+            self::ORDER_COMPANY_PROFIT  => 'ربح الشركة من الطلب',
+            self::refund_marketer       => 'استرجاع من مسوق',
+            self::refund_teamleader     => 'استرجاع من قائد فريق',
+            self::refund_manager        => 'استرجاع من مدير',
+        };
+    }
 }

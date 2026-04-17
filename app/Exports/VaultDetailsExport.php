@@ -46,6 +46,8 @@ class VaultDetailsExport implements FromCollection, WithHeadings, WithStyles
             'الرصيد بعد (من)',
             'الرصيد قبل (إلى)',
             'الرصيد بعد (إلى)',
+            'متعلق ب',
+            'Reference ID',
             'السبب',
             'ملاحظات',
         ];
@@ -62,6 +64,8 @@ class VaultDetailsExport implements FromCollection, WithHeadings, WithStyles
                 $trx['from_balance_after'],
                 $trx['to_balance_before'],
                 $trx['to_balance_after'],
+                $trx['reference_type'],
+                $trx['reference_id'],
                 $trx['reason'],
                 $trx['notes'],
             ];
@@ -80,7 +84,7 @@ class VaultDetailsExport implements FromCollection, WithHeadings, WithStyles
         $sheet->setRightToLeft(true);
 
         // Make headings bold
-        $sheet->getStyle('A6:K6')->applyFromArray([
+        $sheet->getStyle('A5:M5')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -95,7 +99,7 @@ class VaultDetailsExport implements FromCollection, WithHeadings, WithStyles
         ]);
 
         // Auto size columns
-        foreach (range('A', 'K') as $col) {
+        foreach (range('A', 'M') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

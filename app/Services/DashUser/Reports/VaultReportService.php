@@ -2,8 +2,14 @@
 
 namespace App\Services\DashUser\Reports;
 
+use App\Enums\VaultTransactionType;
+use App\Models\BalanceTransferRequest;
+use App\Models\CashRequest;
+use App\Models\CustomerOrder;
+use App\Models\FinancialAdjustment;
 use App\Models\Vault;
 use App\Models\VaultTransaction;
+use App\Models\VaultTransfer;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
@@ -80,8 +86,8 @@ class VaultReportService
                 return [
                     'id' => $trx->id,
                     'date' => $trx->transaction_date,
-
-                    'type' => $trx->type,
+                    'type' => VaultTransactionType::from($trx->type)->label(),
+                    // 'type' => $trx->type,
                     'amount' => $trx->amount,
 
                     'direction' => $trx->directionForVault($vault->id),
@@ -94,6 +100,16 @@ class VaultReportService
 
                     'reason' => $trx->reason,
                     'notes' => $trx->notes,
+
+                    'reference_type' => match ($trx->reference_type) {
+                        BalanceTransferRequest::class => 'تحويل رصيد',
+                        CashRequest::class            => 'طلب نقدي',
+                        FinancialAdjustment::class    => 'تعديل مالي',
+                        VaultTransfer::class          => 'تحويل خزنة',
+                        CustomerOrder::class          => 'طلب عميل',
+                        default                       => 'غير معروف',
+                    },
+                    'reference_id' => $trx->reference_id,
                 ];
             });
 

@@ -2,6 +2,12 @@
 
 namespace App\Http\Resources\DashUser\Orders;
 
+use App\Enums\VaultTransactionType;
+use App\Models\BalanceTransferRequest;
+use App\Models\CashRequest;
+use App\Models\CustomerOrder;
+use App\Models\FinancialAdjustment;
+use App\Models\VaultTransfer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,12 +26,22 @@ class OrderTransactionResource extends JsonResource
             'balance_before' => $this->to_vault_balance_before,
             'balance_after' => $this->to_vault_balance_after,
 
-            'type' => $this->type,
+            // 'type' => $this->type,
 
-            'reference' => $this->whenLoaded('reference', fn() => [
-                'id' => $this->reference?->id,
-                'type' => class_basename($this->reference)
-            ]),
+            'type' => VaultTransactionType::from($this->type)->label(),
+            'reference' => [
+                'id' => $this->reference_id,
+
+                'type' => match ($this->reference_type) {
+                    BalanceTransferRequest::class => 'تحويل رصيد',
+                    CashRequest::class            => 'طلب نقدي',
+                    FinancialAdjustment::class    => 'تعديل مالي',
+                    VaultTransfer::class          => 'تحويل خزنة',
+                    CustomerOrder::class          => 'طلب عميل',
+                    default                       => 'غير معروف',
+                },
+
+            ],
 
 
             'action_by' => $this->whenLoaded('actionBy', fn() => [

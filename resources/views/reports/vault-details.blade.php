@@ -180,6 +180,8 @@
                 <th>الرصيد بعد (من)</th>
                 <th>الرصيد قبل (إلى)</th>
                 <th>الرصيد بعد (إلى)</th>
+                <th>متعلق ب</th>
+                <th>Reference ID</th>
                 <th>السبب</th>
                 <th>ملاحظات</th>
             </tr>
@@ -198,6 +200,9 @@
                 <td>{{ $trx['from_balance_after'] }}</td>
                 <td>{{ $trx['to_balance_before'] }}</td>
                 <td>{{ $trx['to_balance_after'] }}</td>
+                <td>{{$trx['reference_type']}}</td>
+                <td>{{ $trx['reference_id'] }}</td>
+
                 <td>{{ $trx['reason'] }}</td>
                 <td>{{ $trx['notes'] }}</td>
             </tr>

@@ -1442,12 +1442,12 @@ class OrderService
             'to_vault_balance_after' => $newVaultBalance,
         ]);
 
-        $this->subtractBalance($vault, $order->app_user_id, $order->marketer_amount, 'refund_marketer', $order);
+        $this->subtractBalance($vault, $order->app_user_id, $order->marketer_amount, VaultTransactionType::refund_marketer->value, $order);
         if ($order->teamleader_id)
-            $this->subtractBalance($vault, $order->teamleader_id, $order->teamleader_amount, 'refund_teamleader', $order);
+            $this->subtractBalance($vault, $order->teamleader_id, $order->teamleader_amount, VaultTransactionType::refund_teamleader->value, $order);
 
         if ($order->manager_id) {
-            $this->subtractBalance($vault, $order->manager_id, $order->manager_amount, 'refund_manager', $order);
+            $this->subtractBalance($vault, $order->manager_id, $order->manager_amount, VaultTransactionType::refund_manager->value, $order);
         }
     }
 
