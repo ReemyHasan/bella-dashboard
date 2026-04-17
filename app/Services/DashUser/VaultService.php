@@ -132,7 +132,10 @@ class VaultService
 
     public function marketerVault($id)
     {
-        $vault = Vault::where('owner_id', $id)->firstOrFail();
+        $vault = Vault::where('owner_id', $id)->first();
+        if ($vault == null) {
+            throw new CustomException('الموزع ليس لديه خزنة, من فضلك أضف له خزنة أولا.');
+        }
         return [
             'id' => $vault->id,
             'balance' => $vault->balance

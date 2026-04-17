@@ -272,10 +272,10 @@ class SalesReprotsService
             // DATE FILTER
             // =========================
             ->when($filters['from'] ?? null, function ($q, $from) {
-                $q->whereDate('placed_at', '>=', $from);
+                $q->whereDate('created_at', '>=', $from);
             })
             ->when($filters['to'] ?? null, function ($q, $to) {
-                $q->whereDate('placed_at', '<=', $to);
+                $q->whereDate('created_at', '<=', $to);
             })
 
             // =========================

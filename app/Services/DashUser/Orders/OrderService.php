@@ -138,7 +138,7 @@ class OrderService
         ];
     }
 
-    private function calculateAmounts($baseAmount, $resolved, $data)
+    private function calculateAmounts($baseAmount, $resolved, $data, $current_exchange_rate)
     {
         $marketerAmount = $baseAmount * $resolved['marketer_percentage'] / 100;
         $teamLeaderAmount = $baseAmount * $resolved['teamleader_percentage'] / 100;
@@ -153,7 +153,7 @@ class OrderService
 
             $adjustment = $type == 'percentage'
                 ? ($baseAmount * $value / 100)
-                : $value * $data['current_exchange_rate'];
+                : $value * $current_exchange_rate;
 
             if ($operation == 'increase') {
                 $marketerAmount += $adjustment;
@@ -435,7 +435,7 @@ class OrderService
 
             $baseAmount = $totalBasePrice * $orderData['current_exchange_rate'];
 
-            $amounts = $this->calculateAmounts($baseAmount, $resolved, $data);
+            $amounts = $this->calculateAmounts($baseAmount, $resolved, $data, $zone->currency->exchange_value);
 
             $order->update([
                 'total_base_price' => $totalBasePrice,

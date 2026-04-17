@@ -232,12 +232,12 @@ class ChartsController extends Controller implements HasMiddleware
             ->when(
                 $from,
                 fn($q) =>
-                $q->whereDate('placed_at', '>=', $from)
+                $q->whereDate('created_at', '>=', $from)
             )
             ->when(
                 $to,
                 fn($q) =>
-                $q->whereDate('placed_at', '<=', $to)
+                $q->whereDate('created_at', '<=', $to)
             )
 
             // =========================
