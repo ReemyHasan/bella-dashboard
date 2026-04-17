@@ -268,11 +268,11 @@ class OrderService
                         throw new CustomException('المنتج غير موجود في المستودع');
                     }
 
-                    $available = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
+                    // $available = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
 
-                    if ($item['quantity'] > $available) {
-                        throw new CustomException("الكمية غير متوفرة للمنتج {$item['product_id']}");
-                    }
+                    // if ($item['quantity'] > $available) {
+                    //     throw new CustomException("الكمية غير متوفرة للمنتج {$item['product_id']}");
+                    // }
 
                     $zonePrice = $productZonePrices->get($item['product_id']);
 
@@ -358,13 +358,13 @@ class OrderService
                             throw new CustomException("منتج داخل العرض غير موجود في المستودع");
                         }
 
-                        $availableProduct = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
+                        // $availableProduct = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
 
-                        if ($requiredQty > $availableProduct) {
-                            throw new CustomException(
-                                "الكمية غير كافية لمنتج {$product->name} داخل العرض"
-                            );
-                        }
+                        // if ($requiredQty > $availableProduct) {
+                        //     throw new CustomException(
+                        //         "الكمية غير كافية لمنتج {$product->name} داخل العرض"
+                        //     );
+                        // }
                     }
 
                     // =========================
@@ -632,9 +632,9 @@ class OrderService
 
                     $available = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
 
-                    if ($item['quantity'] > $available) {
-                        throw new CustomException("الكمية غير متوفرة");
-                    }
+                    // if ($item['quantity'] > $available) {
+                    //     throw new CustomException("الكمية غير متوفرة");
+                    // }
 
                     $zonePrice = $productZonePrices->get($item['product_id']);
 
@@ -719,13 +719,13 @@ class OrderService
                             throw new CustomException("منتج داخل العرض غير موجود في المستودع");
                         }
 
-                        $availableProduct = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
+                        // $availableProduct = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
 
-                        if ($requiredQty > $availableProduct) {
-                            throw new CustomException(
-                                "الكمية غير كافية لمنتج {$product->name} داخل العرض"
-                            );
-                        }
+                        // if ($requiredQty > $availableProduct) {
+                        //     throw new CustomException(
+                        //         "الكمية غير كافية لمنتج {$product->name} داخل العرض"
+                        //     );
+                        // }
                     }
 
                     // =========================
@@ -796,7 +796,7 @@ class OrderService
 
             $baseAmount = $totalBasePrice * $orderData['current_exchange_rate'];
 
-            $amounts = $this->calculateAmounts($baseAmount, $resolved, $data);
+            $amounts = $this->calculateAmounts($baseAmount, $resolved, $data, $orderData['current_exchange_rate']);
 
             $order->update([
                 'total_base_price' => $totalBasePrice,
@@ -997,11 +997,11 @@ class OrderService
                 throw new CustomException('المنتج غير موجود في المستودع');
             }
 
-            $available = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
+            // $available = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
 
-            if ($item->quantity > $available) {
-                throw new CustomException("لا يمكن إعادة الطلب، الكمية غير متوفرة للمنتج {$item->product_id}");
-            }
+            // if ($item->quantity > $available) {
+            //     throw new CustomException("لا يمكن إعادة الطلب، الكمية غير متوفرة للمنتج {$item->product_id}");
+            // }
 
             $warehouseProduct->increment('reserved_quantity', $item->quantity);
         }
@@ -1058,13 +1058,13 @@ class OrderService
                     throw new CustomException("منتج داخل العرض غير موجود في المستودع");
                 }
 
-                $availableProduct = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
+                // $availableProduct = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
 
-                if ($requiredQty > $availableProduct) {
-                    throw new CustomException(
-                        "الكمية غير كافية لمنتج {$product->name} داخل العرض"
-                    );
-                }
+                // if ($requiredQty > $availableProduct) {
+                //     throw new CustomException(
+                //         "الكمية غير كافية لمنتج {$product->name} داخل العرض"
+                //     );
+                // }
             }
 
             // =========================
@@ -1102,6 +1102,16 @@ class OrderService
         foreach ($order->products as $item) {
 
             $warehouseProduct = $warehouseProducts->get($item->product_id);
+            if (!$warehouseProduct) {
+                throw new CustomException("المنتج غير موجود في المخزن");
+            }
+            // if ($warehouseProduct->reserved_quantity < $item->quantity) {
+            //     throw new CustomException("الكمية المحجوزة غير كافية للمنتج");
+            // }
+
+            if ($warehouseProduct->quantity < $item->quantity) {
+                throw new CustomException("الكمية غير متوفرة للمنتج {$item->product_id}");
+            }
             $warehouseProduct->decrement('reserved_quantity', $item->quantity);
             $warehouseProduct->decrement('quantity', $item->quantity);
         }
@@ -1138,16 +1148,6 @@ class OrderService
 
         foreach ($order->offers as $item) {
 
-            // $warehouseOffer = $warehouseOffers->get($item->offer_id);
-
-            // if (!$warehouseOffer) {
-            //     throw new CustomException("العرض غير موجود في المستودع");
-            // }
-
-            // ✅ remove offer
-            // $warehouseOffer->decrement('reserved_quantity', $item->quantity);
-            // $warehouseOffer->decrement('quantity', $item->quantity);
-
             $offer = $offers->get($item->offer_id);
 
             if (!$offer) continue;
@@ -1161,6 +1161,15 @@ class OrderService
 
                 if (!$warehouseProduct) {
                     throw new CustomException("منتج داخل العرض غير موجود");
+                }
+
+                // ✅ VALIDATION
+                // if ($warehouseProduct->reserved_quantity < $requiredQty) {
+                //     throw new CustomException("الكمية المحجوزة غير كافية لمنتج داخل العرض");
+                // }
+
+                if ($warehouseProduct->quantity < $requiredQty) {
+                    throw new CustomException("الكمية الفعلية غير كافية لمنتج داخل العرض {$product->id}");
                 }
 
                 $warehouseProduct->decrement('reserved_quantity', $requiredQty);
@@ -1318,13 +1327,13 @@ class OrderService
 
     public function handleFinancialProcess(CustomerOrder $order)
     {
-        if ($order->is_financial_processed) {
-            throw new CustomException('تم بالفعل توزيع الأرباح');
-        }
+        // if ($order->is_financial_processed) {
+        //     throw new CustomException('تم بالفعل توزيع الأرباح');
+        // }
 
-        if ($order->order_status != OrderStatus::completed->value) {
-            throw new CustomException('لا يمكن توزيع الربح قبل إتمام الطلب.');
-        }
+        // if ($order->order_status != OrderStatus::completed->value) {
+        //     throw new CustomException('لا يمكن توزيع الربح قبل إتمام الطلب.');
+        // }
         $vault = Vault::where('owner_id', $order->warehouse_man_id)->first();
         if ($vault == null || $order->warehouse_man_id == null)
             throw new CustomException('الموزع ليس لديه خزنة, من فضلك أضف له خزنة ثم أعد المحاولة.');
@@ -1391,6 +1400,7 @@ class OrderService
             'to_vault_balance_before' => $oldVaultBalance,
             'to_vault_balance_after' => $newVaultBalance,
         ]);
+        $this->handleFinancialProcess($order);
     }
 
     private function handleRefund(CustomerOrder $order)

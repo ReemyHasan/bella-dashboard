@@ -65,7 +65,7 @@ class SubTeamController extends Controller implements HasMiddleware
 
         $returnedData = $subteams->map(fn($subteam) => [
             'key' => $subteam?->id,
-            'value' => $subteam?->name
+            'value' => $subteam?->name . ', team: ' . $subteam->team->name . ($subteam->is_direct == 1 ? '(Direct)' : '(SubTeam)')
         ]);
         return response()->format($returnedData, 'messages.success', 200);
     }

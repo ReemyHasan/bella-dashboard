@@ -48,38 +48,83 @@ class SubTeamRequest extends FormRequest
                 'nullable',
                 'array',
             ],
-
             'users.*' => [
-                'exists:app_users,id',
-                Rule::exists('app_users', 'id')
-                    ->where(function ($query) use ($subTeamId) {
-                        $query->where(function ($q) {
-                            $q->whereNull('subteam_id');
-                        })
-                            ->orWhere('subteam_id', $subTeamId);
-                    }),
                 function ($attribute, $value, $fail) use ($subTeamId) {
 
-                    // $teamId = $this->input('team_id');
+                    if (is_numeric($value)) {
 
-                    // $user = \App\Models\AppUser::find($value);
+                        $exists = \App\Models\AppUser::where('id', $value)
+                            ->where(function ($q) use ($subTeamId) {
+                                $q->whereNull('subteam_id')
+                                    ->orWhere('subteam_id', $subTeamId);
+                            })->first();
 
-                    // if (!$user) {
-                    //     return;
-                    // }
+                        // dd($subTeamId, $exists );
+                        if ($exists == null || ($exists->subteam_id != null && $exists->subteam_id != $subTeamId)) {
+                            $fail('المستخدم غير متاح أو منضم لفريق آخر');
+                        }
+                    } elseif (is_array($value)) {
 
-                    // ❌ User belongs to different main team
-                    // if ($user->team_id != $teamId) {
-                    //     $fail('العضو المختار منضم لفريق رئيسي مختلف');
-                    //     return;
-                    // }
+                        if (
+                            empty($value['first_name']) ||
+                            empty($value['last_name']) ||
+                            empty($value['user_name']) ||
+                            empty($value['password']) ||
+                            empty($value['mobile'])
+                        ) {
+                            $fail('بيانات المستخدم غير مكتملة');
+                        }
+                        // ✅ Check username uniqueness
+                        if (\App\Models\AppUser::where('user_name', $value['user_name'])->exists()) {
+                            $fail('اسم المستخدم مستخدم بالفعل');
+                        }
 
-                    // ❌ User already belongs to another subteam
-                    // if ($user->subteam_id && $user->subteam_id != $subTeamId) {
-                    //     $fail('العضو المختار منضم بالفعل لفريق فرعي آخر');
-                    // }
+                        // ✅ Check mobile uniqueness
+                        if (\App\Models\AppUser::where('mobile', $value['mobile'])->exists()) {
+                            $fail('رقم الجوال مستخدم بالفعل');
+                        }
+                        if (
+                            empty($value['address']) ||
+                            !\App\Models\Address::where('id', $value['address'])->exists()
+                        ) {
+                            $fail('العنوان غير صحيح');
+                        }
+                    } else {
+                        $fail('صيغة المستخدم غير صحيحة');
+                    }
                 }
             ],
+            // 'users.*' => [
+            //     'exists:app_users,id',
+            //     Rule::exists('app_users', 'id')
+            //         ->where(function ($query) use ($subTeamId) {
+            //             $query->where(function ($q) {
+            //                 $q->whereNull('subteam_id');
+            //             })
+            //                 ->orWhere('subteam_id', $subTeamId);
+            //         }),
+            //     function ($attribute, $value, $fail) use ($subTeamId) {
+
+            // $teamId = $this->input('team_id');
+
+            // $user = \App\Models\AppUser::find($value);
+
+            // if (!$user) {
+            //     return;
+            // }
+
+            // ❌ User belongs to different main team
+            // if ($user->team_id != $teamId) {
+            //     $fail('العضو المختار منضم لفريق رئيسي مختلف');
+            //     return;
+            // }
+
+            // ❌ User already belongs to another subteam
+            // if ($user->subteam_id && $user->subteam_id != $subTeamId) {
+            //     $fail('العضو المختار منضم بالفعل لفريق فرعي آخر');
+            // }
+            // }
+            // ],
         ];
     }
     public function withValidator($validator)

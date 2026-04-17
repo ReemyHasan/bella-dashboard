@@ -51,7 +51,7 @@ Route::apiResource('offers', OfferController::class);
 
 Route::get('customer-orders/{customer_order}/transactions', [OrderController::class, 'transactions']);
 Route::post('customer-orders/{customer_order}/handle', [OrderController::class, 'handle']);
-Route::get('customer-orders/{customer_order}/share-profits', [OrderController::class, 'handleFinancialProcess']);
+// Route::get('customer-orders/{customer_order}/share-profits', [OrderController::class, 'handleFinancialProcess']);
 
 Route::apiResource('customer-orders', OrderController::class);
 

@@ -2,6 +2,7 @@
 
 namespace App\Services\DashUser\Reports;
 
+use App\Enums\OrderStatus;
 use App\Models\OrderOffer;
 use App\Models\OrderProduct;
 use App\Models\Product;
@@ -72,7 +73,8 @@ class ProductReportService
         $directSales = OrderProduct::query()
             ->selectRaw('product_id, SUM(quantity) as total_sold')
             ->whereHas('order', function ($q) use ($from, $to) {
-                $q->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
+                $q->where('order_status', OrderStatus::completed->value)
+                    ->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
                     ->when($to, fn($q) => $q->whereDate('created_at', '<=', $to));
             })
             ->groupBy('product_id');
@@ -84,7 +86,8 @@ class ProductReportService
             ->join('offer_products', 'order_offers.offer_id', '=', 'offer_products.offer_id')
             ->selectRaw('offer_products.product_id, SUM(order_offers.quantity * offer_products.quantity) as total_sold')
             ->whereHas('order', function ($q) use ($from, $to) {
-                $q->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
+                $q->where('order_status', OrderStatus::completed->value)
+                    ->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
                     ->when($to, fn($q) => $q->whereDate('created_at', '<=', $to));
             })
             ->groupBy('offer_products.product_id');
