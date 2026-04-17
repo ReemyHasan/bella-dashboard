@@ -97,7 +97,7 @@ class OrderService
                 'teamleader_id' => null,
                 'manager_id' => $managerId,
 
-                'marketer_percentage' => $marketerPercentage + $managerPercentage,
+                'marketer_percentage' => $marketerPercentage + $teamLeaderPercentage,
                 'teamleader_percentage' => 0,
                 'manager_percentage' => 0,
             ];
@@ -1346,13 +1346,13 @@ class OrderService
 
 
 
-            $this->addBalance($vault, $order->app_user_id, $marketerAmount, 'marketer_percentage', $order);
+            $this->addBalance($vault, $order->app_user_id, $marketerAmount, VaultTransactionType::marketer_percentage->value, $order, $order->marketer_percentage);
             if ($order->teamleader_id) {
-                $this->addBalance($vault, $order->teamleader_id, $teamleaderAmount, 'teamleader_percentage', $order);
+                $this->addBalance($vault, $order->teamleader_id, $teamleaderAmount, VaultTransactionType::teamleader_percentage->value, $order, $order->teamleader_percentage);
             }
 
             if ($order->manager_id) {
-                $this->addBalance($vault, $order->manager_id, $managerAmount, 'manager_percentage', $order);
+                $this->addBalance($vault, $order->manager_id, $managerAmount, VaultTransactionType::manager_percentage->value, $order, $order->manager_percentage);
             }
 
             $order->update([
@@ -1442,16 +1442,16 @@ class OrderService
             'to_vault_balance_after' => $newVaultBalance,
         ]);
 
-        $this->subtractBalance($vault, $order->app_user_id, $order->marketer_amount, VaultTransactionType::refund_marketer->value, $order);
+        $this->subtractBalance($vault, $order->app_user_id, $order->marketer_amount, VaultTransactionType::refund_marketer->value, $order, $order->marketer_percentage);
         if ($order->teamleader_id)
-            $this->subtractBalance($vault, $order->teamleader_id, $order->teamleader_amount, VaultTransactionType::refund_teamleader->value, $order);
+            $this->subtractBalance($vault, $order->teamleader_id, $order->teamleader_amount, VaultTransactionType::refund_teamleader->value, $order, $order->teamleader_percentage);
 
         if ($order->manager_id) {
-            $this->subtractBalance($vault, $order->manager_id, $order->manager_amount, VaultTransactionType::refund_manager->value, $order);
+            $this->subtractBalance($vault, $order->manager_id, $order->manager_amount, VaultTransactionType::refund_manager->value, $order,  $order->manager_percentage);
         }
     }
 
-    private function addBalance($vault, $userId, $amount, $type, $order)
+    private function addBalance($vault, $userId, $amount, $type, $order, $percentage = null)
     {
         if (!$userId || $amount <= 0) return;
 
@@ -1467,10 +1467,10 @@ class OrderService
         $vault->update([
             'balance' => $vault->balance - $amount,
         ]);
-        $this->createCompleteTransaction($vault, $userId, $amount, $before, $after, $type, $order);
+        $this->createCompleteTransaction($vault, $userId, $amount, $before, $after, $type, $order, $percentage);
     }
 
-    private function subtractBalance($vault, $userId, $amount, $type, $order)
+    private function subtractBalance($vault, $userId, $amount, $type, $order, $percentage)
     {
         if (!$userId || $amount <= 0) return;
 
@@ -1490,12 +1490,20 @@ class OrderService
         $vault->update([
             'balance' => $vault->balance + $amount,
         ]);
-        $this->createRefundTransaction($vault, $userId, $amount, $before, $after, $type, $order);
+        $this->createRefundTransaction($vault, $userId, $amount, $before, $after, $type, $order, $percentage);
     }
+    private function buildNote($percentage, $amount, $action = 'add')
+    {
+        if ($percentage === null) return null;
 
-    private function createRefundTransaction($vault, $appUserId, $amount, $before, $after, $type, $order)
+        $actionText = $action === 'add' ? 'إضافة' : 'خصم';
+
+        return "{$actionText} نسبة {$percentage}% بقيمة " . number_format($amount, 2);
+    }
+    private function createRefundTransaction($vault, $appUserId, $amount, $before, $after, $type, $order, $percentage)
     {
         $user = auth()->user();
+        $note = $this->buildNote($percentage, $amount, 'subtract');
         VaultTransaction::create([
             'to_vault_id' => $vault->id,
 
@@ -1533,13 +1541,16 @@ class OrderService
 
             'to_vault_balance_before' => $before,
             'to_vault_balance_after' => $after,
+            'notes' => $note,
+
         ]);
     }
 
 
-    private function createCompleteTransaction($vault, $appUserId, $amount, $before, $after, $type, $order)
+    private function createCompleteTransaction($vault, $appUserId, $amount, $before, $after, $type, $order, $percentage)
     {
         $user = auth()->user();
+        $note = $this->buildNote($percentage, $amount, 'add');
         VaultTransaction::create([
             'to_vault_id' => $vault->id,
 
@@ -1577,6 +1588,7 @@ class OrderService
 
             'to_vault_balance_before' => $before,
             'to_vault_balance_after' => $after,
+            'notes' => $note
         ]);
     }
 

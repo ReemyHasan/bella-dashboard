@@ -197,7 +197,9 @@ class AppUserService
         $onlyUnassignedTeam = null,
         $isWarehouseMan = null,
         $isTeamManager = null,
-        $isSubTeamLeader = null
+        $isSubTeamLeader = null,
+        $isMarketer = null,
+        $isMarketerOnly = null
     ) {
 
         $users = AppUser::query()
@@ -221,6 +223,15 @@ class AppUserService
                 $query->where('subteam_id', $subTeam);
             })->when(!is_null($isWarehouseMan), function ($query) use ($isWarehouseMan) {
                 $query->where('is_warehouse_man', $isWarehouseMan);
+            })
+            ->when($isMarketer, function ($query) {
+                $query->where('is_warehouse_man', false);
+            })
+            ->when($isMarketerOnly, function ($query) {
+                $query->where('is_warehouse_man', false)
+                    ->whereDoesntHave('roles', function ($q) {
+                        $q->whereIn('name', ['Team Manager', 'Team Leader']);
+                    });
             })
             ->where('status', DashUserStatus::ACTIVE->value)->orderBy('id')->get([
                 'id',

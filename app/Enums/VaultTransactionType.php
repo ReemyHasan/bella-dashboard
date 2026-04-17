@@ -21,6 +21,12 @@ enum VaultTransactionType: string
     case refund_marketer = 'refund_marketer';
     case refund_teamleader = 'refund_teamleader';
     case refund_manager = 'refund_manager';
+
+    case marketer_percentage = 'marketer_percentage';
+    case teamleader_percentage = 'teamleader_percentage';
+    case manager_percentage = 'manager_percentage';
+
+
     public function label(): string
     {
         return match ($this) {
@@ -38,6 +44,10 @@ enum VaultTransactionType: string
             self::refund_marketer       => 'استرجاع من مسوق',
             self::refund_teamleader     => 'استرجاع من قائد فريق',
             self::refund_manager        => 'استرجاع من مدير',
+
+            self::marketer_percentage        => 'نسبة مسوق',
+            self::teamleader_percentage        => 'نسبة قائد فريق فرعي',
+            self::manager_percentage        => 'نسبة مدير فريق',
         };
     }
 }

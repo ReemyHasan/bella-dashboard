@@ -75,6 +75,8 @@ class AppUserController extends Controller implements HasMiddleware
         $isWarehouseMan = $request->input('isWarehouseMan');
         $isTeamManager = $request->input('isTeamManager');
         $isSubTeamLeader = $request->input('isSubTeamLeader');
+        $isMarketer = $request->input('isMarketer');
+        $isMarketerOnly = $request->input('isMarketerOnly');
 
 
         $appUsers = $this->appUserService->selectAvailable(
@@ -83,7 +85,9 @@ class AppUserController extends Controller implements HasMiddleware
             $onlyUnassignedTeam,
             $isWarehouseMan,
             $isTeamManager,
-            $isSubTeamLeader
+            $isSubTeamLeader,
+            $isMarketer,
+            $isMarketerOnly
         );
 
         $returnedData = $appUsers->map(fn($appUser) => [
