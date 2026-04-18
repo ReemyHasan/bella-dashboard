@@ -1259,6 +1259,12 @@ class OrderService
                 !isset($this->allowedTransitions[$currentStatus->value]) ||
                 !in_array($status->value, $this->allowedTransitions[$currentStatus->value])
             ) {
+
+                $from = OrderStatus::from($currentStatus->value)->label();
+                $to   = OrderStatus::from($status->value)->label();
+
+                throw new CustomException("تغيير الحالة غير مسموح من {$from} إلى {$to}");
+
                 throw new CustomException('تغيير الحالة غير مسموح.');
             }
 
@@ -1722,7 +1728,10 @@ class OrderService
         return $products->map(fn($p) => [
             'id' => $p?->product?->id,
             'name' => $p?->product?->name,
-            'available' => $p->quantity - $p->reserved_quantity
+            'available' => $p->quantity - $p->reserved_quantity,
+            'quantity' => $p->quantity,
+            'reserved_quantity' => $p->reserved_quantity
+
         ]);
     }
 

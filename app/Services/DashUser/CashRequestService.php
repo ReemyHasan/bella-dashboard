@@ -150,7 +150,7 @@ class CashRequestService
             throw new CustomException('لا يمكن الموافقة على الطلب.');
         }
 
-        $targetBalance = $cashRequest->requestedFor?->balance; 
+        $targetBalance = $cashRequest->requestedFor?->balance;
 
         if ($targetBalance < $approvedAmount) {
             throw new CustomException("لا يمكن الموافقة على الطلب, الرصيد في محفظة المستخدم أقل من المطلوب : {$targetBalance}.");
@@ -222,7 +222,10 @@ class CashRequestService
             !in_array($status->value, $allowedTransitions[$current])
         ) {
 
-            throw new CustomException('تغيير الحالة غير مسموح.');
+            $from = CashRequestStatus::from($current)->label();
+            $to   = CashRequestStatus::from($status->value)->label();
+
+            throw new CustomException("تغيير الحالة غير مسموح من {$from} إلى {$to}");
         }
 
         return DB::transaction(function () use ($cashRequest, $status, $notes) {
@@ -239,7 +242,6 @@ class CashRequestService
             if ($status === CashRequestStatus::DELIVERED) {
                 $updateData['delivered_at'] = now();
                 $this->addTransaction($cashRequest);
-
             }
 
             $cashRequest->update($updateData);
@@ -343,7 +345,7 @@ class CashRequestService
         VaultTransaction::create([
             'to_vault_id' => $fromVault->id,
 
-            
+
             'balance_user_type' => AppUser::class,
             'balance_user_id' => $user->id,
 

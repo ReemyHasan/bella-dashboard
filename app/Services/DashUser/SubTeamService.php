@@ -40,13 +40,14 @@ class SubTeamService
 
                     if (is_numeric($userData)) {
                         AppUser::where('id', $userData)
-                            ->update(['subteam_id' => $subTeam->id]);
+                            ->update(['subteam_id' => $subTeam->id, 'team_id' => $subTeam->team_id]);
 
                         continue;
                     }
 
                     $user = AppUser::create([
                         'subteam_id' => $subTeam->id,
+                        'team_id' => $subTeam->team_id,
                         'first_name' => $userData['first_name'],
                         'last_name' => $userData['last_name'] ?? null,
                         'user_name' => $userData['user_name'] ?? null,
@@ -96,11 +97,11 @@ class SubTeamService
                 AppUser::where('subteam_id', $subTeam->id)
                     ->when($keepIds->isNotEmpty(), fn($q) => $q->whereNotIn('id', $keepIds))
                     ->when($keepIds->isEmpty(), fn($q) => $q->whereNotNull('id'))
-                    ->update(['subteam_id' => null]);
+                    ->update(['subteam_id' => null, 'team_id' => null]);
 
                 // Assign existing users
                 AppUser::whereIn('id', $userIds)
-                    ->update(['subteam_id' => $subTeam->id]);
+                    ->update(['subteam_id' => $subTeam->id, 'team_id' => $subTeam->team_id]);
 
                 // Create new users
                 foreach ($data['users'] as $userData) {
@@ -109,6 +110,7 @@ class SubTeamService
 
                         $user = AppUser::create([
                             'subteam_id' => $subTeam->id,
+                            'team_id' => $subTeam->team_id,
                             'first_name' => $userData['first_name'],
                             'last_name' => $userData['last_name'] ?? null,
                             'user_name' => $userData['user_name'] ?? null,

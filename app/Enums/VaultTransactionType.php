@@ -26,14 +26,25 @@ enum VaultTransactionType: string
     case teamleader_percentage = 'teamleader_percentage';
     case manager_percentage = 'manager_percentage';
 
+    case BONUS_REQUEST = 'bonus_request';
+    case DEDUCTION_REQUEST = 'deduction_request';
+    case BONUS_ORDER = 'bonus_order';
+    case DEDUCTION_ORDER = 'deduction_order';
 
     public function label(): string
     {
         return match ($this) {
             self::CASH_REQUEST          => 'طلب نقدي مكتمل',
             self::CASH_REQUEST_APPROVED => 'طلب نقدي موافق عليه',
+
             self::BONUS                 => 'مكافأة',
             self::DEDUCTION             => 'خصم',
+
+            self::BONUS_REQUEST => 'طلب مكافأة',
+            self::DEDUCTION_REQUEST => 'طلب خصم',
+            self::BONUS_ORDER => 'أمر مكافأة',
+            self::DEDUCTION_ORDER => 'أمر خصم',
+
             self::TRANSFER              => 'تحويل',
             self::TRANSFER_IN           => 'تحويل وارد',
             self::TRANSFER_OUT          => 'تحويل صادر',

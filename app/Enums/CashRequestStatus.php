@@ -14,4 +14,18 @@ enum CashRequestStatus: string
     case CANCELLED = 'cancelled';
     case WAITING_DELIVERY_APPROVE = 'waiting_delivery_approve';
     case NOT_DELIVERED = 'not_delivered';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::PENDING => 'معلق',
+            self::APPROVED => 'تمت الموافقة',
+            self::IN_TRANSIT => 'قيد التوصيل',
+            self::DELIVERED => 'تم التسليم',
+            self::NOT_DELIVERED => 'لم يتم التسليم',
+            self::CANCELLED => 'ملغي',
+            self::WAITING_DELIVERY_APPROVE => 'بانتظار تأكيد التسليم',
+            default => $this->value,
+        };
+    }
 }

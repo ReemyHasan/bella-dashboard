@@ -2,6 +2,7 @@
 
 namespace App\Services\DashUser;
 
+use App\Enums\FinancialAdjustmentType;
 use App\Enums\PaginationEnum;
 use App\Enums\VaultTransactionType;
 use App\Exceptions\CustomException;
@@ -23,10 +24,27 @@ class FinancialAdjustmentService
 
     public function create(array $data)
     {
-        $user = Auth::user();
+        $authUser = Auth::user();
 
-        return DB::transaction(function () use ($data, $user) {
+        return DB::transaction(function () use ($data, $authUser) {
 
+            $isOrder   = str_contains($data['type'], 'order');
+            $isRequest = str_contains($data['type'], 'request');
+
+            // =========================
+            // ✅ Resolve requested_by
+            // =========================
+            if ($isOrder) {
+                // DashUser creates directly
+                $requestedByType = get_class($authUser);
+                $requestedById   = $authUser->id;
+            } else {
+                // Request → AppUser (leader/manager)
+                $requestedByType = AppUser::class;
+                $requestedById   = $data['requested_by_id'];
+            }
+
+            $status = ($data['type'] == FinancialAdjustmentType::BONUS_ORDER->value || $data['type'] == FinancialAdjustmentType::BONUS_REQUEST->value) ? 'approved' : 'pending';
             $financialAdjustment = FinancialAdjustment::create([
                 // 'from_vault_id' => 1,
                 'amount' => $data['amount'],
@@ -34,14 +52,17 @@ class FinancialAdjustmentService
                 'reason' => $data['reason'] ?? null,
                 'notes' => $data['notes'] ?? null,
 
-                'status' => 'pending',
+                'status' => $status,
 
-                'requested_by_type' => get_class($user),
-                'requested_by_id' => $user->id,
+                'requested_by_type' => $requestedByType,
+                'requested_by_id'   => $requestedById,
 
                 'requested_for_type' => $data['requested_for_type'] == 'dash_user' ? DashUser::class : AppUser::class,
                 'requested_for_id' => $data['requested_for_id']
             ]);
+            if ($data['type'] == FinancialAdjustmentType::BONUS_ORDER->value || $data['type'] == FinancialAdjustmentType::BONUS_REQUEST->value)
+                $this->approveBonus($financialAdjustment);
+
             $financialAdjustment->load('fromVault.owner', 'toVault.owner', 'requestedBy');
 
             return $financialAdjustment;
@@ -53,8 +74,26 @@ class FinancialAdjustmentService
         if ($financialAdjustment->status !== 'pending') {
             throw new CustomException('لا يمكن تعديل الطلب بعد مراجعته.');
         }
+        $authUser = Auth::user();
 
-        return DB::transaction(function () use ($financialAdjustment, $data) {
+        return DB::transaction(function () use ($financialAdjustment, $data, $authUser) {
+
+            $isOrder   = str_contains($data['type'], 'order');
+            $isRequest = str_contains($data['type'], 'request');
+
+            // =========================
+            // ✅ Resolve requested_by
+            // =========================
+            if ($isOrder) {
+                // DashUser creates directly
+                $requestedByType = get_class($authUser);
+                $requestedById   = $authUser->id;
+            } else {
+                // Request → AppUser (leader/manager)
+                $requestedByType = AppUser::class;
+                $requestedById   = $data['requested_by_id'];
+            }
+            $status = ($data['type'] == FinancialAdjustmentType::BONUS_ORDER->value || $data['type'] == FinancialAdjustmentType::BONUS_REQUEST->value) ? 'approved' : 'pending';
 
             $financialAdjustment->update([
                 // 'from_vault_id' => 1,
@@ -63,15 +102,33 @@ class FinancialAdjustmentService
                 'reason' => $data['reason'] ?? null,
                 'notes' => $data['notes'] ?? null,
 
-                'status' => 'pending',
+                'status' => $status,
+                'requested_by_type' => $requestedByType,
+                'requested_by_id'   => $requestedById,
                 'requested_for_type' => $data['requested_for_type'] == 'dash_user' ? DashUser::class : AppUser::class,
                 'requested_for_id' => $data['requested_for_id']
             ]);
+            if ($data['type'] == FinancialAdjustmentType::BONUS_ORDER->value || $data['type'] == FinancialAdjustmentType::BONUS_REQUEST->value)
+                $this->approveBonus($financialAdjustment);
+
             $financialAdjustment->load('fromVault.owner', 'toVault.owner', 'requestedBy');
 
             return $financialAdjustment;
         });
     }
+
+    public function approveBonus(FinancialAdjustment $financialAdjustment)
+    {
+        return DB::transaction(function () use ($financialAdjustment) {
+
+            $financialAdjustment->update([
+                'reviewed_by' => Auth::id(),
+                'reviewed_at' => now(),
+            ]);
+            $this->processAdjustment($financialAdjustment);
+        });
+    }
+
     public function show(FinancialAdjustment $financialAdjustment)
     {
         $financialAdjustment->load('fromVault.owner', 'toVault.owner', 'requestedFor', 'requestedBy', 'reviewedBy');
@@ -158,7 +215,7 @@ class FinancialAdjustmentService
         $requesterBefore = $requester->balance ?? null;
 
         $isDashUser = $adjustment->requested_by_type == DashUser::class;
-        $isBonus = $adjustment->type == 'bonus';
+        $isBonus =  ($adjustment->type == FinancialAdjustmentType::BONUS_ORDER->value ||  $adjustment->type == FinancialAdjustmentType::BONUS_REQUEST->value);
 
         // =========================
         // ✅ CASE 1: DASH USER
@@ -183,9 +240,7 @@ class FinancialAdjustmentService
                 'balance_user_type' => get_class($target),
                 'balance_user_id' => $target->id,
 
-                'type' => $isBonus
-                    ? VaultTransactionType::BONUS->value
-                    : VaultTransactionType::DEDUCTION->value,
+                'type' => $adjustment->type,
 
                 'amount' => $amount,
                 'transaction_date' => now(),
@@ -271,9 +326,7 @@ class FinancialAdjustmentService
             'balance_user_type' => get_class($target),
             'balance_user_id' => $target->id,
 
-            'type' => $isBonus
-                ? VaultTransactionType::BONUS->value
-                : VaultTransactionType::DEDUCTION->value,
+            'type' => $adjustment->type,
 
             'amount' => $amount,
             'transaction_date' => now(),
