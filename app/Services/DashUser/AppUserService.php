@@ -199,7 +199,8 @@ class AppUserService
         $isTeamManager = null,
         $isSubTeamLeader = null,
         $isMarketer = null,
-        $isMarketerOnly = null
+        $isMarketerOnly = null,
+        $manager_id = null
     ) {
 
         $users = AppUser::query()
@@ -232,6 +233,17 @@ class AppUserService
                     ->whereDoesntHave('roles', function ($q) {
                         $q->whereIn('name', ['Team Manager', 'Team Leader']);
                     });
+            })
+            ->when(!is_null($manager_id), function ($query) use ($manager_id) {
+                $query->where(function ($q) use ($manager_id) {
+
+                    $q->whereHas('subTeam', function ($t) use ($manager_id) {
+                        $t->where('team_leader_id', $manager_id);
+                    })
+                        ->orWhereHas('team', function ($t) use ($manager_id) {
+                            $t->where('manager_id', $manager_id);
+                        });
+                });
             })
             ->where('status', DashUserStatus::ACTIVE->value)->orderBy('id')->get([
                 'id',
