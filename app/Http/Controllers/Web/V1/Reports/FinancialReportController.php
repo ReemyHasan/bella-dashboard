@@ -17,7 +17,7 @@ class FinancialReportController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            // new Middleware('permission:view_cash_requests_reports', only: ['cashRequestReport']),
+            new Middleware('permission:view_cash_requests_reports', only: ['cashRequestReport']),
 
         ];
     }
