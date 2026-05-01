@@ -58,7 +58,7 @@ class RoleSeeder extends Seeder
         ], [
             'name' => 'Warehouse Keeper',
             'name_ar' => 'أمين مستودع',
-            'guard_name' => 'dash_user_guard',
+            'guard_name' => 'app_user_guard',
             'is_protected' => true
         ]);
 

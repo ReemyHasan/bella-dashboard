@@ -15,7 +15,7 @@ class TeamObserver
 
         if ($team->manager_id) {
 
-            $manager = AppUser::find($team->manager_id);
+            $manager = AppUser::findOrFail($team->manager_id);
 
             if ($manager) {
                 $manager->update([
@@ -43,7 +43,7 @@ class TeamObserver
             $oldManagerId = $team->getOriginal('manager_id');
 
             if ($oldManagerId) {
-                $oldManager = AppUser::find($oldManagerId);
+                $oldManager = AppUser::findOrFail($oldManagerId);
 
                 if ($oldManager) {
                     $oldManager->removeRole('Team Manager');
@@ -52,7 +52,7 @@ class TeamObserver
 
             if ($team->manager_id) {
 
-                $manager = AppUser::find($team->manager_id);
+                $manager = AppUser::findOrFail($team->manager_id);
 
                 if ($manager) {
                     $manager->update([

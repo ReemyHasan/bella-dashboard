@@ -13,7 +13,7 @@ public function created(SubTeam $subTeam): void
 
         if ($subTeam->team_leader_id) {
 
-            $manager = AppUser::find($subTeam->team_leader_id);
+            $manager = AppUser::findOrFail($subTeam->team_leader_id);
 
             if ($manager) {
                 $manager->update([
@@ -35,7 +35,7 @@ public function created(SubTeam $subTeam): void
             $oldManagerId = $subTeam->getOriginal('team_leader_id');
 
             if ($oldManagerId) {
-                $oldManager = AppUser::find($oldManagerId);
+                $oldManager = AppUser::findOrFail($oldManagerId);
 
                 if ($oldManager) {
                     $oldManager->removeRole('Team Leader');
@@ -44,7 +44,7 @@ public function created(SubTeam $subTeam): void
 
             if ($subTeam->team_leader_id) {
 
-                $manager = AppUser::find($subTeam->team_leader_id);
+                $manager = AppUser::findOrFail($subTeam->team_leader_id);
 
                 if ($manager) {
                     $manager->update([

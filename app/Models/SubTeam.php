@@ -46,4 +46,8 @@ class SubTeam extends Model
     {
         return $this->hasMany(AppUser::class, 'subteam_id');
     }
+    public function importantProducts()
+    {
+        return $this->morphMany(ImportantProduct::class, 'important_for');
+    }
 }

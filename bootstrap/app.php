@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
          $middleware->alias([
             'api.blocked' => App\Http\Middleware\RedirectIfBlocked::class,
             'permission' => App\Http\Middleware\CheckPermission::class,
+            'user.type' => App\Http\Middleware\TypeMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

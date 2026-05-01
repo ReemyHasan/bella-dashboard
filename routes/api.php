@@ -11,7 +11,7 @@ Route::prefix('v1')->middleware('api')->group(function () {
     });
 
 
-    Route::middleware(['auth:sanctum', 'api.blocked'])->group(function () {
+    Route::middleware(['auth:sanctum', 'api.blocked', 'user.type:dash'])->group(function () {
 
 
 
@@ -30,3 +30,5 @@ Route::prefix('v1')->middleware('api')->group(function () {
         });
     });
 });
+
+require __DIR__ . '/mobile.php';

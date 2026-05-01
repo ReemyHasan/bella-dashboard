@@ -7,6 +7,7 @@ return [
     'unauthenticated' => 'غير مصرح لك بالوصول.',
     'success_message' => 'تمت العملية بنجاح',
     'success' => 'تمت العملية بنجاح',
+    'unauthorized_user' => 'غير مصرح لك بالوصول لهذه المصادر.',
 
     'created_successfully' => 'تم إنشاء :item بنجاح',
     'deleted_successfully' => 'تم حذف :item بنجاح',

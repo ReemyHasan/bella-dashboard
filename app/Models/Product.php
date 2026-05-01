@@ -76,4 +76,9 @@ class Product extends Model
         return $this->belongsToMany(Offer::class, 'offer_products')
             ->withPivot('quantity');
     }
+
+    public function importantScopes()
+    {
+        return $this->hasMany(ImportantProduct::class);
+    }
 }

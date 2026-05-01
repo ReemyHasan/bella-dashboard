@@ -63,4 +63,8 @@ class Team extends Model
     {
         return $this->hasMany(SubTeam::class)->where('is_direct', false);
     }
+    public function importantProducts()
+    {
+        return $this->morphMany(ImportantProduct::class, 'important_for');
+    }
 }

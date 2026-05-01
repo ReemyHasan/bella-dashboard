@@ -48,6 +48,7 @@ class AppUserService
                 // 'is_delivery_man' => $data['is_delivery_man'],
                 // 'is_warehouse_man' => $data['is_warehouse_man'],
             ]);
+            $user->assignRole('Marketer');
 
 
             // $roleIds = $data['roles'] ?? [];

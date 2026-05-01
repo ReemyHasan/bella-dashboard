@@ -82,7 +82,8 @@ class MainCategoryService
 
         $mainCategories = MainCategory::orderBy('id')->where('active', true)->get([
             'id',
-            'name'
+            'name',
+            'active'
         ]);
 
         return $mainCategories;

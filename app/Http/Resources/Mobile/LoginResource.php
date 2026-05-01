@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Resources\DashUser;
+namespace App\Http\Resources\Mobile;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AppUserResource extends JsonResource
+class LoginResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -14,6 +14,15 @@ class AppUserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $this->loadMissing(['roles']);
+
+        $roles = $this->roles->map(function ($role) {
+            return [
+                'id'   => $role->id,
+                'name' => $role->name,
+            ];
+        });
+
         return [
             'id'            => $this->id,
             'first_name' => $this->first_name,
@@ -25,9 +34,7 @@ class AppUserResource extends JsonResource
             'profile_link' => $this->profile_link,
             'status'        => $this->status,
             'created_at' => $this->created_at_formatted,
-
             'balance'        => $this->balance,
-            // 'is_delivery_man'        => $this->is_delivery_man,
             'is_warehouse_man'        => $this->is_warehouse_man,
 
             'team' => $this->resolveTeam(),
@@ -42,18 +49,7 @@ class AppUserResource extends JsonResource
                 'name' => $this->warehouse?->name,
             ]),
 
-            'created_by_type' => $this->creator_type,
-
-            'creator' => $this->whenLoaded('createdByAppUser', fn() => [
-                'id' => $this->createdByAppUser?->id,
-                'name' => $this->createdByAppUser?->first_name . ' ' . $this->createdByAppUser?->last_name . ' (' . $this->createdByAppUser?->user_name . ')',
-            ]),
-            'creator' => $this->whenLoaded('createdByDashUser', fn() => [
-                'id' => $this->createdByDashUser?->id,
-                'name' => $this->createdByDashUser?->first_name . ' ' . $this->createdByDashUser?->last_name . ' (' . $this->createdByDashUser?->user_name . ')',
-            ]),
-
-
+            'roles'         => $roles,
             'addresses'         => $this->whenLoaded("addresses", function () {
                 return $this->addresses->map(function ($address) {
                     return [
@@ -63,34 +59,8 @@ class AppUserResource extends JsonResource
                     ];
                 });
             }),
-
-            'roles'         => $this->whenLoaded("roles", function () {
-                return $this->roles->map(function ($role) {
-                    return [
-                        'id'   => $role->id,
-                        'name' => $role->name,
-                    ];
-                });
-            }),
-            // 'permissions' => $this->whenLoaded("permissions", function () {
-            //     return $this->permissions
-            //         ->groupBy('group')
-            //         ->map(function ($permissions, $groupName) {
-            //             return [
-            //                 'group' => $groupName,
-            //                 'items' => $permissions->map(function ($permission) {
-            //                     return [
-            //                         'id'    => $permission->id,
-            //                         'name'  => $permission->name,
-            //                         'name_ar' => $permission->name_ar,
-            //                     ];
-            //                 })->values()
-            //             ];
-            //         })->values();
-            // })
         ];
     }
-
     private function resolveTeam(): ?array
     {
         if ($this->relationLoaded('subTeam') && $this->subTeam) {

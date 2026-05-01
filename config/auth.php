@@ -71,11 +71,11 @@ return [
     'providers' => [
         'dash_users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\DashUser::class),
+            'model' => App\Models\DashUser::class,
         ],
         'app_users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\AppUser::class),
+            'model' => App\Models\AppUser::class,
         ],
         // 'users' => [
         //     'driver' => 'database',
