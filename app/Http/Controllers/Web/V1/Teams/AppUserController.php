@@ -100,6 +100,43 @@ class AppUserController extends Controller implements HasMiddleware
         return response()->format($returnedData, 'messages.success', 200);
     }
 
+       public function selectAvailable2(Request $request)
+    {
+        $team = $request->input('team');
+        $subTeam = $request->input('subTeam');
+        // $warehouse = $request->input('warehouse');
+
+        $onlyUnassignedTeam = $request->input('onlyUnassignedTeam');
+        $isWarehouseMan = $request->input('isWarehouseMan');
+        $isTeamManager = $request->input('isTeamManager');
+        $isSubTeamLeader = $request->input('isSubTeamLeader');
+        $isMarketer = $request->input('isMarketer');
+        $isMarketerOnly = $request->input('isMarketerOnly');
+        $manager_id = $request->input('manager_id');
+
+
+        $appUsers = $this->appUserService->selectAvailable(
+            $team,
+            $subTeam,
+            $onlyUnassignedTeam,
+            $isWarehouseMan,
+            $isTeamManager,
+            $isSubTeamLeader,
+            $isMarketer,
+            $isMarketerOnly,
+            $manager_id
+        );
+
+        $returnedData = $appUsers->map(fn($appUser) => [
+            'id' => $appUser?->id,
+            'name' => $appUser?->first_name . ' ' . $appUser?->last_name . ' (' . $appUser?->user_name . ')',
+            'team_id' => $appUser?->team_id,
+            'subteam_id' => $appUser?->subteam_id,
+
+        ]);
+        return response()->format($returnedData, 'messages.success', 200);
+    }
+
 
     public function setPassword(
         UserPasswordRequest $request,

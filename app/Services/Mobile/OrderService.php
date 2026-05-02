@@ -62,7 +62,7 @@ class OrderService
                 'team_id' => $team->id,
                 'sub_team_id' => $user->subteam_id,
             ]);
-            $address = Address::with('region.city.zone')->find($data['address_id']);
+            $address = Address::with('region.city.zone', 'region.warehouse.keeper')->find($data['address_id']);
 
             if (!$address) {
                 throw new CustomException('العنوان غير موجود');
@@ -70,13 +70,15 @@ class OrderService
 
             $zone = $address->region->city->zone;
             $region = $address->region;
+            $warehouse = $address->region->warehouse;
 
             $orderData += [
                 'delivery_cost' => $region->delivery_cost,
                 'currency_id' => $zone->currency_id,
                 'current_exchange_rate' => $zone->currency->exchange_value,
                 'zone_id' => $zone->id,
-
+                'warehouse_id' => $warehouse->id,
+                'warehouse_man_id' => $warehouse?->keeper_id
             ];
             $orderData = array_merge($orderData, collect($data)->except(['products', 'offers'])->toArray());
 
@@ -361,7 +363,7 @@ class OrderService
                 'sub_team_id' => $user->subteam_id,
             ]);
 
-            $address = Address::with('region.city.zone')->find($data['address_id']);
+            $address = Address::with('region.city.zone', 'region.warehouse.keeper')->find($data['address_id']);
 
             if (!$address) {
                 throw new CustomException('العنوان غير موجود');
@@ -369,12 +371,15 @@ class OrderService
 
             $zone = $address->region->city->zone;
             $region = $address->region;
+            $warehouse = $address->region->warehouse;
 
             $orderData += [
                 'delivery_cost' => $region->delivery_cost,
                 'currency_id' => $zone->currency_id,
-                'zone_id' => $zone->id,
                 'current_exchange_rate' => $zone->currency->exchange_value,
+                'zone_id' => $zone->id,
+                'warehouse_id' => $warehouse->id,
+                'warehouse_man_id' => $warehouse?->keeper_id
             ];
 
             $orderData = array_merge(
@@ -637,6 +642,10 @@ class OrderService
 
     public function handleFinancialProcess(CustomerOrder $order)
     {
+        $vault = Vault::where('owner_id', $order->warehouse_man_id)->first();
+        if ($vault == null || $order->warehouse_man_id == null)
+            throw new CustomException('من فضلك تواصل مع الإدارة, الموزع ليس لديه معلومات كافية.');
+
         return $this->orderSharedService->handleFinancialProcess($order, $vault);
     }
 
@@ -727,6 +736,4 @@ class OrderService
             $this->orderSharedService->subtractBalance($vault, $order->manager_id, $order->manager_amount, VaultTransactionType::refund_manager->value, $order,  $order->manager_percentage);
         }
     }
-
-   
 }

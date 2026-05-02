@@ -26,7 +26,7 @@ return new class extends Migration
             $table->text('reason')->nullable();
             $table->text('notes')->nullable();
 
-            $table->morphs('action_by');
+            $table->nullableMorphs('action_by');
             $table->nullableMorphs('reference');
             $table->nullableMorphs('balance_user');
 

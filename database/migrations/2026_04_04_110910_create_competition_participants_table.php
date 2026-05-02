@@ -17,15 +17,17 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->foreignId('user_id')
-                ->constrained('app_users')
-                ->cascadeOnDelete();
+            // $table->foreignId('user_id')
+            //     ->constrained('app_users')
+            //     ->cascadeOnDelete();
 
+            $table->morphs('participant');
             $table->decimal('score', 12, 2)->default(0);
+            $table->decimal('progress', 5, 2)->default(0);
+
             $table->boolean('is_winner')->default(false);
             $table->timestamps();
 
-            $table->unique(['competition_id', 'user_id']);
         });
     }
 

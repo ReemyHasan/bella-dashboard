@@ -4,8 +4,12 @@ namespace App\Observers;
 
 use App\Enums\CompetitionStatus;
 use App\Enums\OrderStatus;
+use App\Enums\VaultTransactionType;
+use App\Models\AppUser;
+use App\Models\Competition;
 use App\Models\CompetitionParticipant;
 use App\Models\CustomerOrder;
+use App\Models\VaultTransaction;
 use Illuminate\Support\Facades\DB;
 
 class CustomerOrderObserver
@@ -74,11 +78,6 @@ class CustomerOrderObserver
     private function isMarketerEligible(CustomerOrder $order, $competition): bool
     {
         $marketerId = $order->app_user_id;
-
-        // 'teams' => $competition->teams->contains(function ($team) use ($order) {
-        //     return $team->id === $order->team_id
-        //         || $team->subteams->pluck('id')->contains($order->sub_team_id);
-        // }),
         return match ($competition->target) {
 
             'all' => true,
@@ -120,11 +119,11 @@ class CustomerOrderObserver
     {
         $amount = $order->final_total_price;
 
-        $this->increaseScore($competition, $order->app_user_id, $amount);
+        $this->increaseScore($competition, $order, $amount);
     }
     private function handleOrdersCount($order, $competition)
     {
-        $this->increaseScore($competition, $order->app_user_id, 1);
+        $this->increaseScore($competition, $order, 1);
     }
 
     private function handleProductSales($order, $competition)
@@ -135,7 +134,7 @@ class CustomerOrderObserver
             if ($products->contains($orderProduct->product_id)) {
                 $this->increaseScore(
                     $competition,
-                    $order->app_user_id,
+                    $order,
                     $orderProduct->quantity
                 );
             }
@@ -150,7 +149,7 @@ class CustomerOrderObserver
             if ($offers->contains($orderOffer->offer_id)) {
                 $this->increaseScore(
                     $competition,
-                    $order->app_user_id,
+                    $order,
                     $orderOffer->quantity
                 );
             }
@@ -162,25 +161,34 @@ class CustomerOrderObserver
         foreach ($order->products as $orderProduct) {
             $this->increaseScore(
                 $competition,
-                $order->app_user_id,
+                $order,
                 $orderProduct->quantity
             );
         }
     }
 
-    private function increaseScore($competition, $userId, $value)
+    private function increaseScore($competition, $order, $value)
     {
+        [$participantId, $participantType] = $this->resolveParticipant($competition, $order);
+
+        if (!$participantId || !$participantType) {
+            return;
+        }
         $participant = CompetitionParticipant::firstOrCreate(
             [
                 'competition_id' => $competition->id,
-                'user_id' => $userId,
+                'participant_id' => $participantId,
+                'participant_type' => $participantType,
             ],
             [
-                'score' => 0
+                'score' => 0,
+                'progress' => 0
             ]
         );
 
         $participant->increment('score', $value);
+        $participant->progress = $this->calculateProgress($participant->score, $competition);
+        $participant->save();
 
         $participant->refresh();
 
@@ -212,9 +220,15 @@ class CustomerOrderObserver
         };
 
         if ($isWinner) {
-            $participant->update([
-                'is_winner' => true,
-            ]);
+            DB::transaction(function () use ($participant, $competition) {
+
+                $participant->update([
+                    'is_winner' => true,
+                ]);
+
+                $this->rewardWinner($participant, $competition);
+            });
+
 
             // event(new CompetitionWon($participant));
         }
@@ -230,5 +244,115 @@ class CustomerOrderObserver
         $required = $competition->offers->sum('pivot.target_quantity');
 
         return $participant->score >= $required;
+    }
+
+    private function resolveParticipant($competition, $order): array
+    {
+        return match ($competition->target) {
+
+            // 🔹 Individual competitions
+            'all',
+            'marketers'
+            => [$order->app_user_id, \App\Models\AppUser::class],
+
+            // 🔹 Team competitions
+            'teams'
+            => [$order->team_id, \App\Models\Team::class],
+
+            // 🔹 SubTeam competitions
+            'subteams'
+            => [$order->sub_team_id, \App\Models\SubTeam::class],
+
+            default => [null, null],
+        };
+    }
+    private function calculateProgress($score, $competition): float
+    {
+        if (!$competition->target_value || $competition->target_value == 0) {
+            return 0;
+        }
+
+        return min(100, ($score / $competition->target_value) * 100);
+    }
+
+    private function rewardWinner($participant, $competition): void
+    {
+        $receiver = $this->resolveRewardReceiver($participant, $competition);
+
+        if (!$receiver) {
+            return;
+        }
+        DB::transaction(function () use ($receiver, $competition) {
+
+            $fromBefore = $receiver->balance;
+            $receiver->increment('balance', $competition->prize);
+            $receiver->refresh();
+            $fromAfter = $receiver->balance;
+
+
+            if ($competition->co_created_by_id != null) {
+                $coCreatedBy = $competition->coCreatedBy;
+                $coCreatedByToBefore = $coCreatedBy->balance;
+                $coCreatedBy->decrement('balance', $competition->prize);
+                $coCreatedBy->refresh();
+
+                $coCreatedByToAfter = $coCreatedBy->balance;
+
+                VaultTransaction::create([
+                    'balance_user_type' => AppUser::class,
+                    'balance_user_id' => $coCreatedBy->id,
+                    'type' => VaultTransactionType::SOURCE_COMPETITION_PRIZE_DEDUCT->value,
+                    'amount' => $competition->prize,
+                    'transaction_date' => now(),
+
+                    'reference_type' => Competition::class,
+                    'reference_id' => $competition->id,
+
+                    'from_vault_balance_before' => $coCreatedByToBefore,
+                    'from_vault_balance_after' => $coCreatedByToAfter,
+
+                    'action_by_type' => null,
+                    'action_by_id' => null,
+                    'reason' => 'خصم جائزة المسابقة المالية من المدير المنشئ.',
+                    'notes' => 'تمت عملية النقل بشكل تلقائي من النظام'
+                ]);
+            }
+
+            VaultTransaction::create([
+                'balance_user_type' => AppUser::class,
+                'balance_user_id' => $receiver->id,
+                'type' => VaultTransactionType::COMPETITION_PRIZE->value,
+                'amount' => $competition->prize,
+                'transaction_date' => now(),
+
+                'reference_type' => Competition::class,
+                'reference_id' => $competition->id,
+
+                'to_vault_balance_before' => $fromBefore,
+                'to_vault_balance_after' => $fromAfter,
+
+                'action_by_type' => null,
+                'action_by_id' => null,
+                'reason' => 'جائزة المسابقة المالية',
+                'notes' => 'تمت عملية النقل بشكل تلقائي من النظام'
+            ]);
+        });
+    }
+    private function resolveRewardReceiver($participant, $competition)
+    {
+        return match ($competition->target) {
+
+            'all',
+            'marketers'
+            => $participant->participant,
+
+            'teams'
+            => optional($participant->participant)->manager,
+
+            'subteams'
+            => optional($participant->participant)->teamLeader,
+
+            default => null,
+        };
     }
 }

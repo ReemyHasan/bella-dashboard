@@ -9,12 +9,14 @@ class Search extends QueryFilter implements FilterContract
 {
     public function handle($value): void
     {
-        $this->query->whereHas('user', function ($q) use ($value) {
+        $this->query->whereHas('participant', function ($q) use ($value) {
             $q->where(function ($sub) use ($value) {
                 $sub->where('first_name', 'like', "%{$value}%")
                     ->orWhere('last_name', 'like', "%{$value}%")
                     ->orWhere('mobile', 'like', "%{$value}%")
-                    ->orWhere('user_name', 'like', "%{$value}%");
+                    ->orWhere('user_name', 'like', "%{$value}%")
+                    ->orWhere('name', 'like', "%{$value}%");
+
             });
         });
     }

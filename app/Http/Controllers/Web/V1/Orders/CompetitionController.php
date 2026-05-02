@@ -82,10 +82,13 @@ class CompetitionController extends Controller implements HasMiddleware
 
     public function selectAvailable(Request $request)
     {
+        $marketer_id = $request->input('marketer_id');
+
         $status = $request->input('status');
 
 
         $competitions = $this->competitionService->selectAvailable(
+            $marketer_id,
             $status,
         );
 

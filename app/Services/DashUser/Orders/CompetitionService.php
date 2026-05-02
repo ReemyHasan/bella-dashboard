@@ -3,6 +3,7 @@
 namespace App\Services\DashUser\Orders;
 
 use App\Enums\CompetitionStatus;
+use App\Enums\CompetitionTarget;
 use App\Enums\PaginationEnum;
 use App\Exceptions\CustomException;
 use App\Models\AppUser;
@@ -26,7 +27,7 @@ class CompetitionService
     public function leaderboard(Competition $competition, $request)
     {
         return CompetitionParticipant::with([
-            'user'
+            'participant'
         ])
             ->where('competition_id', $competition->id)
             ->filterBy($request->all())
@@ -88,6 +89,9 @@ class CompetitionService
 
     public function update(Competition $competition, array $data)
     {
+        if ($competition->status != CompetitionStatus::draft->value) {
+            throw new CustomException('لا يمكنك تعديل المسابقة, أنها حاليا منتهية او نشطة.');
+        }
         return DB::transaction(function () use ($competition, $data) {
 
             $competition->update($data);
@@ -167,20 +171,54 @@ class CompetitionService
     }
 
 
-    public function selectAvailable($status = null)
+    public function selectAvailable($marketerId = null, $status = CompetitionStatus::active->value)
     {
+        $marketer = $marketerId == null ? null : AppUser::findOrFail($marketerId);
 
-        $competitions = Competition::when(!is_null($status), function ($query) use ($status) {
-            $query->where('status', $status);
-        })->orderBy('id')->get([
-            'id',
-            'name',
-            'status'
-        ]);
+        return Competition::query()
+            ->when(!is_null($status), function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->when(!is_null($marketer), function ($query) use ($marketer) {
 
-        return $competitions;
+                $query->where(function ($query) use ($marketer) {
+
+                    // 🔹 Case: ALL → everyone participates
+                    $query->where('target', CompetitionTarget::all->value);
+
+                    // 🔹 Case: marketers → directly assigned
+                    $query->orWhere(function ($q) use ($marketer) {
+                        $q->where('target', CompetitionTarget::marketers->value)
+                            ->whereHas('marketers', function ($q2) use ($marketer) {
+                                $q2->where('marketer_id', $marketer->id);
+                            });
+                    });
+
+                    // 🔹 Case: teams → marketer belongs to team
+                    $query->orWhere(function ($q) use ($marketer) {
+                        $q->where('target', CompetitionTarget::teams->value)
+                            ->whereHas('teams', function ($q2) use ($marketer) {
+                                $q2->where('team_id', $marketer->team_id);
+                            });
+                    });
+
+                    // 🔹 Case: subteams → marketer belongs to subteam
+                    $query->orWhere(function ($q) use ($marketer) {
+                        $q->where('target', CompetitionTarget::subteams->value)
+                            ->whereHas('subteams', function ($q2) use ($marketer) {
+                                $q2->where('sub_team_id', $marketer->sub_team_id);
+                            });
+                    });
+                });
+            })
+
+            ->orderBy('id')
+            ->get([
+                'id',
+                'name',
+                'status'
+            ]);
     }
-
 
     public function activate(Competition $competition)
     {

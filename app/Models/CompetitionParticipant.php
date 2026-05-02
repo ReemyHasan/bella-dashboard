@@ -13,13 +13,17 @@ class CompetitionParticipant extends Model
 
     protected $fillable = [
         'competition_id',
-        'user_id',
+        'participant_id',
+        'participant_type',
         'score',
+        'progress',
+
         'is_winner'
     ];
 
     protected $casts = [
         'score' => 'decimal:2',
+        'progress' => 'decimal:2',
         'is_winner' => 'boolean'
     ];
 
@@ -29,8 +33,8 @@ class CompetitionParticipant extends Model
         return $this->belongsTo(Competition::class);
     }
 
-    public function user()
+    public function participant()
     {
-        return $this->belongsTo(AppUser::class, 'user_id');
+        return $this->morphTo();
     }
 }

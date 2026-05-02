@@ -102,12 +102,22 @@ class Competition extends Model
 
     public function teams()
     {
-        return $this->belongsToMany(Team::class, 'competition_teams');
+        return $this->belongsToMany(
+            Team::class,
+            'competition_teams',
+            'competition_id',
+            'team_id'
+        );
     }
 
     public function subteams()
     {
-        return $this->belongsToMany(SubTeam::class, 'competition_sub_teams');
+        return $this->belongsToMany(
+            SubTeam::class,
+            'competition_sub_teams',
+            'competition_id',
+            'sub_team_id'
+        );
     }
 
     public function marketers()
@@ -169,6 +179,7 @@ class Competition extends Model
             default => null,
         };
     }
+
     public function participants()
     {
         return $this->hasMany(CompetitionParticipant::class);
@@ -177,7 +188,7 @@ class Competition extends Model
     public function leaderboard()
     {
         return $this->participants()
-            ->with('user')
+            ->with('participant')
             ->orderByDesc('score');
     }
 }

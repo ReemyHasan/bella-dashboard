@@ -26,4 +26,6 @@ Route::get('marketer-balance/{id}', [AppUserController::class, 'marketerBalance'
 
 Route::apiResource('app-users', AppUserController::class);
 Route::get('select-app-users', [AppUserController::class, 'selectAvailable']);
+Route::get('select-app-users-with-extra-data', [AppUserController::class, 'selectAvailable2']);
+
 Route::get('inactive-marketers', [AppUserController::class, 'inactiveMarketers']);
