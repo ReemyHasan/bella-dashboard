@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\HasApiTokens;
 
 #[ObservedBy([AppUserObserver::class])]
@@ -159,6 +160,7 @@ class AppUser extends Authenticatable
     /**
      * Assign role to user
      */
+
     public function assignRole($role)
     {
         if (is_string($role)) {
@@ -166,6 +168,8 @@ class AppUser extends Authenticatable
         }
 
         $this->roles()->syncWithoutDetaching($role);
+
+        $this->clearRolesCache();
     }
 
     public function removeRole($role)
@@ -179,15 +183,38 @@ class AppUser extends Authenticatable
         }
 
         $this->roles()->detach($role->id);
+
+        $this->clearRolesCache();
     }
     /**
      * Check if user has role
      */
+    // public function hasRole($roleName)
+    // {
+    //     return $this->roles()->where('name', $roleName)->exists();
+    // }
     public function hasRole($roleName)
     {
-        return $this->roles()->where('name', $roleName)->exists();
+        return in_array($roleName, $this->getCachedRoles());
     }
-
+    protected function rolesCacheKey(): string
+    {
+        return "user_roles_{$this->id}";
+    }
+    public function clearRolesCache()
+    {
+        Cache::forget($this->rolesCacheKey());
+    }
+    public function getCachedRoles()
+    {
+        return Cache::remember(
+            $this->rolesCacheKey(),
+            now()->addHours(6),
+            function () {
+                return $this->roles()->pluck('name')->toArray();
+            }
+        );
+    }
     /**
      * Check if user has permission
      */

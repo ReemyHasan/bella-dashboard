@@ -55,6 +55,8 @@ class AppUserObserver
      */
     public function updated(AppUser $user): void
     {
+        $user->clearRolesCache();
+
         // DB::transaction(function () use ($user) {
 
         //     $wasKeeper = $user->getOriginal('is_warehouse_man');

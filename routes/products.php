@@ -56,17 +56,6 @@ Route::post('customer-orders/{customer_order}/handle', [OrderController::class, 
 Route::apiResource('customer-orders', OrderController::class);
 
 
-Route::get('select-marketer-info/{marketerId}', [OrderController::class, 'selectMarketerInfo']);
-Route::get('select-address-info/{addressId}', [OrderController::class, 'selectAddressInfo']);
-
-Route::get('select-zone-products/{zoneId}', [OrderController::class, 'selectZoneProducts']);
-Route::get('select-zone-offers/{zoneId}', [OrderController::class, 'selectZoneOffers']);
-
-Route::get('select-warehouse-products/{warehouseId}', [OrderController::class, 'warehouseProducts']);
-Route::get('select-warehouse-offers/{warehouseId}', [OrderController::class, 'warehouseOffers']);
-
-Route::get('select-customer-addresses/{customerId}', [OrderController::class, 'customerAddresses']);
-
 // Route::get('select-warehouse-keeper/{warehouseId}', [OrderController::class, 'selectWarehouseInfo']);
 
 

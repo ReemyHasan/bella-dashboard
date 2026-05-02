@@ -87,7 +87,7 @@ class CustomerOrderResource extends JsonResource
 
             'customer' => $this->whenLoaded('customer', fn() => [
                 'id' => $this->customer?->id,
-                'name' => $this->customer?->first_name . ' ' . $this->customer?->last_name . ' (' . $this->customer?->user_name . ')',
+                'name' => $this->customer?->first_name . ' ' . $this->customer?->last_name,
             ]),
 
             'address' => $this->whenLoaded('address', fn() => [

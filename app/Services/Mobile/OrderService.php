@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Services\DashUser\Orders;
+namespace App\Services\Mobile;
 
 use App\Enums\OrderStatus;
-use App\Enums\PaginationEnum;
 use App\Enums\VaultTransactionType;
 use App\Exceptions\CustomException;
 use App\Models\Address;
@@ -28,51 +27,23 @@ use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
-    public function __construct( private StockHandleService $stockHandleService, private OrderSharedService $orderSharedService) {}
-
-    public function list($request)
-    {
-
-        return CustomerOrder::with('customer', 'currency', 'marketer', 'warehouseMan', 'warehouse', 'address')->filterBy($request->all())
-            ->sortBy($request->get('sort', ['created_at' => 'desc']))
-            ->latest()->paginate(PaginationEnum::GeneralPagination->value);
-    }
-
-
-    public function vaultTransactions(CustomerOrder $vault, $request)
-    {
-        $query = VaultTransaction::with(
-            'actionBy',
-            'reference',
-            'balanceUser'
-        );
-
-        $query->where(function ($q) use ($vault) {
-            $q->where('reference_type', CustomerOrder::class)
-                ->where('reference_id', $vault->id);
-        });
-
-        return $query
-            ->filterBy($request->except('direction'))
-            ->sortBy($request->get('sort', ['created_at' => 'desc']))
-            ->latest()
-            ->paginate(PaginationEnum::GeneralPagination->value);
-    }
-
+    public function __construct(
+        private StockHandleService $stockHandleService,
+        private OrderSharedService $orderSharedService
+    ) {}
 
     public function create(array $data)
     {
-
         return DB::transaction(function () use ($data) {
 
-            $user = AppUser::with('team', 'subTeam.team')->find($data['app_user_id']);
-
+            $user = auth()->user();
+            $user->load('team', 'subTeam.team');
             $team = $user->subTeam
                 ? $user->subTeam->team
                 : $user->team;
 
             if (!$team) {
-                throw new CustomException('المسوق لا ينتمي إلى فريق');
+                throw new CustomException('يجب أن تنتمي إلى فريق');
             }
 
             $teamleaderId = $user->subTeam?->team_leader_id;
@@ -115,8 +86,10 @@ class OrderService
                 ...$orderData,
                 'order_status' => OrderStatus::new->value,
                 'order_number' => $orderNumber,
-                'created_by_type' => DashUser::class,
+                'created_by_type' => AppUser::class,
                 'created_by_id' => auth()->user()->id,
+                'app_user_id' => auth()->user()->id,
+
             ]);
             $totalBasePrice = 0;
 
@@ -124,23 +97,18 @@ class OrderService
             $productIds = collect($data['products'])->pluck('product_id');
             $offerIds = collect($data['offers'])->pluck('offer_id');
 
-            // PRODUCTS PRICES
             $productZonePrices = ProductZonePrice::where('zone_id', $zoneId)
                 ->whereIn('product_id', $productIds ?? [])
                 ->where('is_available', true)
                 ->get()
                 ->keyBy('product_id');
 
-            // OFFERS PRICES
             $offerZonePrices = OfferZonePrice::where('zone_id', $zoneId)
                 ->whereIn('offer_id', $offerIds ?? [])
                 ->where('is_available', true)
                 ->get()
                 ->keyBy('offer_id');
 
-            // =========================
-            // ✅ HANDLE PRODUCTS
-            // =========================
             if (!empty($data['products'])) {
 
 
@@ -157,11 +125,6 @@ class OrderService
                         throw new CustomException('المنتج غير موجود في المستودع');
                     }
 
-                    // $available = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
-
-                    // if ($item['quantity'] > $available) {
-                    //     throw new CustomException("الكمية غير متوفرة للمنتج {$item['product_id']}");
-                    // }
 
                     $zonePrice = $productZonePrices->get($item['product_id']);
 
@@ -181,14 +144,10 @@ class OrderService
 
                     $totalBasePrice += $price * $item['quantity'];
 
-                    // Optional: reserve stock
                     $warehouseProduct->increment('reserved_quantity', $item['quantity']);
                 }
             }
 
-            // =========================
-            // ✅ HANDLE OFFERS (FIXED)
-            // =========================
             if (!empty($data['offers'])) {
 
                 $warehouseOffers = OfferWarehouse::where('warehouse_id', $data['warehouse_id'])
@@ -197,13 +156,11 @@ class OrderService
                     ->get()
                     ->keyBy('offer_id');
 
-                // 🔥 LOAD OFFERS WITH PRODUCTS
                 $offers = Offer::with('products')
                     ->whereIn('id', $offerIds)
                     ->get()
                     ->keyBy('id');
 
-                // 🔥 PRELOAD ALL PRODUCTS INSIDE OFFERS
                 $allOfferProductIds = $offers
                     ->flatMap(fn($offer) => $offer->products->pluck('id'))
                     ->unique();
@@ -222,21 +179,12 @@ class OrderService
                         throw new CustomException('العرض غير موجود في المستودع');
                     }
 
-                    // $available = $warehouseOffer->quantity - $warehouseOffer->reserved_quantity;
-
-                    // if ($item['quantity'] > $available) {
-                    //     throw new CustomException("الكمية غير متوفرة للعرض {$item['offer_id']}");
-                    // }
-
                     $offer = $offers->get($item['offer_id']);
 
                     if (!$offer) {
                         throw new CustomException('العرض غير موجود');
                     }
 
-                    // =========================
-                    // 🔥 CHECK PRODUCTS INSIDE OFFER
-                    // =========================
                     foreach ($offer->products as $product) {
 
                         $requiredQty = $product->pivot->quantity * $item['quantity'];
@@ -246,19 +194,8 @@ class OrderService
                         if (!$warehouseProduct) {
                             throw new CustomException("منتج داخل العرض غير موجود في المستودع");
                         }
-
-                        // $availableProduct = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
-
-                        // if ($requiredQty > $availableProduct) {
-                        //     throw new CustomException(
-                        //         "الكمية غير كافية لمنتج {$product->name} داخل العرض"
-                        //     );
-                        // }
                     }
 
-                    // =========================
-                    // 🔥 RESERVE PRODUCTS FIRST
-                    // =========================
                     foreach ($offer->products as $product) {
 
                         $requiredQty = $product->pivot->quantity * $item['quantity'];
@@ -268,14 +205,7 @@ class OrderService
                             ->increment('reserved_quantity', $requiredQty);
                     }
 
-                    // =========================
-                    // 🔥 RESERVE OFFER
-                    // =========================
-                    // $warehouseOffer->increment('reserved_quantity', $item['quantity']);
 
-                    // =========================
-                    // 💰 PRICE
-                    // =========================
                     $zonePrice = $offerZonePrices->get($item['offer_id']);
 
                     if (!$zonePrice) {
@@ -295,11 +225,6 @@ class OrderService
                     $totalBasePrice += $price * $item['quantity'];
                 }
             }
-
-            // =========================
-            // ✅ CALCULATE TOTALS
-            // =========================
-
             $totalPrice = $totalBasePrice;
 
             if (!empty($data['adjustment_value'])) {
@@ -332,14 +257,6 @@ class OrderService
 
                 ...$amounts
             ]);
-            // $order->update([
-            //     'total_base_price' => $totalBasePrice,
-            //     'total_price' => max($totalPrice, 0),
-            // ]);
-
-            // =========================
-            // ✅ STATUS LOG
-            // =========================
             OrderStatusLog::create([
                 'customer_order_id' => $order->id,
                 'status' => OrderStatus::new->value,
@@ -354,15 +271,15 @@ class OrderService
 
     public function update(CustomerOrder $order, array $data)
     {
-        if ($order->order_status !== OrderStatus::new->value) {
+        if ($order->order_status != OrderStatus::new->value) {
             throw new CustomException('لا يمكن تعديل الطلب بعد مراجعته.');
         }
 
+        if ($order->app_user_id != auth()->user()->id) {
+            throw new CustomException('لا يمكن تعديل الطلب إلا من قبل المسوق المنشئ له.');
+        }
         return DB::transaction(function () use ($order, $data) {
 
-            // =========================
-            // ✅ LOAD OLD DATA
-            // =========================
             $order->load('products', 'offers');
 
             // =========================
@@ -376,13 +293,11 @@ class OrderService
                     ->decrement('reserved_quantity', $oldProduct->quantity);
             }
 
-            // 🔥 Load offers with products
             $offers = Offer::with('products')
                 ->whereIn('id', $order->offers->pluck('offer_id'))
                 ->get()
                 ->keyBy('id');
 
-            // 🔥 preload product warehouses
             $allOfferProductIds = $offers
                 ->flatMap(fn($offer) => $offer->products->pluck('id'))
                 ->unique();
@@ -400,7 +315,6 @@ class OrderService
 
                 if (!$offer) continue;
 
-                // 🔥 restore products inside offer
                 foreach ($offer->products as $product) {
 
                     $restoreQty = $product->pivot->quantity * $oldOffer->quantity;
@@ -416,24 +330,17 @@ class OrderService
                 }
             }
 
-            // =========================
-            // 🔥 STEP 2: DELETE OLD ITEMS
-            // =========================
             $order->products()->delete();
             $order->offers()->delete();
 
-            // =========================
-            // ✅ STEP 3: REBUILD ORDER DATA
-            // =========================
-
-            $user = AppUser::with('team', 'subTeam.team')->find($data['app_user_id']);
-
+            $user = auth()->user();
+            $user->load('team', 'subTeam.team');
             $team = $user->subTeam
                 ? $user->subTeam->team
                 : $user->team;
 
             if (!$team) {
-                throw new CustomException('المستخدم لا ينتمي إلى فريق');
+                throw new CustomException('يجب أن تنتمي إلى فريق');
             }
 
             $teamleaderId = $user->subTeam?->team_leader_id;
@@ -477,10 +384,6 @@ class OrderService
 
             $order->update($orderData);
 
-            // =========================
-            // ✅ STEP 4: PRELOAD PRICES
-            // =========================
-
             $zoneId = $zone->id;
 
             $productIds = collect($data['products'] ?? [])->pluck('product_id');
@@ -500,9 +403,6 @@ class OrderService
 
             $totalBasePrice = 0;
 
-            // =========================
-            // ✅ STEP 5: ADD PRODUCTS
-            // =========================
             if (!empty($data['products'])) {
 
                 $warehouseProducts = ProductWarehouse::where('warehouse_id', $data['warehouse_id'])
@@ -518,12 +418,6 @@ class OrderService
                     if (!$warehouseProduct) {
                         throw new CustomException('المنتج غير موجود في المستودع');
                     }
-
-                    $available = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
-
-                    // if ($item['quantity'] > $available) {
-                    //     throw new CustomException("الكمية غير متوفرة");
-                    // }
 
                     $zonePrice = $productZonePrices->get($item['product_id']);
 
@@ -547,9 +441,6 @@ class OrderService
                 }
             }
 
-            // =========================
-            // ✅ HANDLE OFFERS (FIXED)
-            // =========================
             if (!empty($data['offers'])) {
 
                 $warehouseOffers = OfferWarehouse::where('warehouse_id', $data['warehouse_id'])
@@ -558,13 +449,11 @@ class OrderService
                     ->get()
                     ->keyBy('offer_id');
 
-                // 🔥 LOAD OFFERS WITH PRODUCTS
                 $offers = Offer::with('products')
                     ->whereIn('id', $offerIds)
                     ->get()
                     ->keyBy('id');
 
-                // 🔥 PRELOAD ALL PRODUCTS INSIDE OFFERS
                 $allOfferProductIds = $offers
                     ->flatMap(fn($offer) => $offer->products->pluck('id'))
                     ->unique();
@@ -583,11 +472,6 @@ class OrderService
                         throw new CustomException('العرض غير موجود في المستودع');
                     }
 
-                    // $available = $warehouseOffer->quantity - $warehouseOffer->reserved_quantity;
-
-                    // if ($item['quantity'] > $available) {
-                    //     throw new CustomException("الكمية غير متوفرة للعرض {$item['offer_id']}");
-                    // }
 
                     $offer = $offers->get($item['offer_id']);
 
@@ -595,9 +479,6 @@ class OrderService
                         throw new CustomException('العرض غير موجود');
                     }
 
-                    // =========================
-                    // 🔥 CHECK PRODUCTS INSIDE OFFER
-                    // =========================
                     foreach ($offer->products as $product) {
 
                         $requiredQty = $product->pivot->quantity * $item['quantity'];
@@ -607,19 +488,8 @@ class OrderService
                         if (!$warehouseProduct) {
                             throw new CustomException("منتج داخل العرض غير موجود في المستودع");
                         }
-
-                        // $availableProduct = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity;
-
-                        // if ($requiredQty > $availableProduct) {
-                        //     throw new CustomException(
-                        //         "الكمية غير كافية لمنتج {$product->name} داخل العرض"
-                        //     );
-                        // }
                     }
 
-                    // =========================
-                    // 🔥 RESERVE PRODUCTS FIRST
-                    // =========================
                     foreach ($offer->products as $product) {
 
                         $requiredQty = $product->pivot->quantity * $item['quantity'];
@@ -629,14 +499,6 @@ class OrderService
                             ->increment('reserved_quantity', $requiredQty);
                     }
 
-                    // =========================
-                    // 🔥 RESERVE OFFER
-                    // =========================
-                    // $warehouseOffer->increment('reserved_quantity', $item['quantity']);
-
-                    // =========================
-                    // 💰 PRICE
-                    // =========================
                     $zonePrice = $offerZonePrices->get($item['offer_id']);
 
                     if (!$zonePrice) {
@@ -656,10 +518,6 @@ class OrderService
                     $totalBasePrice += $price * $item['quantity'];
                 }
             }
-            // =========================
-            // ✅ STEP 7: RECALCULATE TOTAL
-            // =========================
-
             $totalPrice = $totalBasePrice;
 
             if (!empty($data['adjustment_value'])) {
@@ -678,7 +536,6 @@ class OrderService
                     $totalPrice = $totalBasePrice - $amount;
                 }
 
-                // prevent negative price
                 $totalPrice = max(0, $totalPrice);
             }
 
@@ -690,7 +547,6 @@ class OrderService
             $order->update([
                 'total_base_price' => $totalBasePrice,
                 'total_price' => max($totalPrice, 0),
-
                 ...$amounts
             ]);
 
@@ -701,86 +557,6 @@ class OrderService
                 'offers.offer'
             ]);
         });
-    }
-    public function show(CustomerOrder $order)
-    {
-        $order->load('customer', 'statusLogs.changedBy', 'currency', 'marketer', 'warehouseMan', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
-        return $order;
-    }
-
-    public function delete(CustomerOrder $order)
-    {
-        if (!in_array($order->order_status, [
-            OrderStatus::new->value,
-            OrderStatus::cancelled->value
-        ])) {
-            throw new CustomException('لا يمكن حذف الطلب بعد معالجته.');
-        }
-
-        $order->load('products', 'offers');
-
-        // =========================
-        // 🔥 STEP 1: RESTORE STOCK
-        // =========================
-
-        foreach ($order->products as $oldProduct) {
-            ProductWarehouse::where('warehouse_id', $order->warehouse_id)
-                ->where('product_id', $oldProduct->product_id)
-                ->lockForUpdate()
-                ->decrement('reserved_quantity', $oldProduct->quantity);
-        }
-
-        // 🔥 Load offers with products
-        $offers = Offer::with('products')
-            ->whereIn('id', $order->offers->pluck('offer_id'))
-            ->get()
-            ->keyBy('id');
-
-        // 🔥 preload product warehouses
-        $allOfferProductIds = $offers
-            ->flatMap(fn($offer) => $offer->products->pluck('id'))
-            ->unique();
-
-        $warehouseProducts = ProductWarehouse::where('warehouse_id', $order->warehouse_id)
-            ->whereIn('product_id', $allOfferProductIds)
-            ->lockForUpdate()
-            ->get()
-            ->keyBy('product_id');
-
-        foreach ($order->offers as $oldOffer) {
-
-            // ✅ restore offer itself
-            // OfferWarehouse::where('warehouse_id', $order->warehouse_id)
-            //     ->where('offer_id', $oldOffer->offer_id)
-            //     ->lockForUpdate()
-            //     ->decrement('reserved_quantity', $oldOffer->quantity);
-
-            $offer = $offers->get($oldOffer->offer_id);
-
-            if (!$offer) continue;
-
-            // 🔥 restore products inside offer
-            foreach ($offer->products as $product) {
-
-                $restoreQty = $product->pivot->quantity * $oldOffer->quantity;
-
-                $warehouseProduct = $warehouseProducts->get($product->id);
-
-                if (!$warehouseProduct) {
-                    throw new CustomException("منتج داخل العرض غير موجود في المستودع");
-                }
-
-                $warehouseProduct
-                    ->decrement('reserved_quantity', $restoreQty);
-            }
-        }
-
-        // =========================
-        // 🔥 STEP 2: DELETE OLD ITEMS
-        // =========================
-        $order->products()->delete();
-        $order->offers()->delete();
-        return $order->delete();
     }
 
     private array $allowedTransitions = [
@@ -793,7 +569,6 @@ class OrderService
 
         'completed' => ['refund'],
 
-        'cancelled' => ['new'],
         'refund' => [],
 
     ];
@@ -814,8 +589,6 @@ class OrderService
                 $to   = OrderStatus::from($status->value)->label();
 
                 throw new CustomException("تغيير الحالة غير مسموح من {$from} إلى {$to}");
-
-                throw new CustomException('تغيير الحالة غير مسموح.');
             }
 
 
@@ -825,9 +598,6 @@ class OrderService
                 $this->stockHandleService->removeFromStock($order);
             }
 
-            // =========================
-            // 🔁 REFUND
-            // =========================
             if ($status == OrderStatus::refund) {
 
                 $this->handleRefund($order);
@@ -835,9 +605,6 @@ class OrderService
                 $reserveStock = false;
             }
 
-            // =========================
-            // ❌ REJECT / CANCEL
-            // =========================
             if (
                 in_array($status, [OrderStatus::cancelled])
             ) {
@@ -845,16 +612,6 @@ class OrderService
                 $reserveStock = false;
             }
 
-            if (
-                $status == OrderStatus::new &&
-                in_array($currentStatus, [OrderStatus::cancelled])
-            ) {
-                $this->stockHandleService->reserveStock($order);
-                $reserveStock = true;
-            }
-            // =========================
-            // ✅ UPDATE STATUS
-            // =========================
             $order->update([
                 'order_status' => $status->value,
                 'cancellation_reason' => $data['cancellation_reason'] ?? null,
@@ -866,9 +623,6 @@ class OrderService
 
             ]);
 
-            // =========================
-            // 📝 STATUS LOG
-            // =========================
             OrderStatusLog::create([
                 'customer_order_id' => $order->id,
                 'status' => $status->value,
@@ -883,18 +637,6 @@ class OrderService
 
     public function handleFinancialProcess(CustomerOrder $order)
     {
-        // if ($order->is_financial_processed) {
-        //     throw new CustomException('تم بالفعل توزيع الأرباح');
-        // }
-
-        // if ($order->order_status != OrderStatus::completed->value) {
-        //     throw new CustomException('لا يمكن توزيع الربح قبل إتمام الطلب.');
-        // }
-        $vault = Vault::where('owner_id', $order->warehouse_man_id)->first();
-        if ($vault == null || $order->warehouse_man_id == null)
-            throw new CustomException('الموزع ليس لديه خزنة, من فضلك أضف له خزنة ثم أعد المحاولة.');
-
-
         return $this->orderSharedService->handleFinancialProcess($order, $vault);
     }
 
@@ -902,12 +644,11 @@ class OrderService
     {
         if ($order->is_financial_processed)
             return;
-        // $amount = $order->total_base_price * $order->current_exchange_rate; //  BASE
         $company_amount = $order->total_price * $order->current_exchange_rate; //  BASE
 
         $vault = Vault::where('owner_id', $order->warehouse_man_id)->first();
-        if ($vault == null)
-            throw new CustomException('الموزع ليس لديه خزنة, من فضلك أضف له خزنة ثم أعد المحاولة.');
+        if ($vault == null || $order->warehouse_man_id == null)
+            throw new CustomException('يرجى التواصل مع الإدارة لحل المشكلة, يوجد نقص في معلومات الموزع');
 
         $oldVaultBalance = $vault->balance;
         $newVaultBalance = $vault->balance + $company_amount;
@@ -925,7 +666,7 @@ class OrderService
 
             'transaction_date' => now(),
 
-            'notes' => 'تعديل على الخزنة من super admin',
+            'notes' => '..',
 
             'action_by_type' => get_class($user),
             'action_by_id' => $user->id,
@@ -966,7 +707,7 @@ class OrderService
 
             'transaction_date' => now(),
 
-            'notes' => 'تعديل على الخزنة من super admin',
+            'notes' => '..',
 
             'action_by_type' => get_class($user),
             'action_by_id' => $user->id,
@@ -987,5 +728,5 @@ class OrderService
         }
     }
 
-
+   
 }
