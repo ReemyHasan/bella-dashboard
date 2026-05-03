@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Shared\V1;
 
 use App\Http\Controllers\Controller;
 use App\Services\Shared\SharedInfoService;
+use Illuminate\Http\Request;
 
 class SharedSelectController extends Controller
 {
@@ -57,5 +58,35 @@ class SharedSelectController extends Controller
 
         $returned = $this->sharedInfoService->customerAddresses($customerId);
         return response()->format($returned, 'messages.success', 200);
+    }
+
+    public function selectAvailableSubteams($teamId)
+    {
+        $subteams = $this->sharedInfoService->selectAvailableSubteams($teamId);
+
+        $returnedData = $subteams->map(fn($subteam) => [
+            'key' => $subteam?->id,
+            'value' => $subteam?->name . ($subteam->is_direct == 1 ? '(Direct)' : '(SubTeam)')
+        ]);
+        return response()->format($returnedData, 'messages.success', 200);
+    }
+    public function selectAvailableCompetitions(Request $request)
+    {
+        $marketer_id = $request->input('marketer_id');
+
+        $status = $request->input('status');
+
+
+        $competitions = $this->sharedInfoService->selectAvailableCompetitions(
+            $marketer_id,
+            $status,
+        );
+
+        $returnedData = $competitions->map(fn($competition) => [
+            'key' => $competition?->id,
+            'value' => $competition?->name
+
+        ]);
+        return response()->format($returnedData, 'messages.success', 200);
     }
 }

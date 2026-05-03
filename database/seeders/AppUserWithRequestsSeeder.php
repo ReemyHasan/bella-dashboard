@@ -9,17 +9,12 @@ use App\Models\AppUser;
 use App\Models\AppUserRequest;
 use App\Models\SubTeam;
 use App\Models\Team;
+use App\Models\Warehouse;
 
 class AppUserWithRequestsSeeder extends Seeder
 {
     public function run(): void
     {
-
-        $fillable = [
-            'manager_id',
-            'team_leader_id',
-
-        ];
 
         $teams = [
             [
@@ -168,6 +163,47 @@ class AppUserWithRequestsSeeder extends Seeder
                 'subteam_id' => 1,
 
 
+            ],
+            ////////////////////////
+
+            [
+                'first_name' => 'أسامة',
+                'last_name' => 'موزع',
+                'user_name' => 'Osama.dist',
+                'mobile' => '0993333365',
+                'password' => Hash::make('password'),
+                'join_date' => now(),
+                'is_warehouse_man' => true,
+                'status' => DashUserStatus::ACTIVE->value,
+                'warehouse_id' => 1
+            ],
+
+            [
+                'first_name' => 'عبد الرحمن',
+                'last_name' => 'علي',
+                'user_name' => 'abd.ali',
+                'mobile' => '09933335433',
+                'password' => Hash::make('password'),
+                'join_date' => now(),
+                'is_warehouse_man' => true,
+                'status' => DashUserStatus::ACTIVE->value,
+                'warehouse_id' => 2
+
+
+            ],
+
+            [
+                'first_name' => 'أمجد',
+                'last_name' => 'سمير',
+                'user_name' => 'Amjad.Smeer',
+                'mobile' => '09933338765',
+                'password' => Hash::make('password'),
+                'join_date' => now(),
+                'is_warehouse_man' => true,
+                'status' => DashUserStatus::ACTIVE->value,
+                'warehouse_id' => 3
+
+
             ]
         ];
 
@@ -202,6 +238,40 @@ class AppUserWithRequestsSeeder extends Seeder
                 'requested_by_id' => 1,
                 'requested_by_type' => AppUser::class,
             ]);
+        }
+
+        $teams = Team::all();
+
+        foreach ($teams as $team) {
+            $manager = AppUser::where('team_id', $team->id)->first();
+
+            if ($manager) {
+                $team->update([
+                    'manager_id' => $manager->id
+                ]);
+            }
+        }
+
+        $subTeams = SubTeam::all();
+
+        foreach ($subTeams as $subTeam) {
+            $leader = AppUser::where('subteam_id', $subTeam->id)->first();
+
+            if ($leader) {
+                $subTeam->update([
+                    'team_leader_id' => $leader->id
+                ]);
+            }
+        }
+
+        $warehouses = Warehouse::orderBy('id')->limit(3)->get();
+        $i = 0;
+        foreach ($warehouses as $warehouse) {
+
+            $warehouse->update([
+                'keeper_id' => 5 + $i
+            ]);
+            $i++;
         }
     }
 }

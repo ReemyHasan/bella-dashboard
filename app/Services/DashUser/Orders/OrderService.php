@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
-    public function __construct( private StockHandleService $stockHandleService, private OrderSharedService $orderSharedService) {}
+    public function __construct(private StockHandleService $stockHandleService, private OrderSharedService $orderSharedService) {}
 
     public function list($request)
     {
@@ -874,6 +874,8 @@ class OrderService
                 'status' => $status->value,
                 'changed_by_type' => get_class(Auth::user()),
                 'changed_by_id' => Auth::id(),
+                'notes' => $data['notes'] ?? "status changed from {$currentStatus->value} to {$status->value}"
+
             ]);
 
             return $order->refresh();
@@ -986,6 +988,4 @@ class OrderService
             $this->orderSharedService->subtractBalance($vault, $order->manager_id, $order->manager_amount, VaultTransactionType::refund_manager->value, $order,  $order->manager_percentage);
         }
     }
-
-
 }

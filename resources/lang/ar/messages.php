@@ -45,6 +45,7 @@ return [
     'already_reviewed' => 'لقد تم مراجعة الطلب بالفعل.',
     'already_handled' => 'لقد تم معالجة الطلب بالفعل.',
 
+    'note_added_successfully' => 'تم إضافة ملاحظة.',
 
     'specific_confirmed_successfully' => 'تم تأكيد :item بنجاح',
     'specific_cancelled_successfully' => 'تم إلغاء :item بنجاح',

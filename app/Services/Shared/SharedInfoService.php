@@ -2,15 +2,19 @@
 
 namespace App\Services\Shared;
 
+use App\Enums\CompetitionStatus;
+use App\Enums\CompetitionTarget;
 use App\Exceptions\CustomException;
 use App\Models\Address;
 use App\Models\AppUser;
+use App\Models\Competition;
 use App\Models\Customer;
 use App\Models\DashUser;
 use App\Models\OfferWarehouse;
 use App\Models\OfferZonePrice;
 use App\Models\ProductWarehouse;
 use App\Models\ProductZonePrice;
+use App\Models\SubTeam;
 
 class SharedInfoService
 {
@@ -21,7 +25,7 @@ class SharedInfoService
         $user = auth()->user();
         if (get_class($user) != AppUser::class) {
             $user = AppUser::with('team', 'subTeam.team')->find($marketeId);
-        }else{
+        } else {
             $user->load('team', 'subTeam.team');
         }
 
@@ -86,7 +90,7 @@ class SharedInfoService
         $warehouse = $address->region->warehouse;
 
         $user = auth()->user();
-        if ($user->hasRole('Team Manager') || $user->hasRole('Team Leader') || get_class($user) == DashUser::class) {
+        if ($user->hasRole('Team Manager') || $user->hasRole('Team Leader') || $user instanceof DashUser) {
 
             $warehouseKeeper =  [
                 'id' => $warehouse?->keeper_id,
@@ -176,5 +180,77 @@ class SharedInfoService
             'extra_details' => $address->pivot->extra_details,
             'is_main' => (bool)$address->pivot->is_main,
         ]);
+    }
+
+    public function selectAvailableSubteams($team = null)
+    {
+
+        $subTeams = SubTeam::with('team:id,name')->when(!is_null($team), function ($query) use ($team) {
+            $query->where('team_id', $team);
+        })->where('active', true)->orderBy('id')->get([
+            'id',
+            'name',
+            'active',
+            'team_id',
+            'is_direct'
+        ]);
+
+        return $subTeams;
+    }
+
+    public function selectAvailableCompetitions($marketerId = null, $status = CompetitionStatus::active->value)
+    {
+
+        $user = auth()->user();
+        if (get_class($user) != AppUser::class) {
+            $marketer = $marketerId == null ? null : AppUser::findOrFail($marketerId);
+        } else {
+            $marketer = $user;
+            $status = CompetitionStatus::active->value;
+        }
+
+        return Competition::query()
+            ->when(!is_null($status), function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->when(!is_null($marketer), function ($query) use ($marketer) {
+
+                $query->where(function ($query) use ($marketer) {
+
+                    // 🔹 Case: ALL → everyone participates
+                    $query->where('target', CompetitionTarget::all->value);
+
+                    // 🔹 Case: marketers → directly assigned
+                    $query->orWhere(function ($q) use ($marketer) {
+                        $q->where('target', CompetitionTarget::marketers->value)
+                            ->whereHas('marketers', function ($q2) use ($marketer) {
+                                $q2->where('marketer_id', $marketer->id);
+                            });
+                    });
+
+                    // 🔹 Case: teams → marketer belongs to team
+                    $query->orWhere(function ($q) use ($marketer) {
+                        $q->where('target', CompetitionTarget::teams->value)
+                            ->whereHas('teams', function ($q2) use ($marketer) {
+                                $q2->where('team_id', $marketer->team_id);
+                            });
+                    });
+
+                    // 🔹 Case: subteams → marketer belongs to subteam
+                    $query->orWhere(function ($q) use ($marketer) {
+                        $q->where('target', CompetitionTarget::subteams->value)
+                            ->whereHas('subteams', function ($q2) use ($marketer) {
+                                $q2->where('sub_team_id', $marketer->sub_team_id);
+                            });
+                    });
+                });
+            })
+
+            ->orderBy('id')
+            ->get([
+                'id',
+                'name',
+                'status'
+            ]);
     }
 }

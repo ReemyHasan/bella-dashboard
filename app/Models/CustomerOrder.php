@@ -199,6 +199,10 @@ class CustomerOrder extends Model
     {
         return $this->hasMany(OrderStatusLog::class);
     }
+    public function lastStatusLog()
+    {
+        return $this->hasOne(OrderStatusLog::class)->latestOfMany();
+    }
     public function address()
     {
         return $this->belongsTo(Address::class, 'address_id');
@@ -217,5 +221,23 @@ class CustomerOrder extends Model
     public function competition()
     {
         return $this->belongsTo(Competition::class, 'competition_id');
+    }
+
+    public function scopeVisibleTo($query, $user)
+    {
+        return $query->where(function ($q) use ($user) {
+
+            if ($user->hasRole('Team Manager')) {
+                $q->where('team_id', $user->team_id);
+                return;
+            }
+
+            if ($user->hasRole('Team Leader')) {
+                $q->where('sub_team_id', $user->subteam_id);
+                return;
+            }
+
+            $q->where('app_user_id', $user->id);
+        });
     }
 }

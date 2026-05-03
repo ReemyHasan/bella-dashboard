@@ -10,6 +10,8 @@ enum OrderStatus: string
     case completed = 'completed';
     case cancelled = 'cancelled';
     case refund = 'refund';
+    case note = 'note';
+
 
     public function label(): string
     {
@@ -20,6 +22,8 @@ enum OrderStatus: string
             self::completed => 'مكتمل',
             self::cancelled => 'ملغي',
             self::refund => 'مرتجع',
+            self::note => 'ملاحظة',
+
             default => $this->value,
         };
     }

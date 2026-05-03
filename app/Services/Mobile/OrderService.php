@@ -3,13 +3,12 @@
 namespace App\Services\Mobile;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaginationEnum;
 use App\Enums\VaultTransactionType;
 use App\Exceptions\CustomException;
 use App\Models\Address;
 use App\Models\AppUser;
-use App\Models\Customer;
 use App\Models\CustomerOrder;
-use App\Models\DashUser;
 use App\Models\Offer;
 use App\Models\OfferWarehouse;
 use App\Models\OfferZonePrice;
@@ -31,6 +30,33 @@ class OrderService
         private StockHandleService $stockHandleService,
         private OrderSharedService $orderSharedService
     ) {}
+
+    public function list($request)
+    {
+
+        return CustomerOrder::with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog')
+            ->where('app_user_id', auth()->user()->id)->filterBy($request->all())
+            ->sortBy($request->get('sort', ['created_at' => 'desc']))
+            ->latest()->paginate(PaginationEnum::GeneralPagination->value);
+    }
+
+    public function managedOrders($request)
+    {
+        return CustomerOrder::with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog')
+            ->visibleTo(auth()->user())->filterBy($request->all())
+            ->sortBy($request->get('sort', ['created_at' => 'desc']))
+            ->latest()->paginate(PaginationEnum::GeneralPagination->value);
+    }
+    public function show(CustomerOrder $order)
+    {
+        $allowedUsers = [$order->app_user_id, $order->teamleader_id, $order->manager_id];
+        if (!in_array(auth()->user()->id, $allowedUsers)) {
+            throw new CustomException('لا يمكن رؤية الطلب إلا من قبل المسوق المنشئ له أو مديره.');
+        }
+        $order->load('customer', 'statusLogs.changedBy', 'currency', 'marketer', 'warehouseMan', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
+        return $order;
+    }
+
 
     public function create(array $data)
     {
@@ -114,7 +140,7 @@ class OrderService
             if (!empty($data['products'])) {
 
 
-                $warehouseProducts = ProductWarehouse::where('warehouse_id', $data['warehouse_id'])
+                $warehouseProducts = ProductWarehouse::where('warehouse_id', $warehouse->id)
                     ->whereIn('product_id', $productIds)
                     ->lockForUpdate() // 🔥 prevent race condition
                     ->get()
@@ -152,7 +178,7 @@ class OrderService
 
             if (!empty($data['offers'])) {
 
-                $warehouseOffers = OfferWarehouse::where('warehouse_id', $data['warehouse_id'])
+                $warehouseOffers = OfferWarehouse::where('warehouse_id', $warehouse->id)
                     ->whereIn('offer_id', $offerIds)
                     ->lockForUpdate()
                     ->get()
@@ -167,7 +193,7 @@ class OrderService
                     ->flatMap(fn($offer) => $offer->products->pluck('id'))
                     ->unique();
 
-                $warehouseProducts = ProductWarehouse::where('warehouse_id', $data['warehouse_id'])
+                $warehouseProducts = ProductWarehouse::where('warehouse_id', $warehouse->id)
                     ->whereIn('product_id', $allOfferProductIds)
                     ->lockForUpdate()
                     ->get()
@@ -410,7 +436,7 @@ class OrderService
 
             if (!empty($data['products'])) {
 
-                $warehouseProducts = ProductWarehouse::where('warehouse_id', $data['warehouse_id'])
+                $warehouseProducts = ProductWarehouse::where('warehouse_id', $warehouse->id)
                     ->whereIn('product_id', $productIds)
                     ->lockForUpdate()
                     ->get()
@@ -448,7 +474,7 @@ class OrderService
 
             if (!empty($data['offers'])) {
 
-                $warehouseOffers = OfferWarehouse::where('warehouse_id', $data['warehouse_id'])
+                $warehouseOffers = OfferWarehouse::where('warehouse_id', $warehouse->id)
                     ->whereIn('offer_id', $offerIds)
                     ->lockForUpdate()
                     ->get()
@@ -463,7 +489,7 @@ class OrderService
                     ->flatMap(fn($offer) => $offer->products->pluck('id'))
                     ->unique();
 
-                $warehouseProducts = ProductWarehouse::where('warehouse_id', $data['warehouse_id'])
+                $warehouseProducts = ProductWarehouse::where('warehouse_id', $warehouse->id)
                     ->whereIn('product_id', $allOfferProductIds)
                     ->lockForUpdate()
                     ->get()
@@ -578,8 +604,26 @@ class OrderService
 
     ];
 
+    public function addNotes(CustomerOrder $order, array $data)
+    {
+        $allowedUsers = [$order->app_user_id, $order->teamleader_id, $order->manager_id];
+        if (!in_array(auth()->user()->id, $allowedUsers)) {
+            throw new CustomException('لا يمكن إضافة ملاحظة إلا من قبل المسوق المنشئ له أو مديره.');
+        }
+
+        OrderStatusLog::create([
+            'customer_order_id' => $order->id,
+            'status' => OrderStatus::note->value,
+            'changed_by_type' => get_class(Auth::user()),
+            'changed_by_id' => Auth::id(),
+            'notes' => $data['note']
+        ]);
+    }
     public function handle(CustomerOrder $order, array $data)
     {
+        if ($order->app_user_id != auth()->user()->id) {
+            throw new CustomException('لا يمكن معالجة الطلب إلا من قبل المسوق المنشئ له.');
+        }
         $status = OrderStatus::from($data['status']);
 
         return DB::transaction(function () use ($order, $status, $data) {
@@ -633,6 +677,7 @@ class OrderService
                 'status' => $status->value,
                 'changed_by_type' => get_class(Auth::user()),
                 'changed_by_id' => Auth::id(),
+                'notes' => $data['notes'] ?? "status changed from {$currentStatus->value} to {$status->value}"
             ]);
 
             return $order->refresh();

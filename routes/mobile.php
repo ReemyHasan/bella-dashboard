@@ -4,6 +4,7 @@ use App\Http\Controllers\Mobile\V1\Auth\AuthController;
 use App\Http\Controllers\Mobile\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Mobile\V1\Auth\ProfileController;
 use App\Http\Controllers\Mobile\V1\Products\CategoryController;
+use App\Http\Controllers\Mobile\V1\Products\OrderController;
 use App\Http\Controllers\Mobile\V1\Products\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,5 +34,12 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
 
         Route::get('products/{product}', [ProductController::class, 'show']);
         Route::get('select-products', [ProductController::class, 'selectAvailable']);
+
+
+        Route::get('managed-customer-orders', [OrderController::class, 'managedOrders']);
+        Route::post('customer-orders/{customer_order}/handle', [OrderController::class, 'handle']);
+        Route::patch('customer-orders/{customer_order}/add-notes', [OrderController::class, 'addNotes']);
+
+        Route::apiResource('customer-orders', OrderController::class)->only('index', 'store', 'update', 'show');
     });
 });

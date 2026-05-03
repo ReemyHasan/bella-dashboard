@@ -19,4 +19,6 @@ Route::middleware(['auth:sanctum', 'api.blocked'])->group(function () {
     Route::get('select-warehouse-offers/{warehouseId}', [SharedSelectController::class, 'warehouseOffers']);
 
     Route::get('select-customer-addresses/{customerId}', [SharedSelectController::class, 'customerAddresses']);
+    Route::get('select-subteams/{teamId}', [SharedSelectController::class, 'selectAvailableSubteams']);
+    Route::get('select-competitions', [SharedSelectController::class, 'selectAvailableCompetitions']);
 });

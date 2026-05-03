@@ -1,19 +1,22 @@
 <?php
 
-namespace App\Http\Resources\DashUser\Orders;
+namespace App\Http\Resources\Mobile;
 
+use App\Http\Resources\DashUser\Orders\OrderOfferResource;
+use App\Http\Resources\DashUser\Orders\OrderProductResource;
+use App\Http\Resources\DashUser\Orders\OrderStatusLogResource;
+use App\Models\DashUser;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CustomerOrderResource extends JsonResource
+class CustomerOrderDetailsResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
+        $user = auth()->user();
+        $flag = $user instanceof DashUser
+            || $user->hasRole('Team Manager')
+            || $user->hasRole('Team Leader');
         return [
             'id'          => $this->id,
             'order_number' => $this->order_number,
@@ -67,17 +70,17 @@ class CustomerOrderResource extends JsonResource
             ]),
             'warehouse_man' => $this->whenLoaded('warehouseMan', fn() => [
                 'id' => $this->warehouseMan?->id,
-                'name' => $this->warehouseMan?->first_name . ' ' . $this->warehouseMan?->last_name . ' (' . $this->warehouseMan?->user_name . ')',
+                'name' => $this->warehouseMan?->first_name . ' ' . $this->warehouseMan?->last_name . ($flag ? ' (' . $this->warehouseMan?->mobile . ')' : ''),
             ]),
 
             'teamleader' => $this->whenLoaded('teamleader', fn() => [
                 'id' => $this->teamleader?->id,
-                'name' => $this->teamleader?->first_name . ' ' . $this->teamleader?->last_name . ' (' . $this->teamleader?->user_name . ')',
+                'name' => $this->teamleader?->first_name . ' ' . $this->teamleader?->last_name . ' (' . $this->teamleader?->mobile . ')',
             ]),
 
             'manager' => $this->whenLoaded('manager', fn() => [
                 'id' => $this->manager?->id,
-                'name' => $this->manager?->first_name . ' ' . $this->manager?->last_name . ' (' . $this->manager?->user_name . ')',
+                'name' => $this->manager?->first_name . ' ' . $this->manager?->last_name . ' (' . $this->manager?->mobile . ')',
             ]),
 
             'warehouse' => $this->whenLoaded('warehouse', fn() => [
@@ -103,7 +106,7 @@ class CustomerOrderResource extends JsonResource
 
             'created_by' => $this->whenLoaded('createdBy', fn() => [
                 'id' => $this->createdBy?->id,
-                'type' => get_class($this->createdBy) == 'App\Models\DashUser' ? 'الإدارة' :  'المسوق',
+                'type' => get_class($this->createdBy) == 'App\Models\DashUser' ? 'الإدارة' :  'من قبلك',
                 'name' => $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name . ' (' . $this->createdBy?->user_name . ')',
             ]),
 
