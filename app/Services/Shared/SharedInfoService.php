@@ -18,7 +18,25 @@ use App\Models\SubTeam;
 
 class SharedInfoService
 {
-
+    public function selectCustomers($search = null)
+    {
+        $customers = Customer::query()->when(!is_null($search), function ($query) use ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%$search%")
+                    ->orWhere('last_name', 'like', "%$search%")
+                    ->orWhere('mobile', 'like', "%$search%");
+            });
+        })->where('is_blocked', false)->get([
+            'id',
+            'first_name',
+            'last_name',
+            'mobile',
+        ]);
+        return $customers->map(fn($customer) => [
+            'key'          => $customer->id,
+            'value' => $customer->first_name . ' ' . $customer->last_name . "({$customer->mobile})",
+        ]);
+    }
     public function selectMarketerInfo($marketeId = null)
     {
 

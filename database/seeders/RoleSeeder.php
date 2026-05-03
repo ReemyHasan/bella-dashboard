@@ -62,7 +62,7 @@ class RoleSeeder extends Seeder
             'is_protected' => true
         ]);
 
-        $warehouseKeeper->permissions()->sync($permissions2);
+        // $warehouseKeeper->permissions()->sync($permissions2);
 
         // $permissions3 = Permission::where('guard_name', 'dash_user_guard')->pluck('id');
 
@@ -80,9 +80,9 @@ class RoleSeeder extends Seeder
             'is_protected' => true
         ]);
 
-        $permissions4 = Permission::where('guard_name', 'app_user_guard')->pluck('id');
+        // $permissions4 = Permission::where('guard_name', 'app_user_guard')->pluck('id');
 
-        $marketer->permissions()->sync($permissions4);
+        // $marketer->permissions()->sync($permissions4);
 
         $teamManager = Role::updateOrCreate([
             'name' => 'Team Manager',
@@ -92,7 +92,7 @@ class RoleSeeder extends Seeder
             'guard_name' => 'app_user_guard',
             'is_protected' => true
         ]);
-        $teamManager->permissions()->sync($permissions4);
+        // $teamManager->permissions()->sync($permissions4);
 
         $teamLeader = Role::updateOrCreate([
             'name' => 'Team Leader',
@@ -103,6 +103,6 @@ class RoleSeeder extends Seeder
             'guard_name' => 'app_user_guard',
             'is_protected' => true
         ]);
-        $teamLeader->permissions()->sync($permissions4);
+        // $teamLeader->permissions()->sync($permissions4);
     }
 }

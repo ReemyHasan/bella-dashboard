@@ -73,4 +73,9 @@ class Customer extends Model
             ->withPivot(['extra_details', 'is_main'])
             ->withTimestamps();
     }
+
+    public function orders()
+    {
+        return $this->hasMany(CustomerOrder::class, 'customer_id');
+    }
 }

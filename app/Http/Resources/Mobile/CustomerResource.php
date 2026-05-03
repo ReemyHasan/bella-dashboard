@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\DashUser;
+namespace App\Http\Resources\Mobile;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -18,9 +18,7 @@ class CustomerResource extends JsonResource
             'id'          => $this->id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
-           // 'user_name' => $this->user_name,
             'mobile' => $this->mobile,
-          //  'profile_link' => $this->profile_link,
             'is_blocked' => $this->is_blocked,
             'blocked_date' => $this->blocked_date_formatted,
             'blocked_reason' => $this->blocked_reason,

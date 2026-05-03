@@ -240,28 +240,28 @@ class AppUserWithRequestsSeeder extends Seeder
             ]);
         }
 
-        $teams = Team::all();
+        $teams = Team::limit(1)->get();
 
         foreach ($teams as $team) {
-            $manager = AppUser::where('team_id', $team->id)->first();
 
-            if ($manager) {
-                $team->update([
-                    'manager_id' => $manager->id
-                ]);
-            }
+            $team->update([
+                'manager_id' => 1
+            ]);
+            $manager = AppUser::findOrFail(1);
+
+            $manager->assignRole('Team Manager');
         }
 
-        $subTeams = SubTeam::all();
+        $subTeams = SubTeam::limit(1)->get();
 
         foreach ($subTeams as $subTeam) {
-            $leader = AppUser::where('subteam_id', $subTeam->id)->first();
 
-            if ($leader) {
-                $subTeam->update([
-                    'team_leader_id' => $leader->id
-                ]);
-            }
+            $subTeam->update([
+                'team_leader_id' => 2
+            ]);
+            $manager = AppUser::findOrFail(2);
+
+            $manager->assignRole('Team Leader');
         }
 
         $warehouses = Warehouse::orderBy('id')->limit(3)->get();

@@ -2,9 +2,6 @@
 
 namespace App\Http\Resources\Mobile;
 
-use App\Http\Resources\DashUser\Orders\OrderOfferResource;
-use App\Http\Resources\DashUser\Orders\OrderProductResource;
-use App\Http\Resources\DashUser\Orders\OrderStatusLogResource;
 use App\Models\DashUser;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

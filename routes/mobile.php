@@ -3,6 +3,7 @@
 use App\Http\Controllers\Mobile\V1\Auth\AuthController;
 use App\Http\Controllers\Mobile\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Mobile\V1\Auth\ProfileController;
+use App\Http\Controllers\Mobile\V1\Customers\CustomerController;
 use App\Http\Controllers\Mobile\V1\Products\CategoryController;
 use App\Http\Controllers\Mobile\V1\Products\OrderController;
 use App\Http\Controllers\Mobile\V1\Products\ProductController;
@@ -42,5 +43,7 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::patch('customer-orders/{customer_order}/add-notes', [OrderController::class, 'addNotes']);
 
         Route::apiResource('customer-orders', OrderController::class)->only('index', 'store', 'update', 'show');
+
+        Route::apiResource('customers', CustomerController::class)->only('index', 'store', 'update', 'show');
     });
 });

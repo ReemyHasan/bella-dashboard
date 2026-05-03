@@ -12,6 +12,13 @@ class SharedSelectController extends Controller
 
 
 
+    public function selectCustomers(Request $request)
+    {
+        $search = $request->input('search');
+
+        $returned = $this->sharedInfoService->selectCustomers($search);
+        return response()->format($returned, 'messages.success', 200);
+    }
     public function selectMarketerInfo($marketeId = null)
     {
         $returned = $this->sharedInfoService->selectMarketerInfo($marketeId);
