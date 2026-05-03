@@ -616,7 +616,7 @@ class OrderService
             'status' => OrderStatus::note->value,
             'changed_by_type' => get_class(Auth::user()),
             'changed_by_id' => Auth::id(),
-            'notes' => $data['note']
+            'notes' => $data['notes']
         ]);
     }
     public function handle(CustomerOrder $order, array $data)

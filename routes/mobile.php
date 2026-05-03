@@ -24,6 +24,7 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
 
         Route::get('my-profile', [ProfileController::class, 'myProfile']);
 
+        Route::get('my-balance-details', [ProfileController::class, 'userBalanceLedgerReport']);
 
         Route::get('main-categories', [CategoryController::class, 'mainCategoriesList']);
         Route::get('sub-categories/{main_category}', [CategoryController::class, 'subCategoriesList']);
