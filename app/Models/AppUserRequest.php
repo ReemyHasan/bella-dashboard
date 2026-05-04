@@ -62,4 +62,15 @@ class AppUserRequest extends Model
     {
         return $this->belongsTo(DashUser::class, 'reviewed_by');
     }
+
+    public function scopeVisibleTo($query, $user)
+    {
+        return $query->where(function ($q) use ($user) {
+            $q->where('app_user_id', $user->id)
+                ->orWhere(function ($sub) use ($user) {
+                    $sub->where('requested_by_id', $user->id)
+                        ->where('requested_by_type', AppUser::class);
+                });
+        });
+    }
 }

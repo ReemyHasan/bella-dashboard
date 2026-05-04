@@ -23,4 +23,5 @@ Route::middleware(['auth:sanctum', 'api.blocked'])->group(function () {
     Route::get('select-competitions', [SharedSelectController::class, 'selectAvailableCompetitions']);
 
     Route::get('select-customers', [SharedSelectController::class, 'selectCustomers']);
+    Route::get('select-request-types', [SharedSelectController::class, 'selectAvailableAppUserRequestTypes']);
 });

@@ -49,7 +49,7 @@ class OrderService
     }
     public function show(CustomerOrder $order)
     {
-        $allowedUsers = [$order->app_user_id, $order->teamleader_id, $order->manager_id];
+        $allowedUsers = [$order->app_user_id, $order->teamleader_id, $order->manager_id, $order->warehouse_man_id];
         if (!in_array(auth()->user()->id, $allowedUsers)) {
             throw new CustomException('لا يمكن رؤية الطلب إلا من قبل المسوق المنشئ له أو مديره.');
         }
@@ -606,7 +606,7 @@ class OrderService
 
     public function addNotes(CustomerOrder $order, array $data)
     {
-        $allowedUsers = [$order->app_user_id, $order->teamleader_id, $order->manager_id];
+        $allowedUsers = [$order->app_user_id, $order->teamleader_id, $order->manager_id, $order->warehouse_man_id];
         if (!in_array(auth()->user()->id, $allowedUsers)) {
             throw new CustomException('لا يمكن إضافة ملاحظة إلا من قبل المسوق المنشئ له أو مديره.');
         }
@@ -621,8 +621,8 @@ class OrderService
     }
     public function handle(CustomerOrder $order, array $data)
     {
-        if ($order->app_user_id != auth()->user()->id) {
-            throw new CustomException('لا يمكن معالجة الطلب إلا من قبل المسوق المنشئ له.');
+        if ($order->warehouse_man_id != auth()->user()->id) {
+            throw new CustomException('لا يمكن معالجة الطلب إلا من قبل الموزع.');
         }
         $status = OrderStatus::from($data['status']);
 

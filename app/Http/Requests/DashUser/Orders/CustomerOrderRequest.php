@@ -117,52 +117,52 @@ class CustomerOrderRequest extends FormRequest
                 return;
             }
 
-            $productIds = collect($this->products ?? [])
-                ->pluck('product_id')
-                ->filter()
-                ->unique();
+            // $productIds = collect($this->products ?? [])
+            //     ->pluck('product_id')
+            //     ->filter()
+            //     ->unique();
 
-            $offerIds = collect($this->offers ?? [])
-                ->pluck('offer_id')
-                ->filter()
-                ->unique();
+            // $offerIds = collect($this->offers ?? [])
+            //     ->pluck('offer_id')
+            //     ->filter()
+            //     ->unique();
 
             // fetch warehouse stock
-            $warehouseProducts = \App\Models\ProductWarehouse::where('warehouse_id', $this->warehouse_id)
-                ->whereIn('product_id', $productIds)
-                ->get()
-                ->keyBy('product_id');
+            // $warehouseProducts = \App\Models\ProductWarehouse::where('warehouse_id', $this->warehouse_id)
+            //     ->whereIn('product_id', $productIds)
+            //     ->get()
+            //     ->keyBy('product_id');
 
-            $warehouseOffers = \App\Models\OfferWarehouse::where('warehouse_id', $this->warehouse_id)
-                ->whereIn('offer_id', $offerIds)
-                ->get()
-                ->keyBy('offer_id');
+            // $warehouseOffers = \App\Models\OfferWarehouse::where('warehouse_id', $this->warehouse_id)
+            //     ->whereIn('offer_id', $offerIds)
+            //     ->get()
+            //     ->keyBy('offer_id');
 
             // If updating, fetch current order
-            $currentOrder = $this->route('customer_order'); // make sure route model binding
-            $currentProducts = $currentOrder?->products?->keyBy('product_id') ?? collect();
-            $currentOffers = $currentOrder?->offers?->keyBy('offer_id') ?? collect();
+            // $currentOrder = $this->route('customer_order'); // make sure route model binding
+            // $currentProducts = $currentOrder?->products?->keyBy('product_id') ?? collect();
+            // $currentOffers = $currentOrder?->offers?->keyBy('offer_id') ?? collect();
 
             // -----------------------------
             // PRODUCTS VALIDATION
             // -----------------------------
-            foreach ($this->products ?? [] as $index => $product) {
+            // foreach ($this->products ?? [] as $index => $product) {
 
-                $warehouseProduct = $warehouseProducts->get($product['product_id']);
-                if (!$warehouseProduct) continue;
+            //     $warehouseProduct = $warehouseProducts->get($product['product_id']);
+            //     if (!$warehouseProduct) continue;
 
-                // include current order reserved quantity for update
-                $currentQty = $currentProducts->get($product['product_id'])->quantity ?? 0;
+            //     // include current order reserved quantity for update
+            //     $currentQty = $currentProducts->get($product['product_id'])->quantity ?? 0;
 
-                $available = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity + $currentQty;
+            //     $available = $warehouseProduct->quantity - $warehouseProduct->reserved_quantity + $currentQty;
 
-                if ($product['quantity'] > $available) {
-                    $validator->errors()->add(
-                        "products.$index.quantity",
-                        "الكمية المطلوبة غير متوفرة. المتاح: {$available}"
-                    );
-                }
-            }
+            //     if ($product['quantity'] > $available) {
+            //         $validator->errors()->add(
+            //             "products.$index.quantity",
+            //             "الكمية المطلوبة غير متوفرة. المتاح: {$available}"
+            //         );
+            //     }
+            // }
 
             // -----------------------------
             // OFFERS VALIDATION

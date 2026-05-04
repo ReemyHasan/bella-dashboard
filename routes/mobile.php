@@ -45,5 +45,7 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::apiResource('customer-orders', OrderController::class)->only('index', 'store', 'update', 'show');
 
         Route::apiResource('customers', CustomerController::class)->only('index', 'store', 'update', 'show');
+
+        Route::apiResource('marketer-requests', CustomerController::class)->only('index', 'store', 'show');
     });
 });

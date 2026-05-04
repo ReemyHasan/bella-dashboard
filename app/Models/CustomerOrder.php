@@ -236,7 +236,10 @@ class CustomerOrder extends Model
                 $q->where('sub_team_id', $user->subteam_id);
                 return;
             }
-
+            if ($user->is_warehouse_man) {
+                $q->where('warehouse_man_id', $user->id);
+                return;
+            }
             $q->where('app_user_id', $user->id);
         });
     }

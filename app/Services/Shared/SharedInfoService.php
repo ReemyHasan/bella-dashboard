@@ -15,6 +15,7 @@ use App\Models\OfferZonePrice;
 use App\Models\ProductWarehouse;
 use App\Models\ProductZonePrice;
 use App\Models\SubTeam;
+use App\Models\UserRequestType;
 
 class SharedInfoService
 {
@@ -270,5 +271,19 @@ class SharedInfoService
                 'name',
                 'status'
             ]);
+    }
+
+    public function selectAvailableAppUserRequestTypes()
+    {
+
+        $userRequestTypes = UserRequestType::orderBy('id')->get([
+            'id',
+            'name'
+        ]);
+
+        return $userRequestTypes->map(fn($userRequestType) => [
+            'key' => $userRequestType?->id,
+            'value' => $userRequestType?->name
+        ]);
     }
 }
