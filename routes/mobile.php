@@ -9,6 +9,7 @@ use App\Http\Controllers\Mobile\V1\Customers\CustomerController;
 use App\Http\Controllers\Mobile\V1\Products\CategoryController;
 use App\Http\Controllers\Mobile\V1\Products\OrderController;
 use App\Http\Controllers\Mobile\V1\Products\ProductController;
+use App\Http\Controllers\Mobile\V1\Products\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -51,5 +52,8 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::apiResource('marketer-requests', AppUserRequestController::class)->only('index', 'store', 'show');
         Route::apiResource('warehouse-man-reviews', WarehouseManReviewController::class)->only('index', 'store');
 
+        Route::get('warehouses', [WarehouseController::class, 'index']);
+        Route::get('warehouses-products', [WarehouseController::class, 'warehouseProducts']);
+        Route::get('warehouses-offers', [WarehouseController::class, 'warehouseOffers']);
     });
 });

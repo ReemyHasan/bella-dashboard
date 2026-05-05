@@ -109,4 +109,19 @@ class SharedSelectController extends Controller
         ]);
         return response()->format($returnedData, 'messages.success', 200);
     }
+
+
+    public function selectAvailableWarehouses(Request $request)
+    {
+        $zone = $request->input('zone');
+        $is_main = $request->input('is_main');
+
+        $warehouses = $this->sharedInfoService->selectAvailableWarehouses($zone, $is_main);
+
+        $returnedData = $warehouses->map(fn($warehouse) => [
+            'key' => $warehouse?->id,
+            'value' => $warehouse?->name
+        ]);
+        return response()->format($returnedData, 'messages.success', 200);
+    }
 }

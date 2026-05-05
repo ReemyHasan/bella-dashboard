@@ -17,6 +17,7 @@ use App\Models\ProductWarehouse;
 use App\Models\ProductZonePrice;
 use App\Models\SubTeam;
 use App\Models\UserRequestType;
+use App\Models\Warehouse;
 
 class SharedInfoService
 {
@@ -307,5 +308,22 @@ class SharedInfoService
             'key'          => $warehouseman->id,
             'value' => $warehouseman->first_name . ' ' . $warehouseman->last_name,
         ]);
+    }
+
+    public function selectAvailableWarehouses($zone = null, $is_main = null)
+    {
+        $warehouses = Warehouse::when(!is_null($zone), function ($query) use ($zone) {
+            $query->where('zone_id', $zone);
+        })->when(!is_null($is_main), function ($query) use ($is_main) {
+            $query->where('is_main', $is_main);
+        })->where('active', true)->orderBy('id')->get([
+            'id',
+            'name',
+            'active',
+            'is_main',
+            'zone_id'
+        ]);
+
+        return $warehouses;
     }
 }
