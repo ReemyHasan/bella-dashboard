@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Mobile\V1\AppUser\AppUserRequestController;
+use App\Http\Controllers\Mobile\V1\AppUser\ProfileController;
+use App\Http\Controllers\Mobile\V1\AppUser\WarehouseManReviewController;
 use App\Http\Controllers\Mobile\V1\Auth\AuthController;
 use App\Http\Controllers\Mobile\V1\Auth\PasswordResetController;
-use App\Http\Controllers\Mobile\V1\Auth\ProfileController;
 use App\Http\Controllers\Mobile\V1\Customers\CustomerController;
 use App\Http\Controllers\Mobile\V1\Products\CategoryController;
 use App\Http\Controllers\Mobile\V1\Products\OrderController;
@@ -46,6 +48,8 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
 
         Route::apiResource('customers', CustomerController::class)->only('index', 'store', 'update', 'show');
 
-        Route::apiResource('marketer-requests', CustomerController::class)->only('index', 'store', 'show');
+        Route::apiResource('marketer-requests', AppUserRequestController::class)->only('index', 'store', 'show');
+        Route::apiResource('warehouse-man-reviews', WarehouseManReviewController::class)->only('index', 'store');
+
     });
 });

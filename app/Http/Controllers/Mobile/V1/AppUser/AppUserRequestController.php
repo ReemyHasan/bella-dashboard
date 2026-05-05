@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Mobile\V1\Auth;
+namespace App\Http\Controllers\Mobile\V1\AppUser;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mobile\AppUser\AppUserRequestRequest;

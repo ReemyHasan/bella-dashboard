@@ -50,5 +50,7 @@ return [
     'competition' => 'الهدف التسويقي',
     'brand' => 'الماركة',
     'balance_transfer_request' => 'طلب نقل رصيد',
-    'warehouse_products' => 'منتجات المستودع'
+    'warehouse_products' => 'منتجات المستودع',
+    'review' => 'التقييم',
+
 ];

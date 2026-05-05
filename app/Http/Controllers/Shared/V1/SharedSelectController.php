@@ -67,13 +67,19 @@ class SharedSelectController extends Controller
         return response()->format($returned, 'messages.success', 200);
     }
 
-      public function selectAvailableAppUserRequestTypes()
+    public function selectAvailableAppUserRequestTypes()
     {
 
         $returned = $this->sharedInfoService->selectAvailableAppUserRequestTypes();
         return response()->format($returned, 'messages.success', 200);
     }
 
+    public function selectAvailableWarehouseMen()
+    {
+
+        $returned = $this->sharedInfoService->selectAvailableWarehouseMen();
+        return response()->format($returned, 'messages.success', 200);
+    }
     public function selectAvailableSubteams($teamId)
     {
         $subteams = $this->sharedInfoService->selectAvailableSubteams($teamId);

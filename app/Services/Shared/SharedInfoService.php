@@ -4,6 +4,7 @@ namespace App\Services\Shared;
 
 use App\Enums\CompetitionStatus;
 use App\Enums\CompetitionTarget;
+use App\Enums\DashUserStatus;
 use App\Exceptions\CustomException;
 use App\Models\Address;
 use App\Models\AppUser;
@@ -284,6 +285,27 @@ class SharedInfoService
         return $userRequestTypes->map(fn($userRequestType) => [
             'key' => $userRequestType?->id,
             'value' => $userRequestType?->name
+        ]);
+    }
+
+
+    public function selectAvailableWarehouseMen($search = null)
+    {
+        $warehousemen = AppUser::query()->where('is_warehouse_man', true)->when(!is_null($search), function ($query) use ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%$search%")
+                    ->orWhere('last_name', 'like', "%$search%")
+                    ->orWhere('user_name', 'like', "%$search%");
+            });
+        })->where('status', DashUserStatus::ACTIVE->value)->get([
+            'id',
+            'first_name',
+            'last_name',
+            'user_name',
+        ]);
+        return $warehousemen->map(fn($warehouseman) => [
+            'key'          => $warehouseman->id,
+            'value' => $warehouseman->first_name . ' ' . $warehouseman->last_name,
         ]);
     }
 }

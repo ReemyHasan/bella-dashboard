@@ -253,4 +253,18 @@ class AppUser extends Authenticatable
     {
         return $this->hasMany(CustomerOrder::class, 'app_user_id');
     }
+
+    public function reviewsGiven()
+    {
+        return $this->hasMany(WarehouseReview::class, 'reviewer_id');
+    }
+
+    public function reviewsReceived()
+    {
+        return $this->hasMany(WarehouseReview::class, 'reviewed_user_id');
+    }
+    public function getAverageRatingAttribute()
+    {
+        return $this->reviewsReceived()->avg('rating');
+    }
 }
