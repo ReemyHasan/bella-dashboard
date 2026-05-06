@@ -268,13 +268,21 @@ class CustomerOrderObserver
     }
     private function calculateProgress($score, $competition): float
     {
-        if (!$competition->target_value || $competition->target_value == 0) {
+        $target = match ($competition->type) {
+            'product_sales'
+            => $competition->products->sum('pivot.target_quantity'),
+            'offer_sales'
+            => $competition->offers->sum('pivot.target_quantity'),
+            default
+            => $competition->target_value,
+        };
+
+        if (!$target || $target == 0) {
             return 0;
         }
 
-        return min(100, ($score / $competition->target_value) * 100);
+        return min(100, ($score / $target) * 100);
     }
-
     private function rewardWinner($participant, $competition): void
     {
         $receiver = $this->resolveRewardReceiver($participant, $competition);

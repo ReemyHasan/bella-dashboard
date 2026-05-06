@@ -111,8 +111,7 @@ class SharedInfoService
         $warehouse = $address->region->warehouse;
 
         $user = auth()->user();
-        if ($user->hasRole('Team Manager') || $user->hasRole('Team Leader') || $user instanceof DashUser) {
-
+        if ($user->hasRole('Team Manager') || $user->hasRole('Team Leader') || $user->is_warehouse_man || $user instanceof DashUser) {
             $warehouseKeeper =  [
                 'id' => $warehouse?->keeper_id,
                 'name' => $warehouse->keeper?->first_name . ' ' . $warehouse->keeper?->last_name . ' (' . $warehouse->keeper?->mobile . ')',
