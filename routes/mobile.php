@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Mobile\V1\AppUser\AppUserRequestController;
+use App\Http\Controllers\Mobile\V1\AppUser\FinancialOverviewController;
 use App\Http\Controllers\Mobile\V1\AppUser\ProfileController;
 use App\Http\Controllers\Mobile\V1\AppUser\WarehouseManReviewController;
 use App\Http\Controllers\Mobile\V1\Auth\AuthController;
@@ -59,5 +60,11 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
 
         Route::get('my-competitions', [CompetitionController::class, 'index']);
         Route::get('my-competitions/{id}', [CompetitionController::class, 'show']);
+
+        ///// Financial Overview 
+        Route::get('user-balance-summary', [FinancialOverviewController::class, 'userBalanceSummary']);
+        Route::get('user-orders-trend-over-time', [FinancialOverviewController::class, 'basePriceOverTime']);
+        Route::get('user-top-sold-products', [FinancialOverviewController::class, 'topProducts']);
+        Route::get('user-top-customers', [FinancialOverviewController::class, 'topCustomers']);
     });
 });

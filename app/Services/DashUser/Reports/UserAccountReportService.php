@@ -6,6 +6,7 @@ use App\Enums\VaultTransactionType;
 use App\Models\AppUser;
 use App\Models\BalanceTransferRequest;
 use App\Models\CashRequest;
+use App\Models\Competition;
 use App\Models\CustomerOrder;
 use App\Models\FinancialAdjustment;
 use App\Models\VaultTransaction;
@@ -42,6 +43,7 @@ class UserAccountReportService
                         FinancialAdjustment::class    => 'تعديل مالي',
                         VaultTransfer::class          => 'تحويل خزنة',
                         CustomerOrder::class          => 'طلب عميل',
+                        Competition::class          => 'هدف تسويقي',
                         default                       => 'غير معروف',
                     },
                     'reference_id' => $trx->reference_id,

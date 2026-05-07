@@ -5,6 +5,7 @@ namespace App\Http\Resources\Mobile;
 use App\Enums\VaultTransactionType;
 use App\Models\BalanceTransferRequest;
 use App\Models\CashRequest;
+use App\Models\Competition;
 use App\Models\CustomerOrder;
 use App\Models\FinancialAdjustment;
 use App\Models\VaultTransfer;
@@ -26,6 +27,7 @@ class UserBalanceLedgerResource extends JsonResource
                 FinancialAdjustment::class    => 'تعديل مالي',
                 VaultTransfer::class          => 'تحويل خزنة',
                 CustomerOrder::class          => 'طلب عميل',
+                Competition::class          => 'هدف تسويقي',
                 default                       => 'غير معروف',
             },
 

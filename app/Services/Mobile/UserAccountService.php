@@ -11,7 +11,7 @@ use App\Traits\ResultTrait;
 
 class UserAccountService
 {
-        use ResultTrait;
+    use ResultTrait;
 
     public function userBalanceLedger(array $filters)
     {
@@ -38,7 +38,7 @@ class UserAccountService
         return [
             'current_balance' => $user->balance,
             'from' => isset($from) ? $from->format('Y-m-d') : null,
-            'to' => isset($to) ? $to->format('Y-m-d'): null,
+            'to' => isset($to) ? $to->format('Y-m-d') : null,
             'transactions' => $this->returnPaginatedResponse($transactions, UserBalanceLedgerResource::collection($transactions))
         ];
     }
