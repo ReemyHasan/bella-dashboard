@@ -44,9 +44,7 @@ class CreatedOrAssigned extends QueryFilter implements FilterContract
 
                     $sub->where('target_type', 'marketer')
                         ->whereHas('assignees', function ($a) use ($user) {
-
-                            $a->where('assignee_id', $user->id)
-                                ->where('assignee_type', AppUser::class);
+                            $a->where('marketer_id', $user->id);
                         });
                 });
 
@@ -57,9 +55,7 @@ class CreatedOrAssigned extends QueryFilter implements FilterContract
 
                         $sub->where('target_type', 'team')
                             ->whereHas('assignees', function ($a) use ($user) {
-
-                                $a->where('assignee_id', $user->team_id)
-                                    ->where('assignee_type', Team::class);
+                                $a->where('team_id', $user->team_id);
                             });
                     });
                 }
@@ -71,9 +67,7 @@ class CreatedOrAssigned extends QueryFilter implements FilterContract
 
                         $sub->where('target_type', 'sub_team')
                             ->whereHas('assignees', function ($a) use ($user) {
-
-                                $a->where('assignee_id', $user->subteam_id)
-                                    ->where('assignee_type', SubTeam::class);
+                                $a->where('sub_team_id', $user->subteam_id);
                             });
                     });
                 }

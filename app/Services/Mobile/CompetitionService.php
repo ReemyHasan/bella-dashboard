@@ -30,7 +30,7 @@ class CompetitionService
 
                 // ✅ 2. marketer participation
                 $q->orWhereHas('marketers', function ($sub) use ($user) {
-                    $sub->where('app_user_id', $user->id);
+                    $sub->where('marketer_id', $user->id);
                 });
 
                 // 🔥 Team Manager
@@ -145,7 +145,7 @@ class CompetitionService
                 $q->orWhereHas(
                     'marketers',
                     fn($m) =>
-                    $m->where('app_user_id', $user->id)
+                    $m->where('marketer_id', $user->id)
                 );
 
                 if ($user->hasRole('Team Manager')) {

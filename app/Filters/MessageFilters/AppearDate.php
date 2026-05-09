@@ -19,11 +19,12 @@ class AppearDate extends QueryFilter implements FilterContract
 
         if ($from && $to) {
             $this->query->where(function ($query) use ($from, $to) {
-                $query->whereBetween('appears_from', [$from, $to])
-                    ->orWhereBetween('appears_to', [$from, $to])
-                    ->orWhere(function ($q) use ($from, $to) {
-                        $q->where('appears_from', '<=', $from)
-                            ->where('appears_to', '>=', $to);
+                $query
+                // ->whereBetween('appears_from', [$from, $to])
+                //     ->orWhereBetween('appears_to', [$from, $to])
+                    ->where(function ($q) use ($from, $to) {
+                        $q->where('appears_from', '>=', $from)
+                            ->where('appears_to', '<=', $to);
                     });
             });
         } elseif ($from) {

@@ -72,7 +72,7 @@ class FinancialOverviewService
         $user = auth()->user();
         $query = CustomerOrder::query();
         $query = $this->applyScopeFilters($query, $user, $filters);
-        $query->where('order_status', OrderStatus::completed->value)
+        $query = $query->where('order_status', OrderStatus::completed->value)
             ->when($from && $to, fn($q) => $q->whereBetween('created_at', [$from, $to]))
             ->when($from && !$to, fn($q) => $q->where('created_at', '>=', $from))
             ->when(!$from && $to, fn($q) => $q->where('created_at', '<=', $to));
@@ -119,7 +119,7 @@ class FinancialOverviewService
             'to'   => $to?->format('Y-m-d'),
 
             'orders' => [
-                'count' => $ordersCount,
+                'orders_count' => $ordersCount,
                 'total_base_price' => (float) ($result->total_base_price_sum ?? 0),
                 'total_adjustment' => (float) ($result->total_adjustment_sum ?? 0),
             ],
@@ -130,8 +130,13 @@ class FinancialOverviewService
 
     public function basePriceOverTime(array $filters)
     {
-        $from = isset($filters['from']) ? Carbon::parse($filters['from'])->startOfDay() : null;
-        $to   = isset($filters['to']) ? Carbon::parse($filters['to'])->endOfDay() : null;
+        $from = isset($filters['from'])
+            ? Carbon::parse($filters['from'])->startOfDay()
+            : now()->subDays(30)->startOfDay();
+
+        $to = isset($filters['to'])
+            ? Carbon::parse($filters['to'])->endOfDay()
+            : now()->endOfDay();
 
         $groupBy = $filters['group_by'] ?? 'daily'; // daily | weekly | monthly
 
@@ -152,7 +157,7 @@ class FinancialOverviewService
             $query = CustomerOrder::query();
             $query = $this->applyScopeFilters($query, $user, $filters);
 
-            $query->where('order_status', OrderStatus::completed->value)
+            $query = $query->where('order_status', OrderStatus::completed->value)
 
                 ->when($from && $to, fn($q) => $q->whereBetween('created_at', [$from, $to]))
                 ->when($from && !$to, fn($q) => $q->where('created_at', '>=', $from))
@@ -165,16 +170,42 @@ class FinancialOverviewService
             ")
                 ->groupBy('period')
                 ->orderBy('period')
-                ->get();
+                ->get()->keyBy('period');
 
             // 🔹 build chart-friendly arrays
             $labels = [];
             $values = [];
 
-            foreach ($rows as $row) {
+            $cursor = $from->copy();
 
-                $labels[] = $this->formatLabel($row->period, $groupBy);
-                $values[] = (float) $row->total;
+            while ($cursor <= $to) {
+
+                $period = match ($groupBy) {
+
+                    'weekly' => $cursor->format('Y-W'),
+
+                    'monthly' => $cursor->format('Y-m'),
+
+                    default => $cursor->format('Y-m-d'),
+                };
+
+                $labels[] = $this->formatLabel(
+                    $period,
+                    $groupBy
+                );
+
+                $values[] = (float) optional(
+                    $rows->get($period)
+                )->total ?? 0;
+
+                match ($groupBy) {
+
+                    'weekly' => $cursor->addWeek(),
+
+                    'monthly' => $cursor->addMonth(),
+
+                    default => $cursor->addDay(),
+                };
             }
 
             return [
@@ -220,7 +251,7 @@ class FinancialOverviewService
             $rows = $this->applyScopeFilters($rows, $user, $filters);
 
 
-            $rows->where('customer_orders.order_status', OrderStatus::completed->value)
+            $rows = $rows->where('customer_orders.order_status', OrderStatus::completed->value)
 
                 ->when($from && $to, fn($q) => $q->whereBetween('customer_orders.created_at', [$from, $to]))
                 ->when($from && !$to, fn($q) => $q->where('customer_orders.created_at', '>=', $from))
@@ -267,7 +298,7 @@ class FinancialOverviewService
             $rows = $this->applyScopeFilters($rows, $user, $filters);
 
             // ->where('customer_orders.app_user_id', $user->id)
-            $rows->where('customer_orders.order_status', OrderStatus::completed->value)
+            $rows = $rows->where('customer_orders.order_status', OrderStatus::completed->value)
 
                 ->when($from && $to, fn($q) => $q->whereBetween('customer_orders.created_at', [$from, $to]))
                 ->when($from && !$to, fn($q) => $q->where('customer_orders.created_at', '>=', $from))

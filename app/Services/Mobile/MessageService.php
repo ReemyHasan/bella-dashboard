@@ -20,12 +20,14 @@ class MessageService
 
         return Message::query()
             ->with('createdBy')
+
             ->where(function ($q) use ($user) {
 
                 /*
             |--------------------------------------------------------------------------
             | Messages created by him
             |--------------------------------------------------------------------------
+            | Creator can always see his messages
             */
                 $q->where(function ($sub) use ($user) {
 
@@ -35,49 +37,103 @@ class MessageService
 
                     /*
             |--------------------------------------------------------------------------
-            | Messages targeting him directly
+            | Assigned messages (must be visible by date)
             |--------------------------------------------------------------------------
             */
                     ->orWhere(function ($sub) use ($user) {
 
-                        $sub->where('target_type', 'marketer')
-                            ->whereHas('assignees', function ($a) use ($user) {
+                        /*
+                |--------------------------------------------------------------------------
+                | Visibility Date Condition
+                |--------------------------------------------------------------------------
+                */
+                        $sub->where(function ($dateQuery) {
 
-                                $a->where('assignee_id', $user->id)
-                                    ->where('assignee_type', AppUser::class);
-                            });
-                    })
+                            $now = now();
 
-                    /*
-            |--------------------------------------------------------------------------
-            | Messages targeting his team
-            |--------------------------------------------------------------------------
-            */
-                    ->orWhere(function ($sub) use ($user) {
+                            $dateQuery
+                                ->where(function ($q) use ($now) {
 
-                        $sub->where('target_type', 'team')
-                            ->whereHas('assignees', function ($a) use ($user) {
+                                    // between from/to
+                                    $q->whereNotNull('appears_from')
+                                        ->whereNotNull('appears_to')
+                                        ->where('appears_from', '<=', $now)
+                                        ->where('appears_to', '>=', $now);
+                                })
 
-                                $a->where('assignee_id', $user->team_id)
-                                    ->where('assignee_type', Team::class);
-                            });
-                    })
+                                ->orWhere(function ($q) use ($now) {
 
-                    /*
-            |--------------------------------------------------------------------------
-            | Messages targeting his subteam
-            |--------------------------------------------------------------------------
-            */
-                    ->orWhere(function ($sub) use ($user) {
+                                    // only from
+                                    $q->whereNotNull('appears_from')
+                                        ->whereNull('appears_to')
+                                        ->where('appears_from', '<=', $now);
+                                })
 
-                        $sub->where('target_type', 'sub_team')
-                            ->whereHas('assignees', function ($a) use ($user) {
+                                ->orWhere(function ($q) use ($now) {
 
-                                $a->where('assignee_id', $user->subteam_id)
-                                    ->where('assignee_type', SubTeam::class);
+                                    // only to
+                                    $q->whereNull('appears_from')
+                                        ->whereNotNull('appears_to')
+                                        ->where('appears_to', '>=', $now);
+                                })
+
+                                ->orWhere(function ($q) {
+
+                                    // always visible if both null
+                                    $q->whereNull('appears_from')
+                                        ->whereNull('appears_to');
+                                });
+                        })
+
+                            /*
+                |--------------------------------------------------------------------------
+                | Direct marketer assignment
+                |--------------------------------------------------------------------------
+                */
+                            ->where(function ($targetQuery) use ($user) {
+
+                                $targetQuery
+
+                                    ->where(function ($q) use ($user) {
+
+                                        $q->where('target_type', 'marketer')
+                                            ->whereHas('assignees', function ($a) use ($user) {
+
+                                                $a->where('marketer_id', $user->id);
+                                            });
+                                    })
+
+                                    /*
+                        |--------------------------------------------------------------------------
+                        | Team assignment
+                        |--------------------------------------------------------------------------
+                        */
+                                    ->orWhere(function ($q) use ($user) {
+
+                                        $q->where('target_type', 'team')
+                                            ->whereHas('assignees', function ($a) use ($user) {
+
+                                                $a->where('team_id', $user->team_id);
+                                            });
+                                    })
+
+                                    /*
+                        |--------------------------------------------------------------------------
+                        | Subteam assignment
+                        |--------------------------------------------------------------------------
+                        */
+                                    ->orWhere(function ($q) use ($user) {
+
+                                        $q->where('target_type', 'sub_team')
+                                            ->whereHas('assignees', function ($a) use ($user) {
+
+                                                $a->where('sub_team_id', $user->subteam_id);
+                                            });
+                                    });
                             });
                     });
-            })->filterBy($request->all())
+            })
+            ->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
     }
@@ -178,8 +234,7 @@ class MessageService
         ) {
 
             $allowed = $message->assignees()
-                ->where('assignee_id', $user->id)
-                ->where('assignee_type', AppUser::class)
+                ->where('marketer_id', $user->id)
                 ->exists();
         }
 
@@ -190,8 +245,7 @@ class MessageService
         ) {
 
             $allowed = $message->assignees()
-                ->where('assignee_id', $user->team_id)
-                ->where('assignee_type', Team::class)
+                ->where('team_id', $user->team_id)
                 ->exists();
         }
 
@@ -202,8 +256,7 @@ class MessageService
         ) {
 
             $allowed = $message->assignees()
-                ->where('assignee_id', $user->subteam_id)
-                ->where('assignee_type', SubTeam::class)
+                ->where('sub_team_id', $user->subteam_id)
                 ->exists();
         }
 

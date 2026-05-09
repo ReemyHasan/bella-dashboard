@@ -60,9 +60,9 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::get('warehouses-offers/{warehouse}', [WarehouseController::class, 'warehouseOffers']);
         Route::get('offers/{offer}', [WarehouseController::class, 'showOffer']);
 
-        ////////////////////////////////////////////////
         Route::get('my-competitions', [CompetitionController::class, 'index']);
         Route::get('my-competitions/{id}', [CompetitionController::class, 'show']);
+
 
         ///// Financial Overview 
         Route::get('user-balance-summary', [FinancialOverviewController::class, 'userBalanceSummary']);
@@ -70,7 +70,7 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::get('user-top-sold-products', [FinancialOverviewController::class, 'topProducts']);
         Route::get('user-top-customers', [FinancialOverviewController::class, 'topCustomers']);
 
-
+        ////////////////////////////////////////////////
         Route::apiResource('messages', MessageController::class)->except('destroy');
     });
 });
