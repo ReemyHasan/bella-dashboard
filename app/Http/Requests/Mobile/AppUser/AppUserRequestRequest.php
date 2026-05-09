@@ -33,8 +33,8 @@ class AppUserRequestRequest extends FormRequest
     protected function prepareForValidation()
     {
         $user = auth()->user();
-        $typeId = $this->user_request_type_id;
-        if ($typeId && $typeId != 3) {
+        $app_user_id = $this->app_user_id;
+        if (!$app_user_id) {
             $this->merge([
                 'app_user_id' => $user->id,
             ]);
@@ -52,17 +52,16 @@ class AppUserRequestRequest extends FormRequest
             // ✅ Promotion case
             if ($typeId == 3) {
 
-                if ($targetUserId == $user->id) {
-                    $validator->errors()->add(
-                        'app_user_id',
-                        'لا يمكن تقديم طلب ترقية لنفسك'
-                    );
-                }
-
                 if (!$user->hasRole('Team Manager')) {
                     $validator->errors()->add(
                         'user_request_type_id',
                         'فقط مدير الفريق يمكنه تقديم طلب ترقية'
+                    );
+                }
+                if ($targetUserId == $user->id) {
+                    $validator->errors()->add(
+                        'app_user_id',
+                        'لا يمكن تقديم طلب ترقية لنفسك'
                     );
                 }
             }

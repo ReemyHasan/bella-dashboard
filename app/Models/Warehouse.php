@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\WarehouseObserver;
 use App\Traits\HasFilters;
 use App\Traits\HasFormattedTimestamps;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+#[ObservedBy([WarehouseObserver::class])]
 class Warehouse extends Model
 {
     use HasFactory, HasFilters, HasFormattedTimestamps;

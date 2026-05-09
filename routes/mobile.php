@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Mobile\V1\AppUser\AppUserRequestController;
 use App\Http\Controllers\Mobile\V1\AppUser\FinancialOverviewController;
+use App\Http\Controllers\Mobile\V1\AppUser\MessageController;
 use App\Http\Controllers\Mobile\V1\AppUser\ProfileController;
 use App\Http\Controllers\Mobile\V1\AppUser\WarehouseManReviewController;
 use App\Http\Controllers\Mobile\V1\Auth\AuthController;
@@ -55,9 +56,11 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::apiResource('warehouse-man-reviews', WarehouseManReviewController::class)->only('index', 'store');
 
         Route::get('warehouses', [WarehouseController::class, 'index']);
-        Route::get('warehouses-products', [WarehouseController::class, 'warehouseProducts']);
-        Route::get('warehouses-offers', [WarehouseController::class, 'warehouseOffers']);
+        Route::get('warehouses-products/{warehouse}', [WarehouseController::class, 'warehouseProducts']);
+        Route::get('warehouses-offers/{warehouse}', [WarehouseController::class, 'warehouseOffers']);
+        Route::get('offers/{offer}', [WarehouseController::class, 'showOffer']);
 
+        ////////////////////////////////////////////////
         Route::get('my-competitions', [CompetitionController::class, 'index']);
         Route::get('my-competitions/{id}', [CompetitionController::class, 'show']);
 
@@ -66,5 +69,8 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::get('user-orders-trend-over-time', [FinancialOverviewController::class, 'basePriceOverTime']);
         Route::get('user-top-sold-products', [FinancialOverviewController::class, 'topProducts']);
         Route::get('user-top-customers', [FinancialOverviewController::class, 'topCustomers']);
+
+
+        Route::apiResource('messages', MessageController::class)->except('destroy');
     });
 });

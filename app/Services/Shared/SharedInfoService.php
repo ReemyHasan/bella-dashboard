@@ -15,9 +15,11 @@ use App\Models\OfferWarehouse;
 use App\Models\OfferZonePrice;
 use App\Models\ProductWarehouse;
 use App\Models\ProductZonePrice;
+use App\Models\Region;
 use App\Models\SubTeam;
 use App\Models\UserRequestType;
 use App\Models\Warehouse;
+use App\Models\Zone;
 
 class SharedInfoService
 {
@@ -324,5 +326,64 @@ class SharedInfoService
         ]);
 
         return $warehouses;
+    }
+
+    public function selectAvailableZones($search = null)
+    {
+
+        $zones = Zone::query()->when(!is_null($search), function ($query) use ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%");
+            });
+        })->get([
+            'id',
+            'name',
+            'symbol',
+        ]);
+
+        return $zones->map(fn($zone) => [
+            'key' => $zone?->id,
+            'value' => $zone?->name . '(' . $zone?->symbol . ')'
+        ]);
+    }
+
+
+    public function selectAvailableRegions($city = null, $search = null)
+    {
+
+        $regions = Region::when(!is_null($city), function ($query) use ($city) {
+            $query->where('city_id', $city);
+        })->when(!is_null($search), function ($query) use ($search) {
+            $query->where('name', 'like', "%$search%");
+        })->orderBy('id')->get([
+            'id',
+            'name',
+            'symbol',
+            'city_id'
+        ]);
+
+        return  $regions->map(fn($region) => [
+            'key' => $region?->id,
+            'value' => $region?->name . '(' . $region?->symbol . ')'
+        ]);
+    }
+
+    public function selectAvailableAddresses($region = null, $search = null)
+    {
+
+        $addresses = Address::when(!is_null($region), function ($query) use ($region) {
+            $query->where('region_id', $region);
+        })->when(!is_null($search), function ($query) use ($search) {
+            $query->where('name', 'like', "%$search%");
+        })->orderBy('id')->get([
+            'id',
+            'name',
+            'region_id'
+        ]);
+
+        return $addresses->map(fn($address) => [
+            'key' => $address?->id,
+            'value' => $address?->name
+        ]);
     }
 }

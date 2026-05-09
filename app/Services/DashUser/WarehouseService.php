@@ -68,15 +68,15 @@ class WarehouseService
                 'keeper_id' => $data['keeper_id']
 
             ]);
-            if (isset($data['keeper_id'])) {
-                $appUser = AppUser::findOrFail($data['keeper_id']);
-                $appUser->update([
-                    'is_warehouse_man' => true,
-                    'is_delivery_man' => true,
-                    'warehouse_id' => $warehouse->id
+            // if (isset($data['keeper_id'])) {
+            //     $appUser = AppUser::findOrFail($data['keeper_id']);
+            //     $appUser->update([
+            //         'is_warehouse_man' => true,
+            //         'is_delivery_man' => true,
+            //         'warehouse_id' => $warehouse->id
 
-                ]);
-            }
+            //     ]);
+            // }
             $warehouse->load('zone', 'keeper');
 
 
@@ -98,21 +98,21 @@ class WarehouseService
                 'keeper_id' => $data['keeper_id']
             ]);
 
-            if (isset($data['keeper_id']) && $data['keeper_id'] != $oldKeeperId) {
-                if ($oldKeeper)
-                    $oldKeeper->update([
-                        'is_warehouse_man' => false,
-                        'is_delivery_man' => false,
+            // if (isset($data['keeper_id']) && $data['keeper_id'] != $oldKeeperId) {
+            //     if ($oldKeeper)
+            //         $oldKeeper->update([
+            //             'is_warehouse_man' => false,
+            //             'is_delivery_man' => false,
 
-                    ]);
-                $appUser = AppUser::findOrFail($data['keeper_id']);
-                $appUser->update([
-                    'is_warehouse_man' => true,
-                    'is_delivery_man' => true,
-                    'warehouse_id' => $warehouse->id
+            //         ]);
+            //     $appUser = AppUser::findOrFail($data['keeper_id']);
+            //     $appUser->update([
+            //         'is_warehouse_man' => true,
+            //         'is_delivery_man' => true,
+            //         'warehouse_id' => $warehouse->id
 
-                ]);
-            }
+            //     ]);
+            // }
 
             $warehouse->load('zone', 'keeper');
 

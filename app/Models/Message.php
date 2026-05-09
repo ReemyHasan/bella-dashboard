@@ -18,7 +18,9 @@ class Message extends Model
         'appears_from',
         'appears_to',
         'target_type',
-        'assignment_type'
+        'assignment_type',
+        'created_by_id',
+        'created_by_type',
     ];
     protected $appends = [
         "created_at_formatted",
@@ -48,5 +50,9 @@ class Message extends Model
     public function assignees()
     {
         return $this->hasMany(MessageAssignee::class);
+    }
+    public function createdBy()
+    {
+        return $this->morphTo();
     }
 }

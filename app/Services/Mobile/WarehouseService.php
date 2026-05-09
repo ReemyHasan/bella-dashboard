@@ -5,6 +5,7 @@ namespace App\Services\Mobile;
 use App\Enums\PaginationEnum;
 use App\Exceptions\CustomException;
 use App\Models\AppUser;
+use App\Models\Offer;
 use App\Models\OfferWarehouse;
 use App\Models\ProductWarehouse;
 use App\Models\Warehouse;
@@ -25,6 +26,7 @@ class WarehouseService
     {
         $this->allowUser();
         $query = Warehouse::with('zone', 'keeper')
+            ->where('active', true)
             ->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest();
@@ -56,5 +58,17 @@ class WarehouseService
         )->where('warehouse_id', $warehouse->id)->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->paginate($request->input('per_page') ?? PaginationEnum::GeneralPagination->value);
+    }
+
+    public function showOffer(Offer $offer)
+    {
+        $offer->load([
+            'images',
+            'tags',
+            'zonePrices.zone.currency',
+            'offerProducts.product.mainImage',
+            'offerWarehouses.warehouse'
+        ]);
+        return $offer;
     }
 }

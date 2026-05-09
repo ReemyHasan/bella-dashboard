@@ -271,6 +271,11 @@ class AppUserWithRequestsSeeder extends Seeder
             $warehouse->update([
                 'keeper_id' => 5 + $i
             ]);
+
+            $keeper = AppUser::findOrFail((5 + $i));
+
+            $keeper->assignRole('Warehouse Keeper');
+
             $i++;
         }
     }

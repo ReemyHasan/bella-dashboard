@@ -124,4 +124,30 @@ class SharedSelectController extends Controller
         ]);
         return response()->format($returnedData, 'messages.success', 200);
     }
+
+    public function selectAvailableZones(Request $request)
+    {
+        $search = $request->input('search');
+
+        $returned = $this->sharedInfoService->selectAvailableZones($search);
+        return response()->format($returned, 'messages.success', 200);
+    }
+
+    public function selectAvailableRegions(Request $request)
+    {
+        $search = $request->input('search');
+        $city = $request->input('city');
+
+        $returned = $this->sharedInfoService->selectAvailableRegions($city, $search);
+        return response()->format($returned, 'messages.success', 200);
+    }
+
+    public function selectAvailableAddresses(Request $request)
+    {
+        $search = $request->input('search');
+        $region = $request->input('region');
+
+        $returned = $this->sharedInfoService->selectAvailableAddresses($region, $search);
+        return response()->format($returned, 'messages.success', 200);
+    }
 }

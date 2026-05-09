@@ -11,7 +11,7 @@ class MessageService
 {
     public function list($request)
     {
-        return Message::filterBy($request->all())
+        return Message::with('createdBy')->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
     }
@@ -25,7 +25,8 @@ class MessageService
                 'appears_to' => $data['appears_to'],
                 'assignment_type' => $data['assignment_type'],
                 'target_type' => $data['target_type'],
-
+                'created_by_id' => auth()->id(),
+                'created_by_type' => get_class(auth()->user()),
             ]);
             if (
                 $data['assignment_type'] === 'specific' &&
@@ -87,7 +88,7 @@ class MessageService
     }
     public function show(Message $message)
     {
-        $message->load(['assignees.team', 'assignees.marketer', 'assignees.subTeam']);
+        $message->load(['assignees.team', 'assignees.marketer', 'assignees.subTeam', 'createdBy']);
         return $message;
     }
 

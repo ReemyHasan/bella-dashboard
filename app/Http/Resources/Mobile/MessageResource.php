@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Resources\DashUser;
+namespace App\Http\Resources\Mobile;
 
+use App\Http\Resources\DashUser\MessageAssigneeResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -29,11 +30,9 @@ class MessageResource extends JsonResource
                 $this->whenLoaded('assignees')
             ),
 
-            'created_by' => $this->whenLoaded('createdBy', fn() => [
-                'id' => $this->createdBy?->id,
-                'type' => get_class($this->createdBy) == 'App\Models\DashUser' ? 'الإدارة' :  'مسوق',
-                'name' => $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name . ' (' . $this->createdBy?->user_name . ')',
-            ])
+            'created_by' => $this->whenLoaded('createdBy', fn() => 
+            $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name . ' (' . $this->createdBy?->user_name . ')'
+            )
         ];
     }
 }

@@ -40,6 +40,8 @@ class AppUserRequestResource extends JsonResource
             'updated_at' => $this->updated_at_formatted,
             'read_at' => $this->read_at_formatted,
             'handled_at' => $this->handled_at_formatted,
+            'reviewer_notes' => $this->notes,
+
             'reviewed_by' => $this->whenLoaded('reviewedBy', fn() => [
                 'id' => $this->reviewedBy?->id,
                 'name' => $this->reviewedBy?->first_name . ' ' . $this->reviewedBy?->last_name,
