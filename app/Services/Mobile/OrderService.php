@@ -34,7 +34,7 @@ class OrderService
     public function list($request)
     {
 
-        return CustomerOrder::with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog')
+        return CustomerOrder::with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog', 'address')
             ->where('app_user_id', auth()->user()->id)->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
@@ -42,7 +42,7 @@ class OrderService
 
     public function managedOrders($request)
     {
-        return CustomerOrder::with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog')
+        return CustomerOrder::with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog', 'address')
             ->visibleTo(auth()->user())->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);

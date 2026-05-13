@@ -39,6 +39,10 @@ class CustomerOrderListResource extends JsonResource
                 'id' => $this->currency?->id,
                 'name' => $this->currency?->name,
             ]),
+            'address' => $this->whenLoaded('address', fn() => [
+                'id' => $this->address?->id,
+                'name' => $this->address?->name,
+            ]),
             'last_note' => $this->whenLoaded('lastStatusLog', fn() => $this->lastStatusLog?->notes),
         ];
     }
