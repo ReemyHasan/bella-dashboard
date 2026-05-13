@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Mobile\V1\AppUser\AppUserRequestController;
+use App\Http\Controllers\Mobile\V1\AppUser\CashRequestController;
+use App\Http\Controllers\Mobile\V1\AppUser\FinancialAdjustmentController;
 use App\Http\Controllers\Mobile\V1\AppUser\FinancialOverviewController;
+use App\Http\Controllers\Mobile\V1\AppUser\ManagementController;
 use App\Http\Controllers\Mobile\V1\AppUser\MessageController;
 use App\Http\Controllers\Mobile\V1\AppUser\ProfileController;
 use App\Http\Controllers\Mobile\V1\AppUser\WarehouseManReviewController;
@@ -70,7 +73,20 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::get('user-top-sold-products', [FinancialOverviewController::class, 'topProducts']);
         Route::get('user-top-customers', [FinancialOverviewController::class, 'topCustomers']);
 
-        ////////////////////////////////////////////////
         Route::apiResource('messages', MessageController::class)->except('destroy');
+
+
+        ////////////////////////////////////////////////
+
+        Route::get('managed-marketers', [ManagementController::class, 'appUsers']);
+        Route::get('managed-marketers/{id}', [ManagementController::class, 'showAppUser']);
+        Route::get('managed-marketers-sales', [ManagementController::class, 'marketersSales']);
+        Route::get('managed-subteams-sales', [ManagementController::class, 'subteamsSales']);
+
+        Route::apiResource('financial-adjustments', FinancialAdjustmentController::class)->except('destroy', 'update');
+
+
+        Route::post('cash-requests/{cash_request}/handle', [CashRequestController::class, 'handle']);
+        Route::apiResource('cash-requests', CashRequestController::class)->except("update", "destroy");
     });
 });

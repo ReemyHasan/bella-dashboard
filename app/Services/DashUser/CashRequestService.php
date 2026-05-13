@@ -4,21 +4,25 @@ namespace App\Services\DashUser;
 
 use App\Enums\CashRequestStatus;
 use App\Enums\PaginationEnum;
-use App\Enums\VaultTransactionType;
 use App\Exceptions\CustomException;
 use App\Models\AppUser;
 use App\Models\CashRequest;
 use App\Models\Currency;
 use App\Models\DashUser;
+use App\Models\PaymentMethod;
 use App\Models\Vault;
-use App\Models\VaultTransaction;
+use App\Services\Shared\CashRequestSharedService;
+use App\Traits\HandlesImageUpload;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-use function PHPUnit\Framework\isNull;
 
 class CashRequestService
 {
+    use HandlesImageUpload;
+
+    public function __construct(private CashRequestSharedService $cashRequestSharedService) {}
+
     public function list($request)
     {
         return CashRequest::with('fromVault.owner', 'requestedFor', 'currency', 'paymentMethod', 'requestedBy', 'address')->filterBy($request->all())
@@ -31,9 +35,25 @@ class CashRequestService
         $user = Auth::user();
 
         return DB::transaction(function () use ($data, $user) {
+
+            $fromVault = Vault::where('owner_id', $data['delivered_by'])
+                ->first();
+
+            if (!$fromVault) {
+                throw new CustomException('.الموزع ليس لديه خزنة');
+            }
+
             $currency = Currency::findOrFail($data['currency_id']);
+
+            $paymentMethod = PaymentMethod::findOrFail($data['payment_method_id']);
+
+            $paymentMethodFields = $this->handlePaymentMethodFields(
+                $data['payment_method_fields'] ?? [],
+                $paymentMethod
+            );
+
             $cashRequest = CashRequest::create([
-                'from_vault_id' => $data['from_vault_id'],
+                'from_vault_id' => $fromVault->id,
                 'requested_amount' => $data['requested_amount'],
                 'address_id' => $data['address_id'] ?? null,
                 'address_details' => $data['address_details'] ?? null,
@@ -57,6 +77,8 @@ class CashRequestService
                 'currency_id' =>  $data['currency_id'],
                 'current_exchange_value' => $currency->exchange_value,
                 'payment_method_id' =>  $data['payment_method_id'],
+                'payment_method_fields' => $paymentMethodFields ?? [],
+
 
             ]);
             $cashRequest->load('fromVault.owner', 'requestedBy', 'currency', 'paymentMethod', 'address');
@@ -73,18 +95,28 @@ class CashRequestService
 
         return DB::transaction(function () use ($cashRequest, $data) {
             $currency = Currency::findOrFail($data['currency_id']);
+            $fromVault = Vault::where('owner_id', $data['delivered_by'])
+                ->first();
 
+            if (!$fromVault) {
+                throw new CustomException('.الموزع ليس لديه خزنة');
+            }
+
+            $paymentMethod = PaymentMethod::findOrFail($data['payment_method_id']);
+
+            $paymentMethodFields = $this->handlePaymentMethodFields(
+                $data['payment_method_fields'] ?? [],
+                $paymentMethod
+            );
             $cashRequest->update([
-                'from_vault_id' => $data['from_vault_id'],
+                'from_vault_id' => $fromVault->id,
                 'requested_amount' => $data['requested_amount'],
                 'address_id' => $data['address_id'] ?? null,
                 'address_details' => $data['address_details'] ?? null,
                 'cash_request_reason' => $data['cash_request_reason'] ?? null,
                 'notes' => $data['notes'] ?? null,
 
-
                 'delivered_by' =>  $data['delivered_by'],
-
                 'delivery_cost' =>  $data['delivery_cost'],
                 // 'additional_delivery_cost' =>  $data['additional_delivery_cost'],
 
@@ -92,11 +124,40 @@ class CashRequestService
                 'current_exchange_value' => $currency->exchange_value,
 
                 'payment_method_id' =>  $data['payment_method_id'],
+                'payment_method_fields' => $paymentMethodFields,
             ]);
             $cashRequest->load('fromVault.owner', 'requestedBy', 'currency', 'paymentMethod', 'address');
 
             return $cashRequest;
         });
+    }
+
+
+    public function handlePaymentMethodFields(array $fields, PaymentMethod $paymentMethod): array
+    {
+        $processedFields = [];
+
+        foreach ($paymentMethod->required_fields as $field) {
+
+            $key = $field['key'];
+            $type = $field['type'] ?? 'text';
+
+            if (!array_key_exists($key, $fields)) {
+                continue;
+            }
+
+            $value = $fields[$key];
+
+            if ($type === 'image' && $value instanceof \Illuminate\Http\UploadedFile) {
+
+                $processedFields[$key] = $this->uploadImage($value, 'cash_requests');
+            } else {
+
+                $processedFields[$key] = $value;
+            }
+        }
+
+        return $processedFields;
     }
     public function show(CashRequest $cashRequest)
     {
@@ -126,6 +187,7 @@ class CashRequestService
                 $cashRequest,
                 $data['approved_amount'],
                 $data['delivered_by'] ?? null,
+                $data['delivery_cost'] ?? null,
                 $data['notes'] ?? null
             ),
 
@@ -144,7 +206,7 @@ class CashRequestService
         };
     }
 
-    public function approve(CashRequest $cashRequest, float $approvedAmount, $delivered_by, ?string $notes = null)
+    public function approve(CashRequest $cashRequest, float $approvedAmount, $delivered_by, $delivery_cost, ?string $notes = null)
     {
         if ($cashRequest->status !== CashRequestStatus::PENDING->value) {
             throw new CustomException('لا يمكن الموافقة على الطلب.');
@@ -155,10 +217,11 @@ class CashRequestService
         if ($targetBalance < $approvedAmount) {
             throw new CustomException("لا يمكن الموافقة على الطلب, الرصيد في محفظة المستخدم أقل من المطلوب : {$targetBalance}.");
         }
-        return DB::transaction(function () use ($cashRequest, $approvedAmount, $notes, $delivered_by) {
+        return DB::transaction(function () use ($cashRequest, $approvedAmount, $notes, $delivered_by, $delivery_cost) {
 
             $cashRequest->update([
                 'approved_amount' => $approvedAmount,
+                'delivery_cost' => ($delivery_cost ?? $cashRequest->delivery_cost),
                 'delivered_by' => $delivered_by ?? $cashRequest->delivered_by,
                 'review_notes' => $notes,
                 'reviewed_by' => Auth::id(),
@@ -166,7 +229,6 @@ class CashRequestService
                 'status' => CashRequestStatus::APPROVED->value,
             ]);
 
-            $this->transferFromUserToVault($cashRequest);
             return $cashRequest->refresh();
         });
     }
@@ -202,17 +264,20 @@ class CashRequestService
 
             CashRequestStatus::IN_TRANSIT->value => [
                 CashRequestStatus::DELIVERED->value,
-                CashRequestStatus::NOT_DELIVERED->value
+                CashRequestStatus::NOT_DELIVERED->value,
+                CashRequestStatus::COMPLETED->value
 
             ],
 
             CashRequestStatus::DELIVERED->value => [
-                CashRequestStatus::WAITING_DELIVERY_APPROVE->value
+                CashRequestStatus::WAITING_DELIVERY_APPROVE->value,
+                CashRequestStatus::COMPLETED->value
+
             ],
 
-            // CashRequestStatus::WAITING_DELIVERY_APPROVE->value => [
-            //     CashRequestStatus::COMPLETED->value
-            // ],
+            CashRequestStatus::WAITING_DELIVERY_APPROVE->value => [
+                CashRequestStatus::COMPLETED->value
+            ],
         ];
 
         $current = $cashRequest->status;
@@ -241,135 +306,15 @@ class CashRequestService
 
             if ($status === CashRequestStatus::DELIVERED) {
                 $updateData['delivered_at'] = now();
-                $this->addTransaction($cashRequest);
+                // $this->addTransaction($cashRequest);
+            }
+            if ($status === CashRequestStatus::COMPLETED) {
+                $this->cashRequestSharedService->transferFromUser($cashRequest);
+                $this->cashRequestSharedService->addTransaction($cashRequest);
             }
 
             $cashRequest->update($updateData);
-            // if ($status === CashRequestStatus::IN_TRANSIT) {
-            // }
-
             return $cashRequest->refresh();
         });
-    }
-    private function addTransaction(CashRequest $cashRequest)
-    {
-        $user = Auth::user();
-
-        $fromVault = $cashRequest->fromVault()->lockForUpdate()->first();
-
-
-        $requestedAmount = $cashRequest->approved_amount;
-        $exchangeValue = $cashRequest->current_exchange_value;
-
-        $amount = $requestedAmount * $exchangeValue;
-
-        if ($fromVault->balance < $amount) {
-            throw new CustomException('الرصيد غير كافٍ في الخزنة المصدر.');
-        }
-
-        $fromBalanceBefore = $fromVault->balance;
-
-        $fromBalanceAfter = $fromBalanceBefore - $amount;
-
-        /**
-         * Update vault balances
-         */
-        $fromVault->update([
-            'balance' => $fromBalanceAfter
-        ]);
-
-
-        $currencyNote =
-            "Requested: {$requestedAmount} {$cashRequest->currency->code} | " .
-            "Exchange: {$exchangeValue} | " .
-            "Vault Amount: {$amount}";
-
-        VaultTransaction::create([
-            'from_vault_id' => $fromVault->id,
-
-            'type' => VaultTransactionType::CASH_REQUEST->value,
-
-            'amount' => $amount,
-
-            'transaction_date' => now(),
-
-            'reason' => $cashRequest->cash_request_reason,
-            'notes' => $currencyNote . ' | ' . ($cashRequest->notes ?? ''),
-
-            'reference_type' => CashRequest::class,
-            'reference_id' => $cashRequest->id,
-
-            'action_by_type' => get_class($user),
-            'action_by_id' => $user->id,
-
-            'from_vault_balance_before' => $fromBalanceBefore,
-            'from_vault_balance_after' => $fromBalanceAfter,
-
-        ]);
-    }
-
-    private function transferFromUserToVault(CashRequest $cashRequest)
-    {
-        $user = Auth::user();
-
-        $target = $cashRequest->requestedFor; // AppUser or DashUser
-        // $vault = Vault::lockForUpdate()->findOrFail($cashRequest->delivered_by);
-        $fromVault = $cashRequest->fromVault()->lockForUpdate()->first();
-
-        $requestedAmount = $cashRequest->approved_amount;
-        $exchangeValue = $cashRequest->current_exchange_value;
-
-        $amount = $requestedAmount * $exchangeValue;
-
-        // 🔴 Check user balance
-        if ($target->balance < $amount) {
-            throw new CustomException('رصيد المستخدم غير كافٍ.');
-        }
-
-        $userBalanceBefore = $target->balance;
-        $userBalanceAfter = $userBalanceBefore - $amount;
-
-        $vaultBalanceBefore = $fromVault->balance;
-        $vaultBalanceAfter = $vaultBalanceBefore + $amount;
-
-        // ✅ Update balances
-        $target->update([
-            'balance' => $userBalanceAfter
-        ]);
-
-        $fromVault->update([
-            'balance' => $vaultBalanceAfter
-        ]);
-
-        // 🧾 Transaction (User → Vault)
-        VaultTransaction::create([
-            'to_vault_id' => $fromVault->id,
-
-
-            'balance_user_type' => AppUser::class,
-            'balance_user_id' => $user->id,
-
-            'type' => VaultTransactionType::CASH_REQUEST_APPROVED->value,
-
-            'amount' => $amount,
-
-            'transaction_date' => now(),
-
-            'reason' => $cashRequest->cash_request_reason,
-            'notes' => "نقل المبلغ من محفظة المستخدم لخزنة الموزع.",
-
-            'reference_type' => CashRequest::class,
-            'reference_id' => $cashRequest->id,
-
-            'action_by_type' => get_class($user),
-            'action_by_id' => $user->id,
-
-            'from_vault_balance_before' => $userBalanceBefore,
-            'from_vault_balance_after' => $userBalanceAfter,
-
-
-            'to_vault_balance_before' => $vaultBalanceBefore,
-            'to_vault_balance_after' => $vaultBalanceAfter,
-        ]);
     }
 }

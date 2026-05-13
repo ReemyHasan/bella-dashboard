@@ -76,7 +76,7 @@ class SalesReportController extends Controller implements HasMiddleware
     public function subTeamMarketersReport(Request $request)
     {
         $data = $request->validate([
-            'sub_team_id' => ['required', 'exists:sub_teams,id'],
+            'sub_team_id' => ['nullable', 'exists:sub_teams,id'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date'],
             'export' => ['nullable', 'in:excel,pdf'],

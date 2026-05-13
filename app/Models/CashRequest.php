@@ -46,6 +46,8 @@ class CashRequest extends Model
         'payment_method_id',
 
         'delivered_at',
+        'payment_method_fields'
+
 
     ];
     protected $appends = [
@@ -59,6 +61,7 @@ class CashRequest extends Model
         'amount' => 'decimal:2',
         'delivery_cost' => 'decimal:2',
         'current_exchange_value' => 'decimal:2',
+        'payment_method_fields' => 'array'
 
     ];
     public function getReviewedAtFormattedAttribute()

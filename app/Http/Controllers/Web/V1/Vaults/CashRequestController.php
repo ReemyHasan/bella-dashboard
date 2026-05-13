@@ -10,6 +10,7 @@ use App\Services\DashUser\CashRequestService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Validation\Rule;
 
 class CashRequestController extends Controller implements HasMiddleware
 {
@@ -67,7 +68,12 @@ class CashRequestController extends Controller implements HasMiddleware
             'approved_amount' => ['required_if:status,approved', 'numeric', 'min:1'],
 
             'delivered_by' => ['nullable', 'exists:app_users,id'],
-
+            'delivery_cost' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                Rule::requiredIf(fn() => $request->status === 'approved' && $request->filled('delivery_cost'))
+            ],
             'notes' => ['nullable', 'string']
         ]);
 

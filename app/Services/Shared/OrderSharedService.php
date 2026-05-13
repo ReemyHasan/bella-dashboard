@@ -163,9 +163,9 @@ class OrderSharedService
             'balance' => $after
         ]);
 
-        $vault->update([
-            'balance' => $vault->balance - $amount,
-        ]);
+        // $vault->update([
+        //     'balance' => $vault->balance - $amount,
+        // ]);
         $this->createCompleteTransaction($vault, $userId, $amount, $before, $after, $type, $order, $percentage);
     }
 
@@ -186,9 +186,9 @@ class OrderSharedService
             'balance' => $after
         ]);
 
-        $vault->update([
-            'balance' => $vault->balance + $amount,
-        ]);
+        // $vault->update([
+        //     'balance' => $vault->balance + $amount,
+        // ]);
         $this->createRefundTransaction($vault, $userId, $amount, $before, $after, $type, $order, $percentage);
     }
     public function buildNote($percentage, $amount, $action = 'add')
@@ -203,26 +203,26 @@ class OrderSharedService
     {
         $user = auth()->user();
         $note = $this->buildNote($percentage, $amount, 'subtract');
-        VaultTransaction::create([
-            'to_vault_id' => $vault->id,
+        // VaultTransaction::create([
+        //     'to_vault_id' => $vault->id,
 
-            'type' => VaultTransactionType::ORDER_REFUND->value,
+        //     'type' => VaultTransactionType::ORDER_REFUND->value,
 
-            'amount' => $amount,
+        //     'amount' => $amount,
 
-            'transaction_date' => now(),
+        //     'transaction_date' => now(),
 
-            'notes' => null,
+        //     'notes' => null,
 
-            'action_by_type' => get_class($user),
-            'action_by_id' => $user->id,
+        //     'action_by_type' => get_class($user),
+        //     'action_by_id' => $user->id,
 
-            'reference_type' => CustomerOrder::class,
-            'reference_id' => $order->id,
+        //     'reference_type' => CustomerOrder::class,
+        //     'reference_id' => $order->id,
 
-            'to_vault_balance_before' => $vault->balance,
-            'to_vault_balance_after' => $vault->balance + $amount,
-        ]);
+        //     'to_vault_balance_before' => $vault->balance,
+        //     'to_vault_balance_after' => $vault->balance + $amount,
+        // ]);
         VaultTransaction::create([
             'type' => $type,
             'amount' => abs($amount),
@@ -250,26 +250,26 @@ class OrderSharedService
     {
         $user = auth()->user();
         $note = $this->buildNote($percentage, $amount, 'add');
-        VaultTransaction::create([
-            'to_vault_id' => $vault->id,
+        // VaultTransaction::create([
+        //     'to_vault_id' => $vault->id,
 
-            'type' => VaultTransactionType::ORDER_COMPLETE->value,
+        //     'type' => VaultTransactionType::ORDER_COMPLETE->value,
 
-            'amount' => $amount,
+        //     'amount' => $amount,
 
-            'transaction_date' => now(),
+        //     'transaction_date' => now(),
 
-            'notes' => null,
+        //     'notes' => null,
 
-            'action_by_type' => get_class($user),
-            'action_by_id' => $user->id,
+        //     'action_by_type' => get_class($user),
+        //     'action_by_id' => $user->id,
 
-            'reference_type' => CustomerOrder::class,
-            'reference_id' => $order->id,
+        //     'reference_type' => CustomerOrder::class,
+        //     'reference_id' => $order->id,
 
-            'to_vault_balance_before' => $vault->balance,
-            'to_vault_balance_after' => $vault->balance - $amount,
-        ]);
+        //     'to_vault_balance_before' => $vault->balance,
+        //     'to_vault_balance_after' => $vault->balance - $amount,
+        // ]);
         VaultTransaction::create([
             'type' => $type,
             'amount' => abs($amount),

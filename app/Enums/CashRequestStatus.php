@@ -24,6 +24,7 @@ enum CashRequestStatus: string
             self::DELIVERED => 'تم التسليم',
             self::NOT_DELIVERED => 'لم يتم التسليم',
             self::CANCELLED => 'ملغي',
+            self::COMPLETED => 'مكتمل',
             self::WAITING_DELIVERY_APPROVE => 'بانتظار تأكيد التسليم',
             default => $this->value,
         };

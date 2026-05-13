@@ -8,6 +8,11 @@ class PaymentMethod extends Model
 {
     protected $fillable = [
         'name_en',
-        'name_ar'
+        'name_ar',
+        'required_fields'
+    ];
+    protected $casts = [
+
+        'required_fields' => 'array',
     ];
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shared\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\PaymentMethod;
 use App\Services\Shared\SharedInfoService;
 use Illuminate\Http\Request;
 
@@ -149,5 +150,16 @@ class SharedSelectController extends Controller
 
         $returned = $this->sharedInfoService->selectAvailableAddresses($region, $search);
         return response()->format($returned, 'messages.success', 200);
+    }
+
+    public function selectAvailablePaymentMethod()
+    {
+        $paymentMethods = PaymentMethod::all();
+        $returnedData = $paymentMethods->map(fn($paymentMethod) => [
+            'key' => $paymentMethod?->id,
+            'value' => $paymentMethod?->name_ar . '-' . $paymentMethod?->name_en,
+            'fields' => $paymentMethod->required_fields
+        ]);
+        return response()->format($returnedData, 'messages.success', 200);
     }
 }

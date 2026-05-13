@@ -64,6 +64,34 @@ class ProductService
 
             $product->tags()->sync($data['tags'] ?? []);
 
+            if (isset($data['warehouses'])) {
+
+                $warehouseIds = [];
+
+                foreach ($data['warehouses'] as $warehouse) {
+
+                    $warehouseIds[] = $warehouse['warehouse_id'];
+
+                    ProductWarehouse::updateOrCreate(
+                        [
+                            'product_id' => $product->id,
+                            'warehouse_id' => $warehouse['warehouse_id'],
+                        ],
+                        [
+                            'quantity' => $warehouse['quantity'],
+                        ]
+                    );
+                }
+
+                /*
+            |--------------------------------------------------------------------------
+            | Remove warehouses not sent
+            |--------------------------------------------------------------------------
+            */
+                ProductWarehouse::where('product_id', $product->id)
+                    ->whereNotIn('warehouse_id', $warehouseIds)
+                    ->delete();
+            }
             $product->load(
                 'mainCategory',
                 'subCategory',

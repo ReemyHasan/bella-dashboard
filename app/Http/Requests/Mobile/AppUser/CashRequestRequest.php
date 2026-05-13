@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\DashUser\Vaults;
+namespace App\Http\Requests\Mobile\AppUser;
 
 use App\Models\PaymentMethod;
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,20 +24,8 @@ class CashRequestRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-
-            // 'from_vault_id' => ['required', 'exists:vaults,id'],
-
             'requested_amount' => ['required', 'numeric', 'min:1'],
 
-            'requested_for_type' => ['required', 'in:dash_user,app_user'],
-            'requested_for_id' => ['required', 'integer'],
-
-            'delivered_by' => [
-                'required',
-                Rule::exists('app_users', 'id')->where(function ($query) {
-                    $query->where('is_warehouse_man', true);
-                }),
-            ],
             'currency_id' => ['required', 'exists:currencies,id'],
             'payment_method_id' => ['required', 'exists:payment_methods,id'],
             'payment_method_fields' => ['nullable', 'array'],
@@ -55,9 +43,6 @@ class CashRequestRequest extends FormRequest
             ],
 
             'cash_request_reason' => ['nullable', 'string'],
-
-            'delivery_cost' => ['nullable', 'numeric', 'min:0'],
-            // 'additional_delivery_cost' => ['nullable', 'numeric', 'min:0'],
 
             'notes' => ['nullable', 'string'],
         ];
@@ -77,7 +62,7 @@ class CashRequestRequest extends FormRequest
                 }
                 $fieldRules[] = match ($field['type'] ?? 'text') {
 
-                    'image' => ['file', 'image', 'max:2048'],
+                    'image' => ['file','image','max:2048'],
                     'number' => 'numeric',
                     default => 'string',
                 };

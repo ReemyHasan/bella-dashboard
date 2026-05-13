@@ -36,7 +36,7 @@ Route::patch('user-requests/{app_user_request}/handle', [AppUserRequestControlle
 
 Route::apiResource('user-requests', AppUserRequestController::class)->only('index', 'show');
 
-Route::get('select-payment-methods', [PaymentMethodController::class, 'selectAvailable']);
+// Route::get('select-payment-methods', [PaymentMethodController::class, 'selectAvailable']);
 
 
 Route::post('cash-requests/{cash_request}/handle', [CashRequestController::class, 'handle']);

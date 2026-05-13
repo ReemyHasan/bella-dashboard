@@ -53,21 +53,19 @@ class ProductRequest extends FormRequest
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:tags,id'],
         ];
-        if ($this->isMethod('post')) {
-            $rules['warehouses'] = ['nullable', 'array'];
+        $rules['warehouses'] = ['nullable', 'array'];
 
-            $rules['warehouses.*.warehouse_id'] = [
-                'required',
-                'exists:warehouses,id',
-                'distinct'
-            ];
+        $rules['warehouses.*.warehouse_id'] = [
+            'required',
+            'exists:warehouses,id',
+            'distinct'
+        ];
 
-            $rules['warehouses.*.quantity'] = [
-                'required',
-                'integer',
-                'min:0'
-            ];
-        }
+        $rules['warehouses.*.quantity'] = [
+            'required',
+            'integer',
+            'min:0'
+        ];
 
         return $rules;
     }

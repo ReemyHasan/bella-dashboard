@@ -19,7 +19,8 @@ class PaymentMethodController extends Controller implements HasMiddleware
         $paymentMethods = PaymentMethod::all();
         $returnedData = $paymentMethods->map(fn($paymentMethod) => [
             'key' => $paymentMethod?->id,
-            'value' => $paymentMethod?->name_ar . '-' . $paymentMethod?->name_en
+            'value' => $paymentMethod?->name_ar . '-' . $paymentMethod?->name_en,
+            'fields' => $paymentMethod->required_fields
         ]);
         return response()->format($returnedData, 'messages.success', 200);
     }

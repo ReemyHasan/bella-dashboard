@@ -16,43 +16,112 @@ class VaultSeeder extends Seeder
     public function run(): void
     {
         Vault::create([]);
-        PaymentMethod::create([
+        PaymentMethod::updateOrCreate([
             'name_en' => 'Cash',
-            'name_ar' => 'كاش باليد'
+        ], [
+            'name_ar' => 'كاش باليد',
+            'required_fields' => []
         ]);
 
-        PaymentMethod::create([
+        PaymentMethod::updateOrCreate([
             'name_en' => 'Money Transfer',
-            'name_ar' => 'حوالة'
+        ], [
+            'name_ar' => 'حوالة',
+            'required_fields' => [
+                [
+                    'key' => 'receiver_name',
+                    'label' => 'اسم المستقبل الثلاثي',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                [
+                    'key' => 'receiver_number',
+                    'label' => 'رقم هاتف المستقبل',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                [
+                    'key' => 'destination',
+                    'label' => 'الوجهة',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                // [
+                //     'key' => 'receipt_image',
+                //     'label' => 'صورة الإيصال',
+                //     'type' => 'image',
+                //     'required' => false,
+                // ]
+            ]
         ]);
 
 
-        PaymentMethod::create([
+        PaymentMethod::updateOrCreate([
             'name_en' => 'Units Transfer',
-            'name_ar' => 'رصيد وحدات'
+        ], [
+            'name_ar' => 'رصيد وحدات',
+            'required_fields' => [
+                [
+                    'key' => 'receiver_number',
+                    'label' => 'رقم هاتف المستقبل',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                // [
+                //     'key' => 'transfer_code',
+                //     'label' => 'رمز التحويل',
+                //     'type' => 'text',
+                //     'required' => true,
+                // ],
+            ]
         ]);
 
-        PaymentMethod::create([
-            'name_en' => 'Delivery',
-            'name_ar' => 'توصيل'
+        PaymentMethod::updateOrCreate([
+            'name_en' => 'Sham Cash',
+        ], [
+            'name_ar' => 'شام كاش',
+            'required_fields' => [
+                // [
+                //     'key' => 'receiver_number',
+                //     'label' => 'رقم هاتف المستقبل',
+                //     'type' => 'text',
+                //     'required' => true,
+                // ],
+                [
+                    'key' => 'qr_image',
+                    'label' => 'QR صورة',
+                    'type' => 'image',
+                    'required' => false,
+                ],
+                [
+                    'key' => 'link_or_qr_code',
+                    'label' => 'رابط او QR كود',
+                    'type' => 'text',
+                    'required' => false,
+                ],
+                // [
+                //     'key' => 'receipt_image',
+                //     'label' => 'صورة الإشعار',
+                //     'type' => 'image',
+                //     'required' => false,
+                // ],
+            ]
         ]);
 
-        // PaymentMethod::create([
-        //     'name_en' => 'Purchase Products',
-        //     'name_ar' => 'شراء مواد'
-        // ]);
+        $delivery = PaymentMethod::where('name_en', 'Delivery')->first();
 
-
-        UserRequestType::create([
+        if ($delivery) {
+            $delivery->delete();
+        }
+        UserRequestType::updateOrCreate([
             'name' => 'سلفة'
+        ], []);
 
-        ]);
-
-         UserRequestType::create([
+        UserRequestType::updateOrCreate([
             'name' => 'شكوى'
-        ]);
-         UserRequestType::create([
+        ], []);
+        UserRequestType::updateOrCreate([
             'name' => 'ترقية'
-        ]);
+        ], []);
     }
 }
