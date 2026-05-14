@@ -7,6 +7,8 @@ use App\Http\Controllers\Mobile\V1\AppUser\FinancialOverviewController;
 use App\Http\Controllers\Mobile\V1\AppUser\ManagementController;
 use App\Http\Controllers\Mobile\V1\AppUser\MessageController;
 use App\Http\Controllers\Mobile\V1\AppUser\ProfileController;
+use App\Http\Controllers\Mobile\V1\AppUser\VaultController;
+use App\Http\Controllers\Mobile\V1\AppUser\WarehouseHandoverController;
 use App\Http\Controllers\Mobile\V1\AppUser\WarehouseManReviewController;
 use App\Http\Controllers\Mobile\V1\Auth\AuthController;
 use App\Http\Controllers\Mobile\V1\Auth\PasswordResetController;
@@ -76,7 +78,6 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::apiResource('messages', MessageController::class)->except('destroy');
 
 
-        ////////////////////////////////////////////////
 
         Route::get('managed-marketers', [ManagementController::class, 'appUsers']);
         Route::get('managed-marketers/{id}', [ManagementController::class, 'showAppUser']);
@@ -88,5 +89,17 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
 
         Route::post('cash-requests/{cash_request}/handle', [CashRequestController::class, 'handle']);
         Route::apiResource('cash-requests', CashRequestController::class)->except("update", "destroy");
+
+        ////////////////////////////////////////////////
+
+        Route::get('my-vault-details', [VaultController::class, 'vaultTransactions']);
+        Route::get('my-vault-transfers', [VaultController::class, 'vaultTransfers']);
+        Route::get('my-vault-transfers/{vault_transfer}', [VaultController::class, 'showVaultTransfer']);
+
+
+        Route::patch('warehouse-handovers/{warehouseHandover}/ship', [WarehouseHandoverController::class, 'shipHandover']);
+        Route::patch('warehouse-handovers/{warehouseHandover}/complete', [WarehouseHandoverController::class, 'completeHandover']);
+
+        Route::apiResource('warehouse-handovers', WarehouseHandoverController::class)->except("destroy");
     });
 });

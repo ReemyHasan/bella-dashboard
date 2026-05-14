@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Mobile\V1\AppUser;
 
+use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mobile\AppUser\CashRequestRequest;
 use App\Http\Resources\Mobile\CashRequestResource;
@@ -34,6 +35,10 @@ class CashRequestController extends Controller
 
     public function handle(Request $request, CashRequest $cash_request)
     {
+        $user = auth()->user();
+        if (!$user->hasRole('Warehouse Keeper')) {
+            throw new CustomException('ليس لديك صلاحية للوصول لهذه الموارد');
+        }
         $validated = $request->validate([
             'status' => ['required', 'in:in_transit,delivered,not_delivered,waiting_delivery_approve,completed'],
             'notes' => ['nullable', 'string']

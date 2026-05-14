@@ -107,7 +107,7 @@ class VaultReportService
                         FinancialAdjustment::class    => 'تعديل مالي',
                         VaultTransfer::class          => 'تحويل خزنة',
                         CustomerOrder::class          => 'طلب عميل',
-                        default                       => 'غير معروف',
+                        default                       => $trx->reference_type,
                     },
                     'reference_id' => $trx->reference_id,
                 ];
