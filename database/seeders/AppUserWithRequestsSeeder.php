@@ -103,12 +103,12 @@ class AppUserWithRequestsSeeder extends Seeder
 
         foreach ($teams as $team) {
 
-            Team::create($team);
+            Team::updateOrCreate(["name" => $team['name']], $team);
         }
 
         foreach ($subTeams as $subTeam) {
 
-            SubTeam::create($subTeam);
+            SubTeam::updateOrCreate(["name" => $subTeam['name']], $subTeam);
         }
         $users = [
             [
@@ -209,7 +209,9 @@ class AppUserWithRequestsSeeder extends Seeder
 
         foreach ($users as $userData) {
 
-            $user = AppUser::create($userData);
+            $user = AppUser::updateOrCreate([
+                "user_name" => $userData['user_name']
+            ], $userData);
 
             AppUserRequest::create([
                 'app_user_id' => $user->id,

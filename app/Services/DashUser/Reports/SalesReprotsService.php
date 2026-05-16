@@ -24,6 +24,8 @@ class SalesReprotsService
         }
         return CustomerOrder::select(
             'app_user_id',
+            'team_id',
+            'sub_team_id',
             DB::raw('SUM(total_price * current_exchange_rate) as total_sales'),
             DB::raw('COUNT(*) as total_orders')
         )
@@ -50,7 +52,11 @@ class SalesReprotsService
                 fn($q, $to) => $q->whereDate('created_at', '<=', $to)
             )
 
-            ->groupBy('app_user_id')
+            ->groupBy(
+                'app_user_id',
+                'team_id',
+                'sub_team_id'
+            )
             ->orderByDesc('total_sales')
 
             ->get()

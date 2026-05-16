@@ -9,6 +9,7 @@ use App\Exceptions\CustomException;
 use App\Models\Address;
 use App\Models\AppUser;
 use App\Models\Competition;
+use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\DashUser;
 use App\Models\OfferWarehouse;
@@ -20,6 +21,7 @@ use App\Models\SubTeam;
 use App\Models\UserRequestType;
 use App\Models\Warehouse;
 use App\Models\Zone;
+use Illuminate\Database\Eloquent\Builder;
 
 class SharedInfoService
 {
@@ -385,5 +387,70 @@ class SharedInfoService
             'key' => $address?->id,
             'value' => $address?->name
         ]);
+    }
+
+
+    public function selectAvailableAppUser(
+        $subTeam = null
+    ) {
+        $user = auth()->user();
+        if (
+            !$user->hasRole('Team Manager') &&
+            !$user->hasRole('Team Leader')
+        ) {
+            throw new CustomException('غير مسموح بعرض المستخدمين');
+        }
+
+        $users = AppUser::query()
+            ->with(['team', 'subTeam'])
+
+            ->when(
+                $user->hasRole('Team Manager'),
+                fn(Builder $q) =>
+                $q->where('team_id', $user->team_id)
+            )
+
+            ->when(
+                $user->hasRole('Team Leader'),
+                fn(Builder $q) =>
+                $q->where('subteam_id', $user->subteam_id)
+            )
+            ->when(!is_null($subTeam), function ($query) use ($subTeam) {
+                $query->where('subteam_id', $subTeam);
+            })
+            ->where('status', DashUserStatus::ACTIVE->value)->orderBy('id')->get([
+                'id',
+                'subteam_id',
+                'team_id',
+                'first_name',
+                'last_name',
+                'mobile',
+                'status'
+            ]);
+
+        return $users->map(fn($appUser) => [
+            'id' => $appUser?->id,
+            'name' => $appUser?->first_name . ' ' . $appUser?->last_name . ' (' . $appUser?->mobile . ')',
+            // 'team_id' => $appUser?->team_id,
+            'team_name' => $appUser?->team?->name,
+            // 'subteam_id' => $appUser?->subteam_id,
+            'subteam_name' => $appUser?->subTeam?->name,
+
+
+        ]);
+    }
+
+
+    public function selectAvailableCurrency()
+    {
+
+        $currencies = Currency::get([
+            'id',
+            'name',
+            'symbol',
+            'exchange_value'
+        ]);
+
+        return $currencies;
     }
 }

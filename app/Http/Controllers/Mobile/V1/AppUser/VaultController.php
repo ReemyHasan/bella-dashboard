@@ -19,9 +19,11 @@ class VaultController extends Controller
         $data = $this->vaultService->vaultTransactions($request);
         $transactions = $data['transactions'];
         $balance = $data['balance'];
+        $request->vault_id = $data['vault_id'];
 
         return response()->format([
             'balance' => $balance,
+            'vault_id' => $data['vault_id'],
             "transactions" => $this->returnPaginatedResponse($transactions, VaultTransactionResource::collection($transactions))
         ], 'messages.success', 200);
     }

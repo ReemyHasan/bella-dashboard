@@ -3,16 +3,10 @@
 namespace App\Services\Mobile;
 
 use App\Enums\PaginationEnum;
-use App\Enums\VaultTransactionType;
 use App\Exceptions\CustomException;
-use App\Models\BalanceTransferRequest;
-use App\Models\CashRequest;
-use App\Models\CustomerOrder;
-use App\Models\FinancialAdjustment;
 use App\Models\Vault;
 use App\Models\VaultTransaction;
 use App\Models\VaultTransfer;
-use Carbon\Carbon;
 
 class VaultService
 {
@@ -50,6 +44,7 @@ class VaultService
 
         return [
             'balance' => $vault->balance,
+            'vault_id' => $vault->id,
             "transactions" => $query
                 ->filterBy($request->except('direction'))
                 ->sortBy($request->get('sort', ['created_at' => 'desc']))

@@ -49,11 +49,11 @@ class WarehouseHandoverResource extends JsonResource
 
             'requester' => $this->whenLoaded('requester', fn() => [
                 'id' => $this->requester?->id,
-                'name' => $this->requester?->first_name . ' ' . $this->requester?->last_name . ' (' . $this->requester?->user_name . ')',
+                'name' => $this->requester?->first_name . ' ' . $this->requester?->last_name . ' (' . $this->requester?->mobile . ')',
             ]),
             'responder' => $this->whenLoaded('responder', fn() => [
                 'id' => $this->responder?->id,
-                'name' => $this->responder?->first_name . ' ' . $this->responder?->last_name . ' (' . $this->responder?->user_name . ')',
+                'name' => $this->responder?->first_name . ' ' . $this->responder?->last_name . '(الإدارة)',
             ]),
             'created_at' => $this->created_at_formatted,
             'updated_at' => $this->updated_at_formatted,

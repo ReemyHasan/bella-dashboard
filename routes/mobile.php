@@ -90,13 +90,12 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::post('cash-requests/{cash_request}/handle', [CashRequestController::class, 'handle']);
         Route::apiResource('cash-requests', CashRequestController::class)->except("update", "destroy");
 
-        ////////////////////////////////////////////////
 
         Route::get('my-vault-details', [VaultController::class, 'vaultTransactions']);
         Route::get('my-vault-transfers', [VaultController::class, 'vaultTransfers']);
         Route::get('my-vault-transfers/{vault_transfer}', [VaultController::class, 'showVaultTransfer']);
 
-
+        ////////////////////////////////////////////////
         Route::patch('warehouse-handovers/{warehouseHandover}/ship', [WarehouseHandoverController::class, 'shipHandover']);
         Route::patch('warehouse-handovers/{warehouseHandover}/complete', [WarehouseHandoverController::class, 'completeHandover']);
 

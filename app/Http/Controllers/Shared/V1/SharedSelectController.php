@@ -162,4 +162,24 @@ class SharedSelectController extends Controller
         ]);
         return response()->format($returnedData, 'messages.success', 200);
     }
+
+    public function selectAvailableAppUser(Request $request)
+    {
+        $subTeam = $request->input('sub_team');
+
+        $returned = $this->sharedInfoService->selectAvailableAppUser($subTeam);
+        return response()->format($returned, 'messages.success', 200);
+    }
+
+    public function selectAvailableCurrency()
+    {
+        $currencies = $this->sharedInfoService->selectAvailableCurrency();
+
+        $returnedData = $currencies->map(fn($currency) => [
+            'key' => $currency?->id,
+            'value' => $currency?->name . '(' . $currency?->symbol . ')',
+            'exchange_value' => (float)$currency->exchange_value
+        ]);
+        return response()->format($returnedData, 'messages.success', 200);
+    }
 }

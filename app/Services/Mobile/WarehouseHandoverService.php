@@ -137,7 +137,7 @@ class WarehouseHandoverService
         if (
             $warehouse->keeper_id !== $user->id
         ) {
-            throw new CustomException('ليس لديك صلاحية للوصول لهذه الموارد');
+            throw new CustomException('المستودع المزود هو المسؤول عن عملية النقل.');
         }
         if ($handover->status !== HandOverStatus::approved->value) {
             throw new CustomException('فقط الطلبات التي تم الموفقة عليها يمكن نقلها');
@@ -176,7 +176,7 @@ class WarehouseHandoverService
         if (
             $handover->requesterWarehouse?->keeper_id !== $user->id
         ) {
-            throw new CustomException('ليس لديك صلاحية للوصول لهذه الموارد');
+            throw new CustomException('المستودع الطالب هو المسؤول عن عملية الموافقة على وصول الشحنة.');
         }
 
         if ($handover->status !== HandOverStatus::in_transit->value) {

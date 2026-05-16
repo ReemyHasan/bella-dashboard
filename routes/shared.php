@@ -33,4 +33,6 @@ Route::middleware(['auth:sanctum', 'api.blocked'])->group(function () {
     Route::get('select-addresses', [SharedSelectController::class, 'selectAvailableAddresses']);
 
     Route::get('select-payment-methods', [SharedSelectController::class, 'selectAvailablePaymentMethod']);
+    Route::get('select-marketers', [SharedSelectController::class, 'selectAvailableAppUser']);
+    Route::get('select-currencies', [SharedSelectController::class, 'selectAvailableCurrency']);
 });

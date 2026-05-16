@@ -66,11 +66,11 @@ class VaultTransaction extends Model
     {
 
         if ($this->to_vault_id == $vaultId) {
-            return 'in';
+            return 'وارد';
         }
 
         if ($this->from_vault_id == $vaultId) {
-            return 'out';
+            return 'صادر';
         }
 
         return null;

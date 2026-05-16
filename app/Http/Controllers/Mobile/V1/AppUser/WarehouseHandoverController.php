@@ -24,13 +24,13 @@ class WarehouseHandoverController extends Controller
     public function store(WarehouseHandoverRequest $request)
     {
         $warehouseHandover = $this->warehouseHandoverService->create($request->validated());
-        return response()->format(new WarehouseHandoverResource($warehouseHandover),  __('messages.created_successfully',  ['item' => __('constants.warehouse_handover')]), 201);
+        return response()->format(null,  __('messages.created_successfully',  ['item' => __('constants.warehouse_handover')]), 201);
     }
 
     public function update(WarehouseHandoverRequest $request, WarehouseHandover $warehouseHandover)
     {
         $warehouseHandover = $this->warehouseHandoverService->update($warehouseHandover, $request->validated());
-        return response()->format(new WarehouseHandoverResource($warehouseHandover),  __('messages.updated_successfully',  ['item' => __('constants.warehouse_handover')]), 200);
+        return response()->format(null,  __('messages.updated_successfully',  ['item' => __('constants.warehouse_handover')]), 200);
     }
     public function show(WarehouseHandover $warehouseHandover)
     {
@@ -42,12 +42,12 @@ class WarehouseHandoverController extends Controller
     public function shipHandover(
         WarehouseHandover $warehouseHandover
     ) {
-        $handover = $this->warehouseHandoverService->shipHandover(
+        $this->warehouseHandoverService->shipHandover(
             $warehouseHandover
         );
 
         return response()->format(
-            new WarehouseHandoverResource($handover),
+            null,
             __('messages.updated_successfully', [
                 'item' => __('constants.warehouse_handover')
             ]),
@@ -57,12 +57,12 @@ class WarehouseHandoverController extends Controller
     public function completeHandover(
         WarehouseHandover $warehouseHandover
     ) {
-        $handover = $this->warehouseHandoverService->completeHandover(
+        $this->warehouseHandoverService->completeHandover(
             $warehouseHandover
         );
 
         return response()->format(
-            new WarehouseHandoverResource($handover),
+            null,
             __('messages.updated_successfully', [
                 'item' => __('constants.warehouse_handover')
             ]),

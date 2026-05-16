@@ -68,3 +68,4 @@ enum VaultTransactionType: string
         };
     }
 }
+
