@@ -2,7 +2,9 @@
 
 namespace App\Services\DashUser;
 
+use App\Enums\NotificationType;
 use App\Enums\PaginationEnum;
+use App\Events\NotificationEvent;
 use App\Models\Product;
 use App\Models\ProductWarehouse;
 use App\Traits\HandlesImageUpload;
@@ -285,6 +287,12 @@ class ProductService
                         'price_after_adjustment' => max(0, $newPrice)
                     ]);
                 }
+                event(new NotificationEvent(
+                    type: NotificationType::DEDUCT_ON_PRODUCT,
+                    data: [
+                        'product' => $product,
+                    ]
+                ));
             }
         });
     }

@@ -34,7 +34,8 @@ class AppUser extends Authenticatable
         'created_by_app_user_id',
         'created_by_dash_user_id',
         'balance',
-        'status'
+        'status',
+        'fcm_token'
     ];
     protected $hidden = [
         'password',

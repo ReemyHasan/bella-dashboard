@@ -1,1 +1,0 @@
-import{t as e}from"./useQuery-BIP7lypG.js";import{P as t}from"./index-CglVadfD.js";const n=async e=>{let n=new URLSearchParams;e&&n.append(`role`,e);let r=n.toString(),i=r?`select-dash-users?${r}`:`select-dash-users`;return(await t.get(i)).data?.data||[]},r=t=>e({queryKey:[`select-dash-users`,t||`all`],queryFn:()=>n(t),staleTime:300*1e3});export{r as t};

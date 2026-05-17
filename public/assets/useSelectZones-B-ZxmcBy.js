@@ -1,1 +1,0 @@
-import{t as e}from"./useQuery-BIP7lypG.js";import{P as t}from"./index-CglVadfD.js";const n=async()=>(await t.get(`select-zones`)).data?.data||[],r=()=>e({queryKey:[`select-zones`],queryFn:n,staleTime:300*1e3});export{r as t};

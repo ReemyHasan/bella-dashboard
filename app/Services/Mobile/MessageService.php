@@ -3,7 +3,9 @@
 namespace App\Services\Mobile;
 
 use App\Enums\AssignmentType;
+use App\Enums\NotificationType;
 use App\Enums\PaginationEnum;
+use App\Events\NotificationEvent;
 use App\Exceptions\CustomException;
 use App\Models\AppUser;
 use App\Models\Message;
@@ -144,7 +146,7 @@ class MessageService
         if (!$user->hasRole('Team Manager') && !$user->hasRole('Team Leader')) {
             throw new CustomException('لا يمكن توجيه رسالة إلا من قبل مدير أو مدير فريق');
         }
-        return DB::transaction(function () use ($data) {
+        $message = DB::transaction(function () use ($data) {
             $message = Message::create([
                 'description' => $data['description'],
                 'appears_from' => $data['appears_from'],
@@ -163,6 +165,14 @@ class MessageService
 
             return $message;
         });
+
+        event(new NotificationEvent(
+            type: NotificationType::MESSAGE,
+            data: [
+                'message' => $message,
+            ]
+        ));
+        return $message;
     }
 
     public function update(Message $message, array $data)

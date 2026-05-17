@@ -8,8 +8,9 @@ use App\Models\SubTeam;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class SyncSubTeamUsers
+class SyncSubTeamUsers implements ShouldQueue
 {
+    use InteractsWithQueue;
     /**
      * Create the event listener.
      */

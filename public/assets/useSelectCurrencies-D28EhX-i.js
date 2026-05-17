@@ -1,1 +1,0 @@
-import{t as e}from"./useQuery-BIP7lypG.js";import{P as t}from"./index-CglVadfD.js";const n=async()=>(await t.get(`select-currencies`)).data?.data||[],r=()=>e({queryKey:[`select-currencies`],queryFn:n,staleTime:300*1e3});export{r as t};

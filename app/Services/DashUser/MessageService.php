@@ -2,7 +2,9 @@
 
 namespace App\Services\DashUser;
 
+use App\Enums\NotificationType;
 use App\Enums\PaginationEnum;
+use App\Events\NotificationEvent;
 use App\Models\Message;
 use App\Models\MessageAssignee;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +20,7 @@ class MessageService
 
     public function create(array $data)
     {
-        return DB::transaction(function () use ($data) {
+        $message = DB::transaction(function () use ($data) {
             $message = Message::create([
                 'description' => $data['description'],
                 'appears_from' => $data['appears_from'],
@@ -38,6 +40,13 @@ class MessageService
 
             return $message;
         });
+        event(new NotificationEvent(
+            type: NotificationType::MESSAGE,
+            data: [
+                'message' => $message,
+            ]
+        ));
+        return $message;
     }
 
     public function update(Message $message, array $data)

@@ -24,7 +24,7 @@ class OrderController extends Controller implements HasMiddleware
             new Middleware('permission:create_order', only: ['store']),
             new Middleware('permission:update_order', only: ['update']),
             new Middleware('permission:delete_order', only: ['destroy']),
-            new Middleware('permission:handle_order', only: ['handle']),
+            new Middleware('permission:handle_order', only: ['handle', 'addNotes']),
         ];
     }
 
@@ -94,6 +94,20 @@ class OrderController extends Controller implements HasMiddleware
             200
         );
     }
+    public function addNotes(Request $request, CustomerOrder $customer_order)
+    {
+        $validated = $request->validate([
+            'notes' => ['required', 'string'],
+        ]);
+        $this->orderService->addNotes(
+            $customer_order,
+            $validated
+        );
 
-
+        return response()->format(
+            null,
+            __('messages.note_added_successfully', ['item' => __('constants.customer_order')]),
+            200
+        );
+    }
 }

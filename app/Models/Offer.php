@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\OfferObserver;
 use App\Traits\HasFilters;
 use App\Traits\HasFormattedTimestamps;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+#[ObservedBy([OfferObserver::class])]
 class Offer extends Model
 {
     use HasFactory, HasFilters, HasFormattedTimestamps;

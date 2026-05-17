@@ -3,8 +3,10 @@
 namespace App\Observers;
 
 use App\Enums\CompetitionStatus;
+use App\Enums\NotificationType;
 use App\Enums\OrderStatus;
 use App\Enums\VaultTransactionType;
+use App\Events\NotificationEvent;
 use App\Models\AppUser;
 use App\Models\Competition;
 use App\Models\CompetitionParticipant;
@@ -230,7 +232,13 @@ class CustomerOrderObserver
             });
 
 
-            // event(new CompetitionWon($participant));
+            event(new NotificationEvent(
+                type: NotificationType::COMPETITION_GOAL_ACHIEVEMENT,
+                data: [
+                    'participant' => $participant->fresh(['participant']),
+                    'competition' => $competition,
+                ]
+            ));
         }
     }
     private function checkProductTarget($participant, $competition): bool

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Shared\V1\NotificationController;
 use App\Http\Controllers\Shared\V1\SharedSelectController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,4 +36,11 @@ Route::middleware(['auth:sanctum', 'api.blocked'])->group(function () {
     Route::get('select-payment-methods', [SharedSelectController::class, 'selectAvailablePaymentMethod']);
     Route::get('select-marketers', [SharedSelectController::class, 'selectAvailableAppUser']);
     Route::get('select-currencies', [SharedSelectController::class, 'selectAvailableCurrency']);
+
+
+
+    ////////////////////
+    Route::get('notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::post('/update-fcm-token', [NotificationController::class, 'updateFcmToken']);
 });

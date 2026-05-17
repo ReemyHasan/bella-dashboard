@@ -4,7 +4,9 @@ namespace App\Services\DashUser\Orders;
 
 use App\Enums\CompetitionStatus;
 use App\Enums\CompetitionTarget;
+use App\Enums\NotificationType;
 use App\Enums\PaginationEnum;
+use App\Events\NotificationEvent;
 use App\Exceptions\CustomException;
 use App\Models\AppUser;
 use App\Models\Competition;
@@ -233,6 +235,12 @@ class CompetitionService
         $competition->update([
             'status' => CompetitionStatus::active->value,
         ]);
+        event(new NotificationEvent(
+            type: NotificationType::NEW_COMPETITION,
+            data: [
+                'competition' => $competition,
+            ]
+        ));
         return $competition;
     }
 }

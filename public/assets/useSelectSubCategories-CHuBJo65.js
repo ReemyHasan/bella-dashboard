@@ -1,1 +1,0 @@
-import{t as e}from"./useQuery-BIP7lypG.js";import{P as t}from"./index-CglVadfD.js";const n=async e=>{let n=e?`select-sub-categories?main_category=${e}`:`select-sub-categories`;return(await t.get(n)).data?.data||[]},r=t=>e({queryKey:[`select-sub-categories`,t],queryFn:()=>n(t),staleTime:300*1e3,enabled:!!t||t===void 0});export{r as t};

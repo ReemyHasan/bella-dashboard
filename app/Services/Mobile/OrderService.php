@@ -2,9 +2,11 @@
 
 namespace App\Services\Mobile;
 
+use App\Enums\NotificationType;
 use App\Enums\OrderStatus;
 use App\Enums\PaginationEnum;
 use App\Enums\VaultTransactionType;
+use App\Events\NotificationEvent;
 use App\Exceptions\CustomException;
 use App\Models\Address;
 use App\Models\AppUser;
@@ -60,7 +62,7 @@ class OrderService
 
     public function create(array $data)
     {
-        return DB::transaction(function () use ($data) {
+        $order = DB::transaction(function () use ($data) {
 
             $user = auth()->user();
             $user->load('team', 'subTeam.team');
@@ -293,8 +295,21 @@ class OrderService
             ]);
 
             $order->load('customer', 'currency', 'marketer', 'warehouseMan', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
+
             return $order;
         });
+
+        event(new NotificationEvent(
+            type: NotificationType::NEW_CUSTOMER_ORDER,
+            data: [
+                'order' => $order->load([
+                    'team.manager',
+                    'subTeam.teamLeader',
+                    'appUser',
+                ]),
+            ]
+        ));
+        return $order;
     }
 
     public function update(CustomerOrder $order, array $data)
@@ -618,6 +633,19 @@ class OrderService
             'changed_by_id' => Auth::id(),
             'notes' => $data['notes']
         ]);
+
+        $order = $order->refresh()->load([
+            'marketer',
+            'warehouseMan',
+        ]);
+        event(new NotificationEvent(
+            type: NotificationType::ORDER_NOTE,
+            data: [
+                'order' => $order,
+                'notes' => $data['notes']
+
+            ]
+        ));
     }
     public function handle(CustomerOrder $order, array $data)
     {
@@ -680,7 +708,19 @@ class OrderService
                 'notes' => $data['notes'] ?? "status changed from {$currentStatus->value} to {$status->value}"
             ]);
 
-            return $order->refresh();
+            $order = $order->refresh()->load([
+                'marketer',
+                'warehouseMan',
+            ]);
+            event(new NotificationEvent(
+                type: NotificationType::ORDER_STATUS_CHANGE,
+                data: [
+                    'order' => $order,
+                    'old_status' => $currentStatus,
+                    'new_status' => $status,
+                ]
+            ));
+            return $order;
         });
     }
 

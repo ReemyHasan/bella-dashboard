@@ -111,7 +111,6 @@
 
         .no-data {
             text-align: center;
-            font-style: italic;
             color: #777;
         }
 

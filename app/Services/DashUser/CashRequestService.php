@@ -3,7 +3,9 @@
 namespace App\Services\DashUser;
 
 use App\Enums\CashRequestStatus;
+use App\Enums\NotificationType;
 use App\Enums\PaginationEnum;
+use App\Events\NotificationEvent;
 use App\Exceptions\CustomException;
 use App\Models\AppUser;
 use App\Models\CashRequest;
@@ -229,7 +231,21 @@ class CashRequestService
                 'status' => CashRequestStatus::APPROVED->value,
             ]);
 
-            return $cashRequest->refresh();
+
+            $cashRequest = $cashRequest->refresh()->load([
+                'requestedFor',
+                'deliveredBy',
+            ]);
+
+            event(new NotificationEvent(
+                type: NotificationType::CASH_REQUEST_UPDATE,
+                data: [
+                    'cash_request' => $cashRequest,
+                    'old_status' =>  CashRequestStatus::PENDING,
+                    'new_status' => CashRequestStatus::APPROVED,
+                ]
+            ));
+            return $cashRequest;
         });
     }
     public function reject(CashRequest $cashRequest, ?string $notes = null)
@@ -281,6 +297,7 @@ class CashRequestService
         ];
 
         $current = $cashRequest->status;
+        $oldStatus = CashRequestStatus::from($current);
 
         if (
             !isset($allowedTransitions[$current]) ||
@@ -293,7 +310,7 @@ class CashRequestService
             throw new CustomException("تغيير الحالة غير مسموح من {$from} إلى {$to}");
         }
 
-        return DB::transaction(function () use ($cashRequest, $status, $notes) {
+        return DB::transaction(function () use ($cashRequest, $status, $notes, $oldStatus) {
 
 
             $updateData = [
@@ -314,7 +331,21 @@ class CashRequestService
             }
 
             $cashRequest->update($updateData);
-            return $cashRequest->refresh();
+
+            $cashRequest = $cashRequest->refresh()->load([
+                'requestedFor',
+                'deliveredBy',
+            ]);
+
+            event(new NotificationEvent(
+                type: NotificationType::CASH_REQUEST_UPDATE,
+                data: [
+                    'cash_request' => $cashRequest,
+                    'old_status' => $oldStatus,
+                    'new_status' => $status,
+                ]
+            ));
+            return $cashRequest;
         });
     }
 }

@@ -2,11 +2,9 @@
 
 namespace App\Observers;
 
+use App\Enums\NotificationType;
+use App\Events\NotificationEvent;
 use App\Models\AppUser;
-use App\Models\DashUser;
-use App\Models\Role;
-use App\Models\Warehouse;
-use Illuminate\Support\Facades\DB;
 
 class AppUserObserver
 {
@@ -15,6 +13,15 @@ class AppUserObserver
      */
     public function created(AppUser $user): void
     {
+        event(new NotificationEvent(
+            type: NotificationType::NEW_MARKETER,
+            data: [
+                'marketer' => $user->load([
+                    'team.manager',
+                    'subTeam.teamLeader',
+                ]),
+            ]
+        ));
         // DB::transaction(function () use ($user) {
 
         //     if (!$user->is_warehouse_man) {
@@ -57,6 +64,18 @@ class AppUserObserver
     {
         $user->clearRolesCache();
 
+        if ($user->wasChanged('balance')) {
+
+            event(new NotificationEvent(
+                type: NotificationType::FINANCIAL_MOVEMENT,
+                data: [
+                    'user' => $user,
+                    'old_balance' => $user->getOriginal('balance'),
+                    'new_balance' => $user->balance,
+                    'difference' => $user->balance - $user->getOriginal('balance'),
+                ]
+            ));
+        }
         // DB::transaction(function () use ($user) {
 
         //     $wasKeeper = $user->getOriginal('is_warehouse_man');
