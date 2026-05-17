@@ -26,7 +26,8 @@ class UpdateOfferHandler
                     [
                         'offer_id' => (string) $offer->id
                     ]
-                )->onQueue('database-notifications');;
+                );
+                // ->onQueue('database-notifications');
             });
 
         // foreach ($this->resolveUsers() as $user) {
@@ -61,7 +62,8 @@ class UpdateOfferHandler
                         'type' => $event->type->value,
                         'offer_id' => (string) $offer->id
                     ]
-                )->onQueue('firebase-notifications');
+                );
+                // ->onQueue('firebase-notifications');
             });
 
         // foreach ($this->resolveUsers() as $user) {

@@ -7,6 +7,7 @@ use App\Events\NotificationEvent;
 use App\Jobs\SendDatabaseNotificationJob;
 use App\Jobs\SendFirebaseNotificationJob;
 use App\Models\AppUser;
+use Illuminate\Support\Facades\Log;
 
 class MessageHandler
 {
@@ -14,7 +15,9 @@ class MessageHandler
     {
         $message = $event->data['message'];
 
+
         $users = $this->resolveUsers($message);
+
 
         $users
             ->chunkById(20, function ($chunkUsers) use ($event, $message) {
@@ -27,7 +30,7 @@ class MessageHandler
                     [
                         'message_id' => $message->id,
                     ]
-                )->onQueue('database-notifications');;
+                );
             });
     }
 
@@ -49,15 +52,18 @@ class MessageHandler
                         'type' => $event->type->value,
                         'message_id' => (string) $message->id,
                     ]
-                )->onQueue('firebase-notifications');
+                );
             });
     }
 
     private function resolveUsers($message)
     {
-        if ($message->assignment_type === 'all') {
+
+        if ($message->assignment_type->value == 'all') {
+
             return AppUser::query()->where('status', DashUserStatus::ACTIVE->value);
         }
+
 
         return match ($message->target_type->value) {
 

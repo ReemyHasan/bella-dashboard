@@ -42,5 +42,5 @@ Route::middleware(['auth:sanctum', 'api.blocked'])->group(function () {
     ////////////////////
     Route::get('notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
     Route::get('notifications', [NotificationController::class, 'index']);
-    Route::post('/update-fcm-token', [NotificationController::class, 'updateFcmToken']);
+    Route::post('update-fcm-token', [NotificationController::class, 'updateFcmToken']);
 });

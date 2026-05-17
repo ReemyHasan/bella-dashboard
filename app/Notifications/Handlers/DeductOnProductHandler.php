@@ -27,7 +27,8 @@ class DeductOnProductHandler
                     [
                         'product_id' => (string) $product->id
                     ]
-                )->onQueue('database-notifications');;
+                );
+                // ->onQueue('database-notifications');;
             });
 
         // foreach ($this->resolveUsers() as $user) {
@@ -62,7 +63,8 @@ class DeductOnProductHandler
                         'type' => $event->type->value,
                         'product_id' => (string) $product->id
                     ]
-                )->onQueue('firebase-notifications');
+                );
+                // ->onQueue('firebase-notifications');
             });
 
         // foreach ($this->resolveUsers() as $user) {

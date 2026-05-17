@@ -21,10 +21,10 @@ class NotificationResource extends JsonResource
             'type_ar' => NotificationType::from($this->type)->label(),
             'created_at' => diffForHumans($this->created_at),
             // 'created_date' => $this->created_at_formatted,
-            'read_at' => $this->read_at_formatted,
+            'read_at' => $this->read_at ? diffForHumans($this->read_at) : null,
             'title' => $this->title,
             'body' => $this->body,
-            'data' => json_decode($this->data, true)
+            'data' => $this->data
         ];
     }
 }

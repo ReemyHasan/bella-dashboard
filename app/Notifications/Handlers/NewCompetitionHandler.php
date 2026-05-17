@@ -26,7 +26,8 @@ class NewCompetitionHandler
                     [
                         'competition_id' => $competition->id,
                     ]
-                )->onQueue('database-notifications');;
+                );
+                // ->onQueue('database-notifications');;
             });
 
         // foreach ($users as $user) {
@@ -61,7 +62,8 @@ class NewCompetitionHandler
                         'type' => $event->type->value,
                         'competition_id' => (string) $competition->id,
                     ]
-                )->onQueue('firebase-notifications');
+                );
+                // ->onQueue('firebase-notifications');
             });
         // foreach ($users as $user) {
 

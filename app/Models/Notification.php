@@ -28,6 +28,8 @@ class Notification extends Model
         "updated_at_formatted",
         "read_at_formatted",
     ];
+
+    
     public function getReadAtFormattedAttribute()
     {
         return $this->read_at

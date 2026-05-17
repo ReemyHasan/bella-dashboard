@@ -12,14 +12,15 @@ function snake_to_title($value): string
 
 function diffForHumans($date)
 {
-    $lang = session()->get('lang');
-    Carbon::setlocale($lang);
+
+    $locale = config('app.locale') ?? config('app.fallback_locale');
+    Carbon::setlocale($locale);
     return Carbon::parse($date)->diffForHumans();
 }
 
 function showDateTime($date, $format = 'Y-m-d h:i A')
 {
-    $locale = (request()->hasHeader('Accept-Language')) ? request()->header('Accept-Language') : config('app.fallback_locale');
+    $locale = config('app.locale') ?? config('app.fallback_locale');
     Carbon::setlocale($locale);
     return Carbon::parse($date)->translatedFormat($format);
 }

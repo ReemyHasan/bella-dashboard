@@ -27,7 +27,8 @@ class NewProductHandler
                     [
                         'product_id' => (string) $product->id
                     ]
-                )->onQueue('database-notifications');;
+                );
+                // ->onQueue('database-notifications');
             });
 
         // foreach ($users as $user) {
@@ -62,7 +63,8 @@ class NewProductHandler
                         'type' => $event->type->value,
                         'product_id' => (string) $product->id
                     ]
-                )->onQueue('firebase-notifications');
+                );
+                // ->onQueue('firebase-notifications');
             });
         // foreach ($users as $user) {
 
