@@ -59,6 +59,7 @@ class LoginResource extends JsonResource
                     ];
                 });
             }),
+            "fcm_token" => $this->fcm_token
         ];
     }
     private function resolveTeam(): ?array

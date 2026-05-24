@@ -21,6 +21,7 @@ class Message extends Model
         'assignment_type',
         'created_by_id',
         'created_by_type',
+        'sent_at'
     ];
     protected $appends = [
         "created_at_formatted",

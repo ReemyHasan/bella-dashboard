@@ -40,12 +40,12 @@ class MessageService
 
             return $message;
         });
-        event(new NotificationEvent(
-            type: NotificationType::MESSAGE,
-            data: [
-                'message' => $message,
-            ]
-        ));
+        // event(new NotificationEvent(
+        //     type: NotificationType::MESSAGE,
+        //     data: [
+        //         'message' => $message,
+        //     ]
+        // ));
         return $message;
     }
 
