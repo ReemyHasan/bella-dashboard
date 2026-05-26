@@ -357,7 +357,7 @@ class OrderService
                 'order' => $order->load([
                     'team.manager',
                     'subTeam.teamLeader',
-                    'appUser',
+                    'marketer',
                 ]),
             ]
         ));
@@ -716,7 +716,7 @@ class OrderService
     }
     public function show(CustomerOrder $order)
     {
-        $order->load('customer', 'statusLogs.changedBy', 'currency', 'marketer', 'warehouseMan', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
+        $order->load('customer', 'statusLogs.changedBy','competition', 'currency', 'marketer', 'warehouseMan', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
         return $order;
     }
 

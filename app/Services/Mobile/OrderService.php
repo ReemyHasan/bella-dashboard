@@ -55,7 +55,7 @@ class OrderService
         if (!in_array(auth()->user()->id, $allowedUsers)) {
             throw new CustomException('لا يمكن رؤية الطلب إلا من قبل المسوق المنشئ له أو مديره.');
         }
-        $order->load('customer', 'statusLogs.changedBy', 'currency', 'marketer', 'warehouseMan', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
+        $order->load('customer', 'statusLogs.changedBy', 'competition', 'currency', 'marketer', 'warehouseMan', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
         return $order;
     }
 
@@ -305,7 +305,7 @@ class OrderService
                 'order' => $order->load([
                     'team.manager',
                     'subTeam.teamLeader',
-                    'appUser',
+                    'marketer',
                 ]),
             ]
         ));

@@ -127,6 +127,10 @@ class CustomerOrderDetailsResource extends JsonResource
             'status_logs' => OrderStatusLogResource::collection(
                 $this->whenLoaded('statusLogs')
             ),
+            'competition' => $this->whenLoaded('competition', fn() => [
+                'id' => $this->competition?->id,
+                'name' => $this->competition?->name
+            ]),
         ];
     }
 }
