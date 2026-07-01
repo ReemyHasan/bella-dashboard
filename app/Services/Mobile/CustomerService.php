@@ -42,9 +42,9 @@ class CustomerService
     public function create(array $data): Customer
     {
         $user = auth()->user();
-        if (!$user->hasRole('Team Manager') && !$user->hasRole('Team Leader')) {
-            throw new CustomException('لا يمكن إضافة زبون جديد إلا من قبل مدير أو مدير فريق');
-        }
+        // if (!$user->hasRole('Team Manager') && !$user->hasRole('Team Leader')) {
+        //     throw new CustomException('لا يمكن إضافة زبون جديد إلا من قبل مدير أو مدير فريق');
+        // }
         return DB::transaction(function () use ($data) {
             $customer = Customer::create([
                 'first_name' => $data['first_name'],
@@ -70,9 +70,9 @@ class CustomerService
     public function update(Customer $customer, array $data): Customer
     {
         $user = auth()->user();
-        if (!$user->hasRole('Team Manager') && !$user->hasRole('Team Leader')) {
-            throw new CustomException('لا يمكن إضافة زبون جديد إلا من قبل مدير أو مدير فريق');
-        }
+        // if (!$user->hasRole('Team Manager') && !$user->hasRole('Team Leader')) {
+        //     throw new CustomException('لا يمكن إضافة زبون جديد إلا من قبل مدير أو مدير فريق');
+        // }
         if ($customer->created_by_type != AppUser::class || $customer->created_by_id != $user->id) {
             throw new CustomException('لا يمكن تعديل معلومات زبون إلا من المنشئ له.');
         }

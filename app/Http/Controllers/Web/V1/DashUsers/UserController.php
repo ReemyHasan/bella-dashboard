@@ -27,7 +27,7 @@ class UserController extends Controller implements HasMiddleware
             new Middleware('permission:set_dash_user_password', only: ['setPassword']),
             // new Middleware('permission:users.view_deleted', only: ['deletedList']),
             // new Middleware('permission:users.restore', only: ['restore']),
-            new Middleware('permission:update_dash_user_permissions', only: ['destroy']),
+            new Middleware('permission:update_dash_user_permissions', only: ['updatePermissions']),
 
 
         ];

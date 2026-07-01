@@ -8,6 +8,7 @@ use App\Enums\DashUserStatus;
 use App\Exceptions\CustomException;
 use App\Models\Address;
 use App\Models\AppUser;
+use App\Models\City;
 use App\Models\Competition;
 use App\Models\Currency;
 use App\Models\Customer;
@@ -346,6 +347,26 @@ class SharedInfoService
         return $zones->map(fn($zone) => [
             'key' => $zone?->id,
             'value' => $zone?->name . '(' . $zone?->symbol . ')'
+        ]);
+    }
+
+    public function selectAvailableCities($zone = null, $search = null)
+    {
+
+        $cities = City::when(!is_null($zone), function ($query) use ($zone) {
+            $query->where('zone_id', $zone);
+        })->when(!is_null($search), function ($query) use ($search) {
+            $query->where('name', 'like', "%$search%");
+        })->orderBy('id')->get([
+            'id',
+            'name',
+            'symbol',
+            'zone_id'
+        ]);
+
+        return  $cities->map(fn($city) => [
+            'key' => $city?->id,
+            'value' => $city?->name . '(' . $city?->symbol . ')'
         ]);
     }
 

@@ -134,6 +134,15 @@ class SharedSelectController extends Controller
         return response()->format($returned, 'messages.success', 200);
     }
 
+    
+    public function selectAvailableCities(Request $request)
+    {
+        $zone= $request->input('zone');
+        $search= $request->input('search');
+        $returnedData = $this->sharedInfoService->selectAvailableCities($zone, $search);
+        return response()->format($returnedData, 'messages.success', 200);
+    }
+
     public function selectAvailableRegions(Request $request)
     {
         $search = $request->input('search');

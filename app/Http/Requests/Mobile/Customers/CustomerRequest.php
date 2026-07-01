@@ -12,8 +12,9 @@ class CustomerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $user = auth()->user();
-        return ($user->hasRole('Team Manager') || $user->hasRole('Team Leader'));
+        // $user = auth()->user();
+        // return ($user->hasRole('Team Manager') || $user->hasRole('Team Leader'));
+        return true;
     }
 
     /**
