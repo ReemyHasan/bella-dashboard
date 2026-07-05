@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Shared\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Mobile\OfferWarehouseResource;
+use App\Http\Resources\Mobile\WarehouseProductResource;
 use App\Models\PaymentMethod;
+use App\Models\Warehouse;
 use App\Services\Shared\SharedInfoService;
 use Illuminate\Http\Request;
 
@@ -59,6 +62,17 @@ class SharedSelectController extends Controller
 
         $returned = $this->sharedInfoService->warehouseOffers($warehouseId);
         return response()->format($returned, 'messages.success', 200);
+    }
+
+     public function warehouseProductsPaginated(Request $request, Warehouse $warehouse)
+    {
+        $warehouseProducts = $this->sharedInfoService->warehouseProductsPaginated($request, $warehouse);
+        return response()->format($this->returnPaginatedResponse($warehouseProducts, WarehouseProductResource::collection($warehouseProducts)), 'messages.success', 200);
+    }
+    public function warehouseOffersPaginated(Request $request, Warehouse $warehouse)
+    {
+        $warehouseOffers = $this->sharedInfoService->warehouseOffersPaginated($request, $warehouse);
+        return response()->format($this->returnPaginatedResponse($warehouseOffers, OfferWarehouseResource::collection($warehouseOffers)), 'messages.success', 200);
     }
 
     public function customerAddresses($customerId)

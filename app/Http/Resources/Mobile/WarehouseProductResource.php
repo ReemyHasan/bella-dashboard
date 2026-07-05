@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Mobile;
 
+use App\Http\Resources\DashUser\ProductZonePriceResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -35,9 +36,12 @@ class WarehouseProductResource extends JsonResource
 
 
             'main_image' => $this?->whenLoaded('product', function () {
-                return $this->product->mainImage ? $this?->product?->mainImage?->path : null;
+                return $this->product->mainImage ? getPublicFileUrl($this?->product?->mainImage?->path) : null;
             }),
 
+            'zone_prices' => $this?->whenLoaded('product', function () {
+                return $this->product->zonePrices ? ProductZonePriceResource::collection($this->product->zonePrices) : null;
+            }),
             'quantity' => $this->quantity,
             'reserved' => $this->reserved_quantity,
             'available' => $this->quantity - $this->reserved_quantity

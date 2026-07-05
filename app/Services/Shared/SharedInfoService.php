@@ -5,6 +5,7 @@ namespace App\Services\Shared;
 use App\Enums\CompetitionStatus;
 use App\Enums\CompetitionTarget;
 use App\Enums\DashUserStatus;
+use App\Enums\PaginationEnum;
 use App\Exceptions\CustomException;
 use App\Models\Address;
 use App\Models\AppUser;
@@ -193,6 +194,62 @@ class SharedInfoService
             // 'available' => $p->quantity
         ]);
     }
+    public function warehouseProductsPaginated($request, Warehouse $warehouse)
+    {
+        return ProductWarehouse::with(
+            [
+                'product.mainCategory',
+                'product.subCategory',
+                'product.mainImage',
+                'product.zonePrices.zone.currency'
+            ]
+        )->where('warehouse_id', $warehouse->id)->filterBy($request->all())
+            ->sortBy($request->get('sort', ['created_at' => 'desc']))
+            ->paginate($request->input('per_page') ?? PaginationEnum::GeneralPagination->value);
+    }
+    public function warehouseOffersPaginated($request, Warehouse $warehouse)
+    {
+        return OfferWarehouse::with(
+            [
+                'offer.mainImage',
+                'offer.zonePrices.zone.currency'
+            ]
+        )->where('warehouse_id', $warehouse->id)->filterBy($request->all())
+            ->sortBy($request->get('sort', ['created_at' => 'desc']))
+            ->paginate($request->input('per_page') ?? PaginationEnum::GeneralPagination->value);
+    }
+
+    // public function warehouseProductPaginated($warehouseId)
+    // {
+    //     $products = ProductWarehouse::with([
+    //         'product:id,name',
+    //         'product.mainImage',
+    //         'zonePrices.zone.currency'
+    //     ])->where('warehouse_id', $warehouseId)->get();
+    //     return $products->map(fn($p) => [
+    //         'id' => $p?->product?->id,
+    //         'name' => $p?->product?->name,
+    //         'available' => $p->quantity - $p->reserved_quantity,
+    //         'quantity' => $p->quantity,
+    //         'reserved_quantity' => $p->reserved_quantity,
+    //         'main_image' => getPublicFileUrl($p->product?->mainImage?->path)
+    //     ]);
+    // }
+    // public function warehouseOffersPaginated($warehouseId)
+    // {
+    //     $offers = OfferWarehouse::with([
+    //         'offer:id,name',
+    //         'offer.mainImage',
+    //         'zonePrices.zone.currency'
+    //     ])->where('warehouse_id', $warehouseId)->get();
+
+    //     return $offers->map(fn($p) => [
+    //         'id' => $p?->offer?->id,
+    //         'name' => $p?->offer?->name,
+    //         'main_image' => getPublicFileUrl($p->offer?->mainImage?->path)
+    //     ]);
+    // }
+
     public function customerAddresses($customerId)
     {
 
