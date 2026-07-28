@@ -41,7 +41,8 @@ class WarehouseService
             [
                 'product.mainCategory',
                 'product.subCategory',
-                'product.mainImage'
+                'product.mainImage',
+                'product.zonePrices'
             ]
         )->where('warehouse_id', $warehouse->id)->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
@@ -53,7 +54,8 @@ class WarehouseService
         $this->allowUser();
         return OfferWarehouse::with(
             [
-                'offer.mainImage'
+                'offer.mainImage',
+                'offer.zonePrices'
             ]
         )->where('warehouse_id', $warehouse->id)->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
