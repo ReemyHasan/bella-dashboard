@@ -15,7 +15,8 @@ class WarehouseHandover extends Model
         'requester_warehouse_id',
         'provider_warehouse_id',
         'status',
-        'requested_by',
+        'requested_by_type',
+        'requested_by_id',
         'responded_by',
         'approved_at',
         'completed_at',
@@ -60,9 +61,10 @@ class WarehouseHandover extends Model
         return $this->belongsTo(Warehouse::class, 'provider_warehouse_id');
     }
 
-    public function requester()
+  
+    public function requestedBy()
     {
-        return $this->belongsTo(DashUser::class, 'requested_by');
+        return $this->morphTo();
     }
 
     public function responder()

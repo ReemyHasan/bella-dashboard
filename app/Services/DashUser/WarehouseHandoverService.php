@@ -8,6 +8,7 @@ use App\Exceptions\CustomException;
 use App\Http\Resources\DashUser\WarehouseHandoverResource;
 use App\Http\Resources\DashUser\WarehouseProductResource;
 use App\Http\Resources\DashUser\WarehouseResource;
+use App\Models\DashUser;
 use App\Models\ProductWarehouse;
 use App\Models\Warehouse;
 use App\Models\WarehouseHandover;
@@ -68,7 +69,8 @@ class WarehouseHandoverService
                 'requester_warehouse_id' => $data['requester_warehouse_id'],
                 'provider_warehouse_id'  => $data['provider_warehouse_id'],
                 'status' => HandOverStatus::pending->value,
-                'requested_by' => auth()->id(),
+                'requested_by_id' => auth()->user()->id,
+                'requested_by_type' => DashUser::class,
                 'notes' => $data['notes'] ?? null
             ]);
 
@@ -80,7 +82,7 @@ class WarehouseHandoverService
                 ]);
             }
 
-            return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requester', 'responder');
+            return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requestedBy', 'responder');
         });
     }
 
@@ -115,7 +117,7 @@ class WarehouseHandoverService
                 ]);
             }
 
-            return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requester', 'responder');
+            return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requestedBy', 'responder');
         });
     }
     public function show(WarehouseHandover $warehouseHandover)
@@ -125,7 +127,7 @@ class WarehouseHandoverService
         if (!$this->canAccessHandover($warehouseHandover, $user)) {
             abort(403, __('messages.unauthorized_action'));
         }
-        $warehouseHandover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requester', 'responder');
+        $warehouseHandover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requestedBy', 'responder');
         // dd($warehouseHandover);
         return $warehouseHandover;
     }
@@ -194,7 +196,7 @@ class WarehouseHandoverService
                 'approved_at' => now()
             ]);
 
-            return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requester', 'responder');
+            return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requestedBy', 'responder');
         });
     }
 
@@ -219,7 +221,7 @@ class WarehouseHandoverService
             'notes' => $reason
         ]);
 
-        return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requester', 'responder');
+        return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requestedBy', 'responder');
     }
 
     public function shipHandover(WarehouseHandover $handover)
@@ -258,7 +260,7 @@ class WarehouseHandoverService
                 'status' => HandOverStatus::in_transit->value
             ]);
 
-            return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requester', 'responder');
+            return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requestedBy', 'responder');
         });
     }
 
@@ -300,7 +302,7 @@ class WarehouseHandoverService
                 'completed_at' => now()
             ]);
 
-            return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requester', 'responder');
+            return $handover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requestedBy', 'responder');
         });
     }
 

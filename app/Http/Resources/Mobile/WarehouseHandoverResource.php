@@ -47,9 +47,9 @@ class WarehouseHandoverResource extends JsonResource
 
             'notes' => $this->notes,
 
-            'requester' => $this->whenLoaded('requester', fn() => [
-                'id' => $this->requester?->id,
-                'name' => $this->requester?->first_name . ' ' . $this->requester?->last_name . ' (' . $this->requester?->mobile . ')',
+            'requester' => $this->whenLoaded('requestedBy', fn() => [
+                'id' => $this->requestedBy?->id,
+                'name' => $this->requestedBy?->first_name . ' ' . $this->requestedBy?->last_name . ' (' . $this->requestedBy?->mobile . ')',
             ]),
             'responder' => $this->whenLoaded('responder', fn() => [
                 'id' => $this->responder?->id,

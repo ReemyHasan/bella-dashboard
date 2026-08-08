@@ -5,6 +5,7 @@ namespace App\Services\Mobile;
 use App\Enums\HandOverStatus;
 use App\Enums\PaginationEnum;
 use App\Exceptions\CustomException;
+use App\Models\AppUser;
 use App\Models\ProductWarehouse;
 use App\Models\Warehouse;
 use App\Models\WarehouseHandover;
@@ -65,7 +66,9 @@ class WarehouseHandoverService
                 'requester_warehouse_id' => $warehouse->id,
                 'provider_warehouse_id'  => $data['provider_warehouse_id'],
                 'status' => HandOverStatus::pending->value,
-                'requested_by' => $user->id,
+
+                'requested_by_id' => auth()->user()->id,
+                'requested_by_type' => AppUser::class,
                 'notes' => $data['notes'] ?? null
             ]);
 
@@ -122,7 +125,7 @@ class WarehouseHandoverService
 
         $this->canAccessHandover($warehouseHandover, $user);
 
-        $warehouseHandover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requester', 'responder');
+        $warehouseHandover->load('requesterWarehouse', 'providerWarehouse', 'items.product.mainCategory', 'items.product.subCategory', 'requestedBy', 'responder');
 
         return $warehouseHandover;
     }
