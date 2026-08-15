@@ -16,6 +16,7 @@ use App\Notifications\Handlers\OrderNoteHandler;
 use App\Notifications\Handlers\OrderStatusChangeHandler;
 use App\Notifications\Handlers\UpdateOfferHandler;
 use App\Notifications\Handlers\UpdateProductHandler;
+use App\Notifications\Handlers\WaitingOrderHandler;
 
 enum NotificationType: string
 {
@@ -44,12 +45,13 @@ enum NotificationType: string
     case CASH_REQUEST_UPDATE = 'cash_request_update'; // related marketer, and warehouse man when admin approve the cash request
 
     case NEW_MARKETER = 'new_marketer'; // manager of the team this marketer registerd in
-
+    case WAITING_ORDER = 'waiting_order';
 
     public function label(): string
     {
         return match ($this) {
             self::MESSAGE => 'رسالة',
+            self::WAITING_ORDER => 'طلب مؤجل',
 
             self::NEW_COMPETITION => 'مسابقة جديدة',
             self::COMPETITION_GOAL_ACHIEVEMENT => 'تحقيق هدف المسابقة',
@@ -80,6 +82,7 @@ enum NotificationType: string
     {
         return match ($this) {
             self::MESSAGE => MessageHandler::class, // ###########################
+            self::WAITING_ORDER => WaitingOrderHandler::class, // ###########################
 
             self::NEW_COMPETITION => NewCompetitionHandler::class,  // ###########################
             self::COMPETITION_GOAL_ACHIEVEMENT => CompetitionGoalAchievementHandler::class, // ###########################

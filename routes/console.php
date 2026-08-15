@@ -10,3 +10,5 @@ use Illuminate\Support\Facades\Schedule;
 // })->purpose('Display an inspiring quote')->everySecond();
 
 Schedule::command('messages:send-scheduled')->everySixHours();
+Schedule::command('orders:send-waiting-notifications')
+    ->dailyAt('00:00');

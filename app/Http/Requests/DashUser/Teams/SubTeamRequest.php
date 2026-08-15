@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\DashUser\Teams;
 
+use App\Models\SubTeam;
+use App\Models\Team;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -127,22 +129,75 @@ class SubTeamRequest extends FormRequest
             // ],
         ];
     }
+    // public function withValidator($validator)
+    // {
+    //     $validator->after(function ($validator) {
+
+    //         if ($this->boolean('is_direct')) {
+
+    //             $first = \App\Models\SubTeam::where('team_id', $this->input('team_id'))
+    //                 ->where('is_direct', true)
+    //                 ->first();
+
+    //             if ($first != null && $first?->id != $this->route('sub_team')) {
+    //                 $validator->errors()->add(
+    //                     'is_direct',
+    //                     'الفريق الرئيسي لديه فعلا فريق مباشر'
+    //                 );
+    //             }
+    //         }
+    //     });
+    // }
+
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
 
             if ($this->boolean('is_direct')) {
 
-                $first = \App\Models\SubTeam::where('team_id', $this->input('team_id'))
+                $first = SubTeam::query()
+                    ->where('team_id', $this->input('team_id'))
                     ->where('is_direct', true)
                     ->first();
 
-                if ($first != null && $first?->id != $this->route('sub_team')) {
+                if ($first && $first->id != $this->route('sub_team')) {
                     $validator->errors()->add(
                         'is_direct',
                         'الفريق الرئيسي لديه فعلا فريق مباشر'
                     );
                 }
+            }
+        });
+
+        $validator->after(function ($validator) {
+
+            $leaderId = $this->input('team_leader_id');
+
+            if (!$leaderId) {
+                return;
+            }
+
+            $subTeamId = $this->route('sub_team');
+
+            // Check if the user is already a manager of another team
+            $isManager = Team::query()
+                ->where('manager_id', $leaderId)
+                ->exists();
+
+            // Check if the user is already a leader of another sub-team
+            $isLeader = SubTeam::query()
+                ->where('team_leader_id', $leaderId)
+                ->when(
+                    $subTeamId,
+                    fn($query) => $query->where('id', '!=', $subTeamId)
+                )
+                ->exists();
+
+            if ($isManager || $isLeader) {
+                $validator->errors()->add(
+                    'team_leader_id',
+                    'لا يمكن تعيين هذا المستخدم كقائد فريق لأنه مدير أو قائد فريق آخر.'
+                );
             }
         });
     }

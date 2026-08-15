@@ -23,6 +23,7 @@ class OrderStatusLogResource extends JsonResource
             'created_at_formatted'          => $this->created_at_formatted,
             'changed_by' => $this->whenLoaded('changedBy', fn() => [
                 'id' => $this->changedBy?->id,
+                'is_admin' => get_class($this->changedBy) == 'App\Models\DashUser' ? 1 : 0,
                 'name' => $this->changedBy?->first_name . ' ' . $this->changedBy?->last_name . ' (' . $this->changedBy?->user_name . ')',
             ]),
 

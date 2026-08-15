@@ -44,6 +44,9 @@ class CustomerOrderListResource extends JsonResource
                 'name' => $this->address?->name,
             ]),
             'last_note' => $this->whenLoaded('lastStatusLog', fn() => $this->lastStatusLog?->notes),
+            'waiting_until' => $this->waiting_until_formatted,
+            'waiting_reason' => $this->waiting_reason,
+
         ];
     }
 }
