@@ -8,11 +8,13 @@ use App\Models\AppUser;
 use App\Models\CashRequest;
 use App\Models\VaultTransaction;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class CashRequestSharedService
 {
     public function addTransaction(CashRequest $cashRequest)
     {
+
         $user = Auth::user();
 
         $fromVault = $cashRequest->fromVault()->lockForUpdate()->first();
@@ -42,7 +44,7 @@ class CashRequestSharedService
             "سعر الصرف: {$exchangeValue} | " .
             "المبلغ الواجب تسليمه: {$amount}";
 
-        VaultTransaction::create([
+        $x = VaultTransaction::create([
             'from_vault_id' => $fromVault->id,
 
             'type' => VaultTransactionType::CASH_REQUEST->value,
@@ -68,6 +70,7 @@ class CashRequestSharedService
 
     public function transferFromUser(CashRequest $cashRequest)
     {
+
         $user = Auth::user();
 
         $target = $cashRequest->requestedFor; // AppUser or DashUser
@@ -100,10 +103,10 @@ class CashRequestSharedService
         // ]);
 
         // 🧾 Transaction (User → Vault)
-        VaultTransaction::create([
+        $x = VaultTransaction::create([
             // 'to_vault_id' => $fromVault->id,
-            'balance_user_type' => AppUser::class,
-            'balance_user_id' => $user->id,
+            'balance_user_type' => get_class($target),
+            'balance_user_id' => $target->id,
 
             'type' => VaultTransactionType::CASH_REQUEST_APPROVED->value,
 

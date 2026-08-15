@@ -210,6 +210,14 @@ class CashRequestService
 
     public function approve(CashRequest $cashRequest, float $approvedAmount, $delivered_by, $delivery_cost, ?string $notes = null)
     {
+        $newDeliveredBy = $delivered_by ?? $cashRequest->delivered_by;
+        $fromVault = Vault::where('owner_id', $newDeliveredBy)
+            ->first();
+
+        if (!$fromVault) {
+            throw new CustomException('.الموزع ليس لديه خزنة');
+        }
+
         if ($cashRequest->status !== CashRequestStatus::PENDING->value) {
             throw new CustomException('لا يمكن الموافقة على الطلب.');
         }
@@ -219,12 +227,14 @@ class CashRequestService
         if ($targetBalance < $approvedAmount) {
             throw new CustomException("لا يمكن الموافقة على الطلب, الرصيد في محفظة المستخدم أقل من المطلوب : {$targetBalance}.");
         }
-        return DB::transaction(function () use ($cashRequest, $approvedAmount, $notes, $delivered_by, $delivery_cost) {
+        return DB::transaction(function () use ($cashRequest, $approvedAmount, $notes, $delivered_by, $delivery_cost, $fromVault) {
 
             $cashRequest->update([
                 'approved_amount' => $approvedAmount,
                 'delivery_cost' => ($delivery_cost ?? $cashRequest->delivery_cost),
                 'delivered_by' => $delivered_by ?? $cashRequest->delivered_by,
+                'from_vault_id' => $fromVault->id,
+
                 'review_notes' => $notes,
                 'reviewed_by' => Auth::id(),
                 'reviewed_at' => now(),
