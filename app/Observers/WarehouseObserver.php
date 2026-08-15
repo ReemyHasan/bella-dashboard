@@ -23,6 +23,9 @@ class WarehouseObserver
                     'warehouse_id' => $warehouse->id
                 ]);
 
+
+                $keeper->roles()->sync([]);
+                $keeper->permissions()->sync([]);
                 $keeper->assignRole('Warehouse Keeper');
             }
         }
@@ -60,6 +63,9 @@ class WarehouseObserver
                         'is_delivery_man' => true,
                         'warehouse_id' => $warehouse->id
                     ]);
+
+                    $keeper->roles()->sync([]);
+                    $keeper->permissions()->sync([]);
 
                     $keeper->assignRole('Warehouse Keeper');
                 }

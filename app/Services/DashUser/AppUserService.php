@@ -39,7 +39,7 @@ class AppUserService
                 'status' => $data['status'],
                 'team_id' => $data['team_id'] ?? null,
                 'subteam_id' => $data['subteam_id'] ?? null,
-                'warehouse_id' => $data['warehouse_id'],
+                'warehouse_id' => $data['warehouse_id'] ?? null,
                 'balance' => $data['balance'],
                 'profile_link' => $data['profile_link'],
 

@@ -8,7 +8,7 @@ use App\Models\SubTeam;
 class SubTeamObserver
 {
 
-public function created(SubTeam $subTeam): void
+    public function created(SubTeam $subTeam): void
     {
 
         if ($subTeam->team_leader_id) {
@@ -17,8 +17,11 @@ public function created(SubTeam $subTeam): void
 
             if ($manager) {
                 $manager->update([
-                    'team_id' => $subTeam->team_id, 'subteam_id' => $subTeam->id
+                    'team_id' => $subTeam->team_id,
+                    'subteam_id' => $subTeam->id
                 ]);
+                $manager->roles()->sync([]);
+                $manager->permissions()->sync([]);
 
                 $manager->assignRole('Team Leader');
             }
@@ -48,8 +51,11 @@ public function created(SubTeam $subTeam): void
 
                 if ($manager) {
                     $manager->update([
-                        'team_id' => $subTeam->team_id, 'subteam_id' => $subTeam->id
+                        'team_id' => $subTeam->team_id,
+                        'subteam_id' => $subTeam->id
                     ]);
+                    $manager->roles()->sync([]);
+                    $manager->permissions()->sync([]);
 
                     $manager->assignRole('Team Leader');
                 }

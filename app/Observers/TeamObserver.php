@@ -21,6 +21,8 @@ class TeamObserver
                 $manager->update([
                     'team_id' => $team->id
                 ]);
+                $manager->roles()->sync([]);
+                $manager->permissions()->sync([]);
 
                 $manager->assignRole('Team Manager');
             }
@@ -58,6 +60,8 @@ class TeamObserver
                     $manager->update([
                         'team_id' => $team->id
                     ]);
+                    $manager->roles()->sync([]);
+                    $manager->permissions()->sync([]);
 
                     $manager->assignRole('Team Manager');
                 }
