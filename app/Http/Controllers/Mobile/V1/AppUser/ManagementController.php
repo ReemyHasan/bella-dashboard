@@ -17,7 +17,11 @@ class ManagementController extends Controller
         $users = $this->appUserService->appUsers($request);
         return response()->format($this->returnPaginatedResponse($users, AppUserResource::collection($users)), 'messages.success', 200);
     }
-
+    public function selectManagedMarketer(Request $request)
+    {
+        $users = $this->appUserService->selectManagedMarketer($request);
+        return response()->format($users, 'messages.success', 200);
+    }
     public function showAppUser($id)
     {
         $appUser = $this->appUserService->showAppUser($id);

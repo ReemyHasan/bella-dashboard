@@ -33,7 +33,13 @@ class WarehouseController extends Controller
         return response()->format($this->returnPaginatedResponse($warehouseOffers, OfferWarehouseResource::collection($warehouseOffers)), 'messages.success', 200);
     }
 
-     public function showOffer(Offer $offer)
+    public function offers(Request $request)
+    {
+        $warehouseOffers = $this->warehouseService->offers($request);
+        return response()->format($this->returnPaginatedResponse($warehouseOffers, OfferResource::collection($warehouseOffers)), 'messages.success', 200);
+    }
+
+    public function showOffer(Offer $offer)
     {
         $offer = $this->warehouseService->showOffer($offer);
         return response()->format(new OfferResource($offer), 'messages.success', 200);

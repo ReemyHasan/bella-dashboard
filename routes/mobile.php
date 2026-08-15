@@ -64,6 +64,7 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::get('warehouses-products/{warehouse}', [WarehouseController::class, 'warehouseProducts']);
         Route::get('warehouses-offers/{warehouse}', [WarehouseController::class, 'warehouseOffers']);
         Route::get('offers/{offer}', [WarehouseController::class, 'showOffer']);
+        Route::get('offers', [WarehouseController::class, 'offers']);
 
         Route::get('my-competitions', [CompetitionController::class, 'index']);
         Route::get('my-competitions/{id}', [CompetitionController::class, 'show']);
@@ -83,6 +84,7 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::get('managed-marketers/{id}', [ManagementController::class, 'showAppUser']);
         Route::get('managed-marketers-sales', [ManagementController::class, 'marketersSales']);
         Route::get('managed-subteams-sales', [ManagementController::class, 'subteamsSales']);
+        Route::get('select-managed-marketers', [ManagementController::class, 'selectManagedMarketer']);
 
         Route::apiResource('financial-adjustments', FinancialAdjustmentController::class)->except('destroy', 'update');
 

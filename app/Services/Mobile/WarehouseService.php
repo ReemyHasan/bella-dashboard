@@ -62,6 +62,18 @@ class WarehouseService
             ->paginate($request->input('per_page') ?? PaginationEnum::GeneralPagination->value);
     }
 
+
+    public function offers($request)
+    {
+        return Offer::with(
+            'mainImage',
+            'tags',
+            'zonePrices'
+        )->filterBy($request->all())
+            ->sortBy($request->get('sort', ['created_at' => 'desc']))
+            ->latest()->paginate(PaginationEnum::GeneralPagination->value);
+    }
+
     public function showOffer(Offer $offer)
     {
         $offer->load([
