@@ -134,7 +134,7 @@ class OrderSharedService
 
 
 
-            $this->addBalance($vault, $order->app_user_id, $marketerAmount, VaultTransactionType::marketer_percentage->value, $order, $order->marketer_percentage);
+            $this->addBalance($vault, $order->app_user_id, $marketerAmount, VaultTransactionType::marketer_percentage->value, $order, $order->marketer_percentage, true);
             if ($order->teamleader_id) {
                 $this->addBalance($vault, $order->teamleader_id, $teamleaderAmount, VaultTransactionType::teamleader_percentage->value, $order, $order->teamleader_percentage);
             }
@@ -150,7 +150,7 @@ class OrderSharedService
         });
     }
 
-    public function addBalance($vault, $userId, $amount, $type, $order, $percentage = null)
+    public function addBalance($vault, $userId, $amount, $type, $order, $percentage = null, $isMarketer = false)
     {
         if (!$userId || $amount <= 0) return;
 
@@ -166,10 +166,10 @@ class OrderSharedService
         // $vault->update([
         //     'balance' => $vault->balance - $amount,
         // ]);
-        $this->createCompleteTransaction($vault, $userId, $amount, $before, $after, $type, $order, $percentage);
+        $this->createCompleteTransaction($vault, $userId, $amount, $before, $after, $type, $order, $percentage, $isMarketer);
     }
 
-    public function subtractBalance($vault, $userId, $amount, $type, $order, $percentage)
+    public function subtractBalance($vault, $userId, $amount, $type, $order, $percentage, $isMarketer = false)
     {
         if (!$userId || $amount <= 0) return;
 
@@ -189,20 +189,55 @@ class OrderSharedService
         // $vault->update([
         //     'balance' => $vault->balance + $amount,
         // ]);
-        $this->createRefundTransaction($vault, $userId, $amount, $before, $after, $type, $order, $percentage);
+        $this->createRefundTransaction($vault, $userId, $amount, $before, $after, $type, $order, $percentage, $isMarketer);
     }
-    public function buildNote($percentage, $amount, $action = 'add')
+    public function buildNote($percentage, $amount, $action = 'add', $isMarketer = false, $order = null)
     {
         if ($percentage === null) return null;
 
+        if ($isMarketer && $order) {
+
+            $baseAmount = (float) $order->total_base_price;
+
+            $percentageAmount = $baseAmount * $order->current_exchange_rate * $percentage / 100;
+
+            $note = "ربح المسوق بنسبة {$percentage}% بقيمة "
+                . number_format($percentageAmount, 2);
+
+            /*
+         * Adjustment exists
+         */
+            if (!empty($order->adjustment_value)) {
+
+                $value = (float) $order->adjustment_value;
+
+                $adjustmentAmount = $order->adjustment_type === 'percentage'
+                    ? ($baseAmount * $value / 100)
+                    : ($value * $order->current_exchange_rate);
+
+                $adjustmentAmount = round($adjustmentAmount, 2);
+
+                if ($adjustmentAmount > 0) {
+
+                    $adjustmentText = $order->adjustment_operation === 'increase'
+                        ? 'إضافة'
+                        : 'خصم';
+
+                    $note .= " و{$adjustmentText} تعديل بقيمة "
+                        . number_format($adjustmentAmount, 2);
+                }
+            }
+
+            return $note;
+        }
         $actionText = $action === 'add' ? 'إضافة' : 'خصم';
 
         return "{$actionText} نسبة {$percentage}% بقيمة " . number_format($amount, 2);
     }
-    public function createRefundTransaction($vault, $appUserId, $amount, $before, $after, $type, $order, $percentage)
+    public function createRefundTransaction($vault, $appUserId, $amount, $before, $after, $type, $order, $percentage, $isMarketer = false)
     {
         $user = auth()->user();
-        $note = $this->buildNote($percentage, $amount, 'subtract');
+        $note = $this->buildNote($percentage, $amount, 'subtract', $isMarketer, $order);
         // VaultTransaction::create([
         //     'to_vault_id' => $vault->id,
 
@@ -246,10 +281,10 @@ class OrderSharedService
     }
 
 
-    public function createCompleteTransaction($vault, $appUserId, $amount, $before, $after, $type, $order, $percentage)
+    public function createCompleteTransaction($vault, $appUserId, $amount, $before, $after, $type, $order, $percentage, $isMarketer = false)
     {
         $user = auth()->user();
-        $note = $this->buildNote($percentage, $amount, 'add');
+        $note = $this->buildNote($percentage, $amount, 'add', $isMarketer, $order);
         // VaultTransaction::create([
         //     'to_vault_id' => $vault->id,
 

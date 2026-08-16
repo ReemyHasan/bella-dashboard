@@ -59,13 +59,12 @@ enum VaultTransactionType: string
             self::refund_teamleader     => 'استرجاع من قائد فريق',
             self::refund_manager        => 'استرجاع من مدير',
 
-            self::marketer_percentage        => 'نسبة مسوق',
+            self::marketer_percentage        => 'ربح مسوق',
             self::teamleader_percentage        => 'نسبة قائد فريق فرعي',
             self::manager_percentage        => 'نسبة مدير فريق',
             self::COMPETITION_PRIZE        => 'جائزة مسابقة',
             self::SOURCE_COMPETITION_PRIZE_DEDUCT => 'خصم جائزة المسابقة من المدير',
             self::MARKETER_GAIN        => 'ربح المسوق',
-
         };
     }
 }

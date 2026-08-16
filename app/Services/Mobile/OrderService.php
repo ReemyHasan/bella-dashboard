@@ -813,7 +813,7 @@ class OrderService
             'to_vault_balance_after' => $newVaultBalance,
         ]);
 
-        $this->orderSharedService->subtractBalance($vault, $order->app_user_id, $order->marketer_amount, VaultTransactionType::refund_marketer->value, $order, $order->marketer_percentage);
+        $this->orderSharedService->subtractBalance($vault, $order->app_user_id, $order->marketer_amount, VaultTransactionType::refund_marketer->value, $order, $order->marketer_percentage, true);
         if ($order->teamleader_id)
             $this->orderSharedService->subtractBalance($vault, $order->teamleader_id, $order->teamleader_amount, VaultTransactionType::refund_teamleader->value, $order, $order->teamleader_percentage);
 

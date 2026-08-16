@@ -17,24 +17,29 @@ class ManagementService
     {
         $user = auth()->user();
 
-        if (
-            !$user->hasRole('Team Manager') &&
-            !$user->hasRole('Team Leader')
-        ) {
+        $isManager = $user->hasRole('Team Manager');
+        $isLeader = $user->hasRole('Team Leader');
+
+        if (!$isManager && !$isLeader) {
             throw new CustomException('غير مسموح بعرض المستخدمين');
         }
 
         $query = AppUser::query()
-            ->with(['roles', 'createdByAppUser', 'createdByDashUser', 'team', 'subTeam.team'])
-
+            ->with([
+                'roles',
+                'createdByAppUser',
+                'createdByDashUser',
+                'team',
+                'subTeam.team',
+            ])
             ->when(
-                $user->hasRole('Team Manager'),
+                $isManager,
                 fn(Builder $q) =>
                 $q->where('team_id', $user->team_id)
             )
 
             ->when(
-                $user->hasRole('Team Leader'),
+                !$isManager && $isLeader,
                 fn(Builder $q) =>
                 $q->where('subteam_id', $user->subteam_id)
             )
@@ -45,7 +50,9 @@ class ManagementService
             )
             ->latest();
 
-        return $query->paginate(PaginationEnum::GeneralPagination->value);
+        return $query->paginate(
+            PaginationEnum::GeneralPagination->value
+        );
     }
 
     public function selectManagedMarketer($request)
