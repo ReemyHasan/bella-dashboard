@@ -51,14 +51,6 @@ class AppUserService
             $user->assignRole('Marketer');
 
 
-            // $roleIds = $data['roles'] ?? [];
-
-            // $user->roles()->sync($roleIds);
-
-            // if (!empty($roleIds)) {
-            //     $this->syncUserPermissionsFromRoles($user, $roleIds);
-            // }
-
             $attachData = [];
 
             if (isset($data['addresses'])) {
@@ -95,13 +87,7 @@ class AppUserService
             // 'is_delivery_man' => $data['is_delivery_man'],
             // 'is_warehouse_man' => $data['is_warehouse_man'],
         ]);
-        // $roleIds = $data['roles'] ?? [];
-
-        // $user->roles()->sync($roleIds);
-
-        // if (!empty($roleIds)) {
-        //     $this->syncUserPermissionsFromRoles($user, $roleIds);
-        // }
+       
 
 
         $attachData = [];

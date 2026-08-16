@@ -5,6 +5,8 @@ namespace App\Observers;
 use App\Enums\NotificationType;
 use App\Events\NotificationEvent;
 use App\Models\AppUser;
+use App\Models\SubTeam;
+use App\Models\Team;
 
 class AppUserObserver
 {
@@ -76,81 +78,92 @@ class AppUserObserver
                 ]
             ));
         }
-        // DB::transaction(function () use ($user) {
+        if ($user->wasChanged('team_id')) {
+            $this->syncTeamManager($user);
+        }
 
-        //     $wasKeeper = $user->getOriginal('is_warehouse_man');
-        //     $isKeeper  = $user->is_warehouse_man;
+        if ($user->wasChanged('subteam_id')) {
+            $this->syncTeamLeader($user);
+        }
+    }
 
-        //     $dashUser = $user->dashUser;
+    private function syncTeamManager(AppUser $user): void
+    {
+        /*
+         * Remove this user as manager from teams
+         * that are different from their current team.
+         */
+        Team::query()
+            ->where('manager_id', $user->id)
+            ->when(
+                $user->team_id,
+                fn($query) => $query->where('id', '!=', $user->team_id)
+            )
+            ->update([
+                'manager_id' => null,
+            ]);
 
-        //     $role = Role::where('name', 'Warehouse Keeper')->first();
+        /*
+         * If the user has no team, they cannot be a manager.
+         */
+        if (!$user->team_id) {
+            $user->removeRole('Team Manager');
 
-        //     /**
-        //      * Case 1: false -> true
-        //      * User became a warehouse keeper
-        //      */
-        //     if (!$wasKeeper && $isKeeper) {
+            return;
+        }
 
-        //         if (!$dashUser) {
-        //             $dashUser = DashUser::create([
-        //                 'first_name' => $user->first_name,
-        //                 'last_name'  => $user->last_name,
-        //                 'user_name'  => $user->user_name,
-        //                 'mobile'     => $user->mobile,
-        //                 'password'   => $user->password,
-        //                 'birth_date' => $user->birth_date,
-        //                 'profile_link' => $user->profile_link,
-        //                 'status' => $user->status,
-        //                 'app_user_id' => $user->id
-        //             ]);
-        //         }
+        /*
+         * Check whether they are still manager
+         * of their current team.
+         */
+        $isManager = Team::query()
+            ->where('id', $user->team_id)
+            ->where('manager_id', $user->id)
+            ->exists();
 
-        //         if ($role) {
-        //             $dashUser->roles()->syncWithoutDetaching([$role->id]);
-        //         }
+        if (!$isManager) {
+            $user->removeRole('Team Manager');
+        }
+    }
 
-        //         if ($user->warehouse_id) {
-        //             Warehouse::where('id', $user->warehouse_id)
-        //                 ->update(['keeper_id' => $dashUser->id]);
-        //         }
-        //     }
+    private function syncTeamLeader(AppUser $user): void
+    {
+        /*
+         * Remove this user as leader from sub-teams
+         * that are different from their current sub-team.
+         */
+        SubTeam::query()
+            ->where('team_leader_id', $user->id)
+            ->when(
+                $user->subteam_id,
+                fn($query) => $query->where('id', '!=', $user->subteam_id)
+            )
+            ->update([
+                'team_leader_id' => null,
+            ]);
 
-        //     /**
-        //      * Case 2: true -> false
-        //      * User is no longer a warehouse keeper
-        //      */
-        //     if ($wasKeeper && !$isKeeper) {
+        /*
+         * If the user has no sub-team,
+         * they cannot be a team leader.
+         */
+        if (!$user->subteam_id) {
+            $user->removeRole('Team Leader');
 
-        //         if ($dashUser) {
+            return;
+        }
 
-        //             if ($role) {
-        //                 $dashUser->roles()->detach($role->id);
-        //             }
+        /*
+         * Check whether they are still leader
+         * of their current sub-team.
+         */
+        $isLeader = SubTeam::query()
+            ->where('id', $user->subteam_id)
+            ->where('team_leader_id', $user->id)
+            ->exists();
 
-        //             Warehouse::where('keeper_id', $dashUser->id)
-        //                 ->update(['keeper_id' => null]);
-
-        //             // $dashUser->delete();
-        //         }
-        //     }
-
-        //     /**
-        //      * Case 3: true -> true but warehouse changed
-        //      */
-        //     if ($wasKeeper && $isKeeper && $user->wasChanged('warehouse_id')) {
-
-        //         if ($dashUser) {
-
-        //             Warehouse::where('keeper_id', $dashUser->id)
-        //                 ->update(['keeper_id' => null]);
-
-        //             if ($user->warehouse_id) {
-        //                 Warehouse::where('id', $user->warehouse_id)
-        //                     ->update(['keeper_id' => $dashUser->id]);
-        //             }
-        //         }
-        //     }
-        // });
+        if (!$isLeader) {
+            $user->removeRole('Team Leader');
+        }
     }
 
     /**

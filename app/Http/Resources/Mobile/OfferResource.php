@@ -26,7 +26,9 @@ class OfferResource extends JsonResource
 
             'active' => $this->active,
 
-
+            'main_image' => $this->whenLoaded('mainImage', function () {
+                return getPublicFileUrl($this->mainImage?->path);
+            }),
 
             'images' => ProductImageResource::collection(
                 $this->whenLoaded('images')

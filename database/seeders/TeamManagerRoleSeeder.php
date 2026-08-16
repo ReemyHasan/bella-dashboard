@@ -16,33 +16,63 @@ class TeamManagerRoleSeeder extends Seeder
     public function run(): void
     {
 
-        $managerIds = Team::query()
+        Team::query()
             ->whereNotNull('manager_id')
-            ->pluck('manager_id');
-
-        AppUser::query()
-            ->whereIn('id', $managerIds)
             ->get()
-            ->each(function (AppUser $manager) {
+            ->each(function (Team $team) {
+
+                $manager = AppUser::find($team->manager_id);
+
+                if (!$manager) {
+                    return;
+                }
+
                 $manager->roles()->sync([]);
                 $manager->permissions()->sync([]);
+
+                $manager->update([
+                    'team_id' => $team->id,
+                    'subteam_id' => null,
+                ]);
 
                 $manager->assignRole('Team Manager');
             });
 
-
-        $teamLeaderIds = SubTeam::query()
+        SubTeam::query()
             ->whereNotNull('team_leader_id')
-            ->pluck('team_leader_id');
-
-        AppUser::query()
-            ->whereIn('id', $teamLeaderIds)
+            ->with('team')
             ->get()
-            ->each(function (AppUser $teamLeader) {
+            ->each(function (SubTeam $subTeam) {
+
+                $teamLeader = AppUser::find($subTeam->team_leader_id);
+
+                if (!$teamLeader) {
+                    return;
+                }
+
+                // $isManager = Team::query()
+                //     ->where('manager_id', $teamLeader->id)
+                //     ->exists();
+
+                // if ($isManager) {
+                //     return;
+                // }
+
                 $teamLeader->roles()->sync([]);
                 $teamLeader->permissions()->sync([]);
 
+
+                $teamLeader->update([
+                    'team_id' => $subTeam->team_id,
+                    'subteam_id' => $subTeam->id,
+                ]);
+
+                /*
+                 * Assign only Team Leader.
+                 */
                 $teamLeader->assignRole('Team Leader');
             });
+
+
     }
 }

@@ -46,7 +46,7 @@ class ProductDetailsResources extends JsonResource
 
 
             'main_image' => $this->whenLoaded('mainImage', function () {
-                return $this->mainImage?->path;
+                return getPublicFileUrl($this->mainImage?->path);
             }),
 
             'images' => ProductImageResource::collection(

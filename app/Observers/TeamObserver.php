@@ -19,7 +19,9 @@ class TeamObserver
 
             if ($manager) {
                 $manager->update([
-                    'team_id' => $team->id
+                    'team_id' => $team->id,
+                    'subteam_id' => null
+
                 ]);
                 $manager->roles()->sync([]);
                 $manager->permissions()->sync([]);
@@ -58,7 +60,8 @@ class TeamObserver
 
                 if ($manager) {
                     $manager->update([
-                        'team_id' => $team->id
+                        'team_id' => $team->id,
+                        'subteam_id' => null
                     ]);
                     $manager->roles()->sync([]);
                     $manager->permissions()->sync([]);

@@ -32,7 +32,7 @@ enum VaultTransactionType: string
     case DEDUCTION_ORDER = 'deduction_order';
     case COMPETITION_PRIZE = 'competition_prize';
     case SOURCE_COMPETITION_PRIZE_DEDUCT = 'source_competition_prize_deduct';
-
+    case MARKETER_GAIN = 'marketer_gain';
 
     public function label(): string
     {
@@ -63,9 +63,9 @@ enum VaultTransactionType: string
             self::teamleader_percentage        => 'نسبة قائد فريق فرعي',
             self::manager_percentage        => 'نسبة مدير فريق',
             self::COMPETITION_PRIZE        => 'جائزة مسابقة',
-            self::SOURCE_COMPETITION_PRIZE_DEDUCT => 'خصم جائزة المسابقة من المدير'
+            self::SOURCE_COMPETITION_PRIZE_DEDUCT => 'خصم جائزة المسابقة من المدير',
+            self::MARKETER_GAIN        => 'ربح المسوق',
 
         };
     }
 }
-

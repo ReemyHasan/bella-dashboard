@@ -43,7 +43,7 @@ class ProductListResource extends JsonResource
 
 
             'main_image' => $this->whenLoaded('mainImage', function () {
-                return $this->mainImage?->path;
+                return getPublicFileUrl($this->mainImage?->path);
             }),
 
             'tags'         => $this->whenLoaded("tags", function () {
