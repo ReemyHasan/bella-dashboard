@@ -51,6 +51,26 @@ class TeamObserver
 
                 if ($oldManager) {
                     $oldManager->removeRole('Team Manager');
+                    if ((int) $oldManager->team_id === (int) $team->id) {
+
+                        $directSubTeam = $team->subTeams()
+                            ->where('is_direct', true)
+                            ->first();
+
+                        // Create Direct subteam if it doesn't exist
+                        if (!$directSubTeam) {
+                            $directSubTeam = $team->subTeams()->create([
+                                'name' => 'Direct ' . $team->name,
+                                'active' => true,
+                                'is_direct' => true,
+                                'team_leader_id' => null,
+                            ]);
+                        }
+
+                        $oldManager->updateQuietly([
+                            'subteam_id' => $directSubTeam->id,
+                        ]);
+                    }
                 }
             }
 
@@ -59,7 +79,7 @@ class TeamObserver
                 $manager = AppUser::findOrFail($team->manager_id);
 
                 if ($manager) {
-                    $manager->update([
+                    $manager->updateQuietly([
                         'team_id' => $team->id,
                         'subteam_id' => null
                     ]);

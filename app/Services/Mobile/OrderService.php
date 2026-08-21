@@ -44,10 +44,10 @@ class OrderService
 
     public function managedOrders($request)
     {
-        return CustomerOrder::with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog', 'address')
-            ->visibleTo(auth()->user())->filterBy($request->all())
+        return CustomerOrder::visibleTo()->with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog', 'address')
+            ->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
-            ->latest()->paginate(PaginationEnum::GeneralPagination->value);
+            ->paginate(PaginationEnum::GeneralPagination->value);
     }
     public function show(CustomerOrder $order)
     {
@@ -596,12 +596,22 @@ class OrderService
                 ...$amounts
             ]);
 
-            return $order->fresh()->load([
-                'customer',
-                'currency',
-                'products.product',
-                'offers.offer'
-            ]);
+            event(new NotificationEvent(
+                type: NotificationType::UPDATE_CUSTOMER_ORDER,
+                data: [
+                    'order' => $order->fresh()->load([
+                        'team.manager',
+                        'subTeam.teamLeader',
+                        'marketer',
+                        'customer',
+                        'currency',
+                        'products.product',
+                        'offers.offer'
+                    ]),
+                ]
+            ));
+
+            return $order;
         });
     }
 

@@ -6,7 +6,7 @@ use App\Events\NotificationEvent;
 use App\Services\Notification\FirebaseNotificationService;
 use App\Services\Notification\NotificationService;
 
-class NewCustomerOrderHandler
+class UpdateCustomerOrderHandler
 {
     public function __construct(
         protected NotificationService $notificationService,
@@ -23,7 +23,7 @@ class NewCustomerOrderHandler
                 type: $event->type->value,
                 client: $user,
                 title: $event->type->label(),
-                body: "تم إنشاء طلب جديد رقم #{$order->order_number}",
+                body: "تم التعديل على طلب زبون #{$order->order_number}",
                 data: [
                     'order_id' => $order->id,
                 ]
@@ -45,7 +45,7 @@ class NewCustomerOrderHandler
             $this->firebaseNotificationService->sendNotification(
                 tokens: $user->fcm_token,
                 title: $event->type->label(),
-                body: "تم إنشاء طلب جديد رقم #{$order->order_number}",
+                body: "تم التعديل على طلب زبون #{$order->order_number}",
                 data: [
                     'type' => $event->type->value,
                     'order_id' => (string) $order->id,
@@ -62,6 +62,7 @@ class NewCustomerOrderHandler
             optional($order->team)->manager,
             optional($order->subTeam)->teamLeader,
             optional($order)->warehouseMan,
+            $order->marketer,
 
         ])->filter();
 

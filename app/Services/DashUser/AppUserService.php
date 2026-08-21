@@ -49,7 +49,7 @@ class AppUserService
                 // 'is_warehouse_man' => $data['is_warehouse_man'],
             ]);
             $user->assignRole('Marketer');
-
+            $this->assignDirectSubTeamIfNeeded($user);
 
             $attachData = [];
 
@@ -87,7 +87,7 @@ class AppUserService
             // 'is_delivery_man' => $data['is_delivery_man'],
             // 'is_warehouse_man' => $data['is_warehouse_man'],
         ]);
-       
+
 
 
         $attachData = [];
@@ -106,7 +106,39 @@ class AppUserService
 
         return $user;
     }
+    private function assignDirectSubTeamIfNeeded(AppUser $user): void
+    {
+        if (!$user->team_id || $user->subteam_id) {
+            return;
+        }
 
+        $team = $user->team;
+
+        if (!$team) {
+            return;
+        }
+
+        if ((int) $team->manager_id == (int) $user->id) {
+            return;
+        }
+
+        $directSubTeam = $team->subTeams()
+            ->where('is_direct', true)
+            ->first();
+
+        if (!$directSubTeam) {
+            $directSubTeam = $team->subTeams()->create([
+                'name' => 'Direct '. $team->name,
+                'active' => true,
+                'is_direct' => true,
+                'team_leader_id' => null,
+            ]);
+        }
+
+        $user->updateQuietly([
+            'subteam_id' => $directSubTeam->id,
+        ]);
+    }
 
     private function syncUserPermissionsFromRoles(AppUser $user, array $roleIds): void
     {

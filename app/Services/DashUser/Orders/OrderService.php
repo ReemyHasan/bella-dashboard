@@ -705,18 +705,26 @@ class OrderService
 
                 ...$amounts
             ]);
-
-            return $order->fresh()->load([
-                'customer',
-                'currency',
-                'products.product',
-                'offers.offer'
-            ]);
+            event(new NotificationEvent(
+                type: NotificationType::UPDATE_CUSTOMER_ORDER,
+                data: [
+                    'order' => $order->fresh()->load([
+                        'team.manager',
+                        'subTeam.teamLeader',
+                        'marketer',
+                        'customer',
+                        'currency',
+                        'products.product',
+                        'offers.offer'
+                    ]),
+                ]
+            ));
+            return $order;
         });
     }
     public function show(CustomerOrder $order)
     {
-        $order->load('customer', 'statusLogs.changedBy','competition', 'currency', 'marketer', 'warehouseMan', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
+        $order->load('customer', 'statusLogs.changedBy', 'competition', 'currency', 'marketer', 'warehouseMan', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
         return $order;
     }
 

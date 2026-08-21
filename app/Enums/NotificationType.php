@@ -17,6 +17,7 @@ use App\Notifications\Handlers\OrderStatusChangeHandler;
 use App\Notifications\Handlers\UpdateOfferHandler;
 use App\Notifications\Handlers\UpdateProductHandler;
 use App\Notifications\Handlers\WaitingOrderHandler;
+use App\Notifications\Handlers\UpdateCustomerOrderHandler;
 
 enum NotificationType: string
 {
@@ -26,6 +27,7 @@ enum NotificationType: string
 
     case NEW_CUSTOMER_ORDER = 'new_customer_order'; //  *********************
     case ORDER_STATUS_CHANGE = 'order_status_change'; //  *********************
+    case UPDATE_CUSTOMER_ORDER = 'update_customer_order'; //  *********************
 
 
     case ORDER_NOTE = 'order_new_note'; // *********************
@@ -59,6 +61,7 @@ enum NotificationType: string
             self::NEW_CUSTOMER_ORDER => 'طلب عميل جديد',
             self::ORDER_STATUS_CHANGE => 'تغيير حالة الطلب',
             self::ORDER_NOTE => 'ملاحظة جديدة على الطلب',
+            self::UPDATE_CUSTOMER_ORDER => 'تعديل على طلب عميل',
 
             self::NEW_PRODUCT => 'منتج جديد',
             self::UPDATE_PRODUCT => 'تحديث المنتج',
@@ -90,6 +93,7 @@ enum NotificationType: string
             self::NEW_CUSTOMER_ORDER => NewCustomerOrderHandler::class, // ###########################
             self::ORDER_STATUS_CHANGE => OrderStatusChangeHandler::class, // ###########################
             self::ORDER_NOTE => OrderNoteHandler::class, // ###########################
+            self::UPDATE_CUSTOMER_ORDER => UpdateCustomerOrderHandler::class, // ###########################
 
             self::NEW_PRODUCT => NewProductHandler::class,  // ###########################
             self::UPDATE_PRODUCT => UpdateProductHandler::class,  // ###########################

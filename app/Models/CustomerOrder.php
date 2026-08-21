@@ -223,24 +223,21 @@ class CustomerOrder extends Model
         return $this->belongsTo(Competition::class, 'competition_id');
     }
 
-    public function scopeVisibleTo($query, $user)
+    public function scopeVisibleTo($query)
     {
-        return $query->where(function ($q) use ($user) {
+        $user = auth()->user();
+        if ($user->hasRole('Team Manager')) {
+            return $query->where('team_id', $user->team_id);
+        }
 
-            if ($user->hasRole('Team Manager')) {
-                $q->where('team_id', $user->team_id);
-                return;
-            }
+        if ($user->hasRole('Team Leader')) {
+            return $query->where('sub_team_id', $user->subteam_id);
+        }
 
-            if ($user->hasRole('Team Leader')) {
-                $q->where('sub_team_id', $user->subteam_id);
-                return;
-            }
-            if ($user->is_warehouse_man) {
-                $q->where('warehouse_man_id', $user->id);
-                return;
-            }
-            $q->where('app_user_id', $user->id);
-        });
+        if ($user->is_warehouse_man) {
+            return $query->where('warehouse_man_id', $user->id);
+        }
+
+        return $query->where('app_user_id', $user->id);
     }
 }

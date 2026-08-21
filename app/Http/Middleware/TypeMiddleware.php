@@ -19,11 +19,11 @@ class TypeMiddleware
     {
         $user = auth()->user();
 
-        if ($type === 'app' && ! $user instanceof AppUser) {
+        if ($type == 'app' && ! $user instanceof AppUser) {
             return response()->format(null, __('messages.unauthorized_user'), 403, false);
         }
 
-        if ($type === 'dash' && ! $user instanceof DashUser) {
+        if ($type == 'dash' && ! $user instanceof DashUser) {
             return response()->format(null, __('messages.unauthorized_user'), 403, false);
         }
 
