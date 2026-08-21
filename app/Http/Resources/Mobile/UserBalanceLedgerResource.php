@@ -33,8 +33,8 @@ class UserBalanceLedgerResource extends JsonResource
 
             'reference_id' => $this->reference_id,
             'amount' => $this->amount,
-            'balance_before' => $this->to_vault_balance_before,
-            'balance_after' => $this->to_vault_balance_after,
+            'balance_before' => $this->to_vault_balance_before ?? $this->from_vault_balance_before,
+            'balance_after' => $this->to_vault_balance_after ?? $this->from_vault_balance_after,
             'notes' => $this->notes ?? 'N/A',
             'reason' => $this->reason ?? 'N/A',
         ];

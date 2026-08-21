@@ -56,7 +56,12 @@ class CustomerRequest extends FormRequest
 
         ];
     }
-
+    public function messages(): array
+    {
+        return [
+            'mobile.unique' => 'الزبون مضاف مسبقاً',
+        ];
+    }
     public function attributes(): array
     {
         return [

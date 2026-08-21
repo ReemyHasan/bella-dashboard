@@ -48,8 +48,8 @@ class UserAccountReportService
                     },
                     'reference_id' => $trx->reference_id,
                     'amount' => $trx->amount,
-                    'balance_before' => $trx->to_vault_balance_before,
-                    'balance_after' => $trx->to_vault_balance_after,
+                    'balance_before' => $trx->to_vault_balance_before ?? $trx->from_vault_balance_before,
+                    'balance_after' => $trx->to_vault_balance_after ?? $trx->from_vault_balance_after,
                     'notes' => $trx->notes ?? "N/A",
                     'reason' => $trx->reason ?? "N/A",
                 ];
