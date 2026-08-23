@@ -140,36 +140,71 @@
     <div class="section-title">تفاصيل التقرير</div>
 
 
-    <table border="1" width="100%">
+    <table>
+
         <thead>
+
             <tr>
-                <th>المنتج</th>
-                <th>المستودع</th>
-                <th>الكمية</th>
-                <th>الكمية المحجوزة</th>
-                <th>الكمية المتوفرة</th>
+
+                <th>
+                    المنتج
+                </th>
+
+                @foreach($warehouses as $warehouse)
+
+                <th>
+                    {{ $warehouse['name'] }}
+                </th>
+
+                @endforeach
+
             </tr>
+
         </thead>
+
         <tbody>
-            @if(isset($data) && count($data) > 0)
 
-            @foreach($data as $product)
+            @if(count($rows) > 0)
+
+            @foreach($rows as $product)
+
             <tr>
-                <td>{{ $product['product'] }}</td>
-                <td>{{ $product['warehouse'] }}</td>
-                <td>{{ $product['quantity'] }}</td>
-                <td>{{ $product['reserved'] }}</td>
-                <td>{{ $product['available'] }}</td>
+
+                <td class="product-name">
+                    {{ $product['product_name'] }}
+                </td>
+
+                @foreach($warehouses as $warehouse)
+
+                @php
+                $key = 'warehouse_' . $warehouse['id'];
+                @endphp
+
+                <td class="quantity">
+                    {{ $product[$key] ?? 0 }}
+                </td>
+
+                @endforeach
+
             </tr>
+
             @endforeach
-            @else
-            <tr>
-                <td colspan="4" class="no-data">لا يوجد بيانات للعرض</td>
-            </tr>
-            @endif
-        </tbody>
-    </table>
 
+            @else
+
+            <tr>
+
+                <td colspan="{{ count($warehouses) + 1 }}" class="no-data">
+                    لا يوجد بيانات للعرض
+                </td>
+
+            </tr>
+
+            @endif
+
+        </tbody>
+
+    </table>
     <footer>
         تم توليد التقرير في تاريخ: {{ now()->format('Y-m-d H:i') }}
     </footer>

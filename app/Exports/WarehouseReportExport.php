@@ -6,6 +6,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
@@ -13,22 +14,18 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class WarehouseReportExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
-    protected $rows = [];
+    protected array $rows = [];
+    protected array $warehouses = [];
 
-    public function __construct($data)
+    public function __construct(array $data)
     {
-        // 🔥 Flatten data
-        // dd($data);
-        foreach ($data as $warehouse) {
+        $this->warehouses = collect($data['warehouses'] ?? [])
+            ->values()
+            ->toArray();
 
-            $this->rows[] = [
-                'product_name'   => $warehouse['product'],
-                'warehouse_name' => $warehouse['warehouse'],
-                'quantity'  => (int) ($warehouse['quantity'] ?? 0),
-                'reserved'  => (int) ($warehouse['reserved'] ?? 0),
-                'available' => (int) ($warehouse['available'] ?? 0),
-            ];
-        }
+        $this->rows = collect($data['rows'] ?? [])
+            ->values()
+            ->toArray();
     }
 
     public function collection()
@@ -36,54 +33,91 @@ class WarehouseReportExport implements FromCollection, WithHeadings, WithMapping
         return collect($this->rows);
     }
 
-    // ✅ Arabic Headers
     public function headings(): array
     {
-        return [
-            'اسم المنتج',
-            'اسم المستودع',
-            'الكمية الكلية',
-            'الكمية المحجوزة',
-            'المتاح',
-        ];
+        return array_merge(
+            ['اسم المنتج'],
+            collect($this->warehouses)
+                ->pluck('name')
+                ->toArray()
+        );
     }
 
-    // ✅ Map each row
     public function map($row): array
     {
-        return [
-            $row['product_name'],
-            $row['warehouse_name'],
-            $row['quantity'],
-            $row['reserved'],
-            $row['available'],
+        $result = [
+            $row['product_name'] ?? '',
         ];
+
+        foreach ($this->warehouses as $warehouse) {
+
+            $key = 'warehouse_' . $warehouse['id'];
+
+            $result[] = (int) ($row[$key] ?? 0);
+        }
+
+        return $result;
     }
+
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('C:E')
-            ->getNumberFormat()
-            ->setFormatCode(NumberFormat::FORMAT_NUMBER);
-        foreach (range('A', 'E') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-        $sheet->setRightToLeft(true);
-        // 🔥 Header row styling
-        $sheet->getStyle('A1:E1')->applyFromArray([
-            'font' => [
-                'bold' => true,
-                'color' => ['rgb' => 'FFFFFF'], // white text
-            ],
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '4472C4'], // blue background
-            ],
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
-            ],
-        ]);
+        $totalColumns = count($this->warehouses) + 1;
 
-        return [
-        ];
+        $lastColumn = Coordinate::stringFromColumnIndex($totalColumns);
+
+        // Number format for warehouse quantities
+        if ($totalColumns > 1) {
+            $sheet
+                ->getStyle("B:{$lastColumn}")
+                ->getNumberFormat()
+                ->setFormatCode(NumberFormat::FORMAT_NUMBER);
+        }
+
+        // Auto size
+        for ($column = 1; $column <= $totalColumns; $column++) {
+
+            $columnLetter = Coordinate::stringFromColumnIndex($column);
+
+            $sheet
+                ->getColumnDimension($columnLetter)
+                ->setAutoSize(true);
+        }
+
+        // RTL
+        $sheet->setRightToLeft(true);
+
+        // Header styling
+        $sheet
+            ->getStyle("A1:{$lastColumn}1")
+            ->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                    'color' => [
+                        'rgb' => 'FFFFFF',
+                    ],
+                ],
+
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => [
+                        'rgb' => '4472C4',
+                    ],
+                ],
+
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+        // Center warehouse quantities
+        if ($totalColumns > 1) {
+            $sheet
+                ->getStyle("B:{$lastColumn}")
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        }
+
+        return [];
     }
 }

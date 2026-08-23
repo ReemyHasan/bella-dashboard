@@ -50,30 +50,34 @@ class WarehouseReportController extends Controller implements HasMiddleware
     }
 
 
-    private function transformForExport($data)
-    {
-        return collect($data)->flatMap(function ($warehouse) {
+    // private function transformForExport($data)
+    // {
+    //     return collect($data)->flatMap(function ($warehouse) {
 
-            return collect($warehouse['products'])->map(function ($product) use ($warehouse) {
-                return [
-                    'product' => $product['product_name'],
-                    'warehouse' => $warehouse['warehouse_name'],
-                    'quantity'  => (int) ($product['quantity'] ?? 0),
-                    'reserved'  => (int) ($product['reserved_quantity'] ?? 0),
-                    'available' => (int) ($product['available'] ?? 0),
-                ];
-            });
-        });
-    }
+    //         return collect($warehouse['products'])->map(function ($product) use ($warehouse) {
+    //             return [
+    //                 'product' => $product['product_name'],
+    //                 'warehouse' => $warehouse['warehouse_name'],
+    //                 'quantity'  => (int) ($product['quantity'] ?? 0),
+    //                 'reserved'  => (int) ($product['reserved_quantity'] ?? 0),
+    //                 'available' => (int) ($product['available'] ?? 0),
+    //             ];
+    //         });
+    //     });
+    // }
     private function exportExcel($data)
     {
         $fileName = 'warehouse_' . now()->format('Y-m-d_h:i') . '_report.xlsx';
-        return Excel::download(new WarehouseReportExport($this->transformForExport($data)), $fileName);
+        return Excel::download(new WarehouseReportExport($data), $fileName);
     }
 
     private function exportPdf($data)
     {
-        $html = view('reports.warehouse', ['data' => $this->transformForExport($data)])->render();
+        $html = view('reports.warehouse', [
+            'warehouses' => $data['warehouses'] ?? [],
+            'rows' => $data['rows'] ?? [],
+        ])->render();
+
         $pdf = LaravelMpdfDz::loadHTML($html);
         $fileName = 'warehouse_' . now()->format('Y-m-d_h:i') . '_report.pdf';
 
