@@ -244,9 +244,9 @@ class AppUserService
             })->when(!is_null($isWarehouseMan), function ($query) use ($isWarehouseMan) {
                 $query->where('is_warehouse_man', $isWarehouseMan);
             })
-            ->when($isMarketer, function ($query) {
-                $query->where('is_warehouse_man', false);
-            })
+            // ->when($isMarketer, function ($query) {
+            //     $query->where('is_warehouse_man', false);
+            // })
             ->when($isMarketerOnly, function ($query) {
                 $query->where('is_warehouse_man', false)
                     ->whereDoesntHave('roles', function ($q) {

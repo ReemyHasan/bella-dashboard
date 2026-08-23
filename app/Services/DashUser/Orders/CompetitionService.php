@@ -11,6 +11,8 @@ use App\Exceptions\CustomException;
 use App\Models\AppUser;
 use App\Models\Competition;
 use App\Models\CompetitionParticipant;
+use App\Models\SubTeam;
+use App\Models\Team;
 use Illuminate\Support\Facades\DB;
 
 class CompetitionService
@@ -41,27 +43,92 @@ class CompetitionService
     public function create(array $data)
     {
         return DB::transaction(function () use ($data) {
+            $creator = auth()->user();
+
+            $coCreator = !empty($data['co_created_by_id'])
+                ? AppUser::find($data['co_created_by_id'])
+                : null;
+
             $CompData = [
-                'co_created_by_type' => $data["co_created_by_id"] ? AppUser::class : null,
-                'created_by_id' => auth()->id(),
-                'created_by_type' => get_class(auth()->user()),
-                'status' => CompetitionStatus::draft->value
+                'co_created_by_type' => $coCreator ? AppUser::class : null,
+                'created_by_id' => $creator->id,
+                'created_by_type' => get_class($creator),
+                'status' => CompetitionStatus::draft->value,
+
             ];
             $competition = Competition::create(array_merge($CompData, $data));
 
             $competition->zones()->sync($data['zones']);
 
-            if ($data['target'] === 'teams') {
-                $competition->teams()->sync($data['teams']);
+            if ($data['target'] === CompetitionTarget::all_teams->value) {
+
+                $teamIds = Team::query()
+                    ->pluck('id');
+
+                $competition->teams()->sync($teamIds);
             }
 
-            if ($data['target'] === 'subteams') {
-                $competition->subteams()->sync($data['subteams']);
+            if ($data['target'] === CompetitionTarget::subteams->value) {
+
+                $competition->subteams()->sync(
+                    $data['subteams']
+                );
             }
 
-            if ($data['target'] === 'marketers') {
-                $competition->marketers()->sync($data['marketers']);
+            if ($data['target'] === CompetitionTarget::all_subteams->value) {
+
+                $subteamQuery = SubTeam::query();
+
+                if ($coCreator) {
+
+                    if ($coCreator->hasRole('Team Manager')) {
+
+                        $subteamQuery->where(
+                            'team_id',
+                            $coCreator->team_id
+                        );
+                    }
+                }
+
+                $subteamIds = $subteamQuery->pluck('id');
+
+                $competition->subteams()->sync($subteamIds);
             }
+
+
+            if ($data['target'] === CompetitionTarget::marketers->value) {
+
+                $competition->marketers()->sync(
+                    $data['marketers']
+                );
+            }
+
+            if ($data['target'] === CompetitionTarget::all->value) {
+
+                $marketerQuery = AppUser::query();
+
+                if ($coCreator) {
+
+                    if ($coCreator->hasRole('Team Manager')) {
+
+                        $marketerQuery->where(
+                            'team_id',
+                            $coCreator->team_id
+                        );
+                    } elseif ($coCreator->hasRole('Team Leader')) {
+
+                        $marketerQuery->where(
+                            'sub_team_id',
+                            $coCreator->sub_team_id
+                        );
+                    }
+                }
+
+                $marketerIds = $marketerQuery->pluck('id');
+
+                $competition->marketers()->sync($marketerIds);
+            }
+
 
             if ($data['type'] === 'product_sales') {
                 $competition->products()->sync(
@@ -95,7 +162,11 @@ class CompetitionService
             throw new CustomException('لا يمكنك تعديل المسابقة, أنها حاليا منتهية او نشطة.');
         }
         return DB::transaction(function () use ($competition, $data) {
+            $creator = auth()->user();
 
+            $coCreator = !empty($data['co_created_by_id'])
+                ? AppUser::find($data['co_created_by_id'])
+                : null;
             $competition->update($data);
 
             $competition->zones()->sync($data['zones']);
@@ -104,17 +175,75 @@ class CompetitionService
             $competition->subteams()->sync([]);
             $competition->marketers()->sync([]);
 
-            if ($data['target'] === 'teams') {
-                $competition->teams()->sync($data['teams'] ?? []);
+            if ($data['target'] === CompetitionTarget::all_teams->value) {
+
+                $teamIds = Team::query()
+                    ->pluck('id');
+
+                $competition->teams()->sync($teamIds);
             }
 
-            if ($data['target'] === 'subteams') {
-                $competition->subteams()->sync($data['subteams'] ?? []);
+            if ($data['target'] === CompetitionTarget::subteams->value) {
+
+                $competition->subteams()->sync(
+                    $data['subteams']
+                );
             }
 
-            if ($data['target'] === 'marketers') {
-                $competition->marketers()->sync($data['marketers'] ?? []);
+            if ($data['target'] === CompetitionTarget::all_subteams->value) {
+
+                $subteamQuery = SubTeam::query();
+
+                if ($coCreator) {
+
+                    if ($coCreator->hasRole('Team Manager')) {
+
+                        $subteamQuery->where(
+                            'team_id',
+                            $coCreator->team_id
+                        );
+                    }
+                }
+
+                $subteamIds = $subteamQuery->pluck('id');
+
+                $competition->subteams()->sync($subteamIds);
             }
+
+
+            if ($data['target'] === CompetitionTarget::marketers->value) {
+
+                $competition->marketers()->sync(
+                    $data['marketers']
+                );
+            }
+
+            if ($data['target'] === CompetitionTarget::all->value) {
+
+                $marketerQuery = AppUser::query();
+
+                if ($coCreator) {
+
+                    if ($coCreator->hasRole('Team Manager')) {
+
+                        $marketerQuery->where(
+                            'team_id',
+                            $coCreator->team_id
+                        );
+                    } elseif ($coCreator->hasRole('Team Leader')) {
+
+                        $marketerQuery->where(
+                            'sub_team_id',
+                            $coCreator->sub_team_id
+                        );
+                    }
+                }
+
+                $marketerIds = $marketerQuery->pluck('id');
+
+                $competition->marketers()->sync($marketerIds);
+            }
+
 
             if ($data['type'] === 'product_sales') {
                 $competition->products()->sync(

@@ -60,9 +60,10 @@ class SharedInfoService
             ? $user->subTeam->team
             : $user->team;
 
-        if (!$team) {
-            throw new CustomException('المسوق لا ينتمي إلى فريق');
-        }
+        // if (!$team) {
+        //     throw new CustomException('المسوق لا ينتمي إلى فريق');
+        // }
+        $isWarehouseMan = (bool) $user->is_warehouse_man;
 
         if ($user->subTeam) {
             $teamArr = [
@@ -95,10 +96,10 @@ class SharedInfoService
 
         $requiredData = [
 
-            'marketer_percentage' => $team->marketer_percentage,
-            'teamleader_percentage' => $team->team_leader_percentage,
+            'marketer_percentage' => $isWarehouseMan ? 40: $team?->marketer_percentage ?? 0,
+            'teamleader_percentage' => $team?->team_leader_percentage ?? 0,
             // 'manager_percentage' => $isDirectTeam ? null : $team->manager_percentage
-            'manager_percentage' => $team->manager_percentage
+            'manager_percentage' => $team?->manager_percentage ?? 0
 
         ];
 

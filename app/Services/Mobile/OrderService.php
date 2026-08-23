@@ -21,6 +21,7 @@ use App\Models\ProductWarehouse;
 use App\Models\ProductZonePrice;
 use App\Models\Vault;
 use App\Models\VaultTransaction;
+use App\Models\Warehouse;
 use App\Services\Shared\OrderSharedService;
 use App\Services\Shared\StockHandleService;
 use Illuminate\Support\Facades\Auth;
@@ -65,31 +66,40 @@ class OrderService
         $order = DB::transaction(function () use ($data) {
 
             $user = auth()->user();
-            $user->load('team', 'subTeam.team');
-            $team = $user->subTeam
-                ? $user->subTeam->team
-                : $user->team;
+            $isWarehouseMan = (bool) $user->is_warehouse_man;
+            $team = null;
+            $teamleaderId = null;
+            $isDirectTeam = false;
+            $resolved = [
+                'teamleader_id' => null,
+                'manager_id' => null,
+                'marketer_percentage' => 40,
+                'teamleader_percentage' => 0,
+                'manager_percentage' => 0
+            ];
 
-            if (!$team) {
-                throw new CustomException('يجب أن تنتمي إلى فريق');
+            if (!$isWarehouseMan) {
+                $user->load('team', 'subTeam.team');
+                $team = $user->subTeam
+                    ? $user->subTeam->team
+                    : $user->team;
+
+                if (!$team) {
+                    throw new CustomException('يجب أن تنتمي إلى فريق');
+                }
+
+                $teamleaderId = $user->subTeam?->team_leader_id;
+
+                $isDirectTeam = $user->subTeam?->is_direct;
+
+                $resolved = $this->orderSharedService->resolvePercentages(
+                    $user,
+                    $team,
+                    $teamleaderId,
+                    $isDirectTeam
+                );
             }
 
-            $teamleaderId = $user->subTeam?->team_leader_id;
-
-            $isDirectTeam = $user->subTeam?->is_direct;
-
-            $resolved = $this->orderSharedService->resolvePercentages(
-                $user,
-                $team,
-                $teamleaderId,
-                $isDirectTeam
-            );
-
-            $orderData = array_merge($resolved, [
-                'is_stock_reserved' => true,
-                'team_id' => $team->id,
-                'sub_team_id' => $user->subteam_id,
-            ]);
             $address = Address::with('region.city.zone', 'region.warehouse.keeper')->find($data['address_id']);
 
             if (!$address) {
@@ -98,15 +108,41 @@ class OrderService
 
             $zone = $address->region->city->zone;
             $region = $address->region;
-            $warehouse = $address->region->warehouse;
+            if ($isWarehouseMan) {
 
+                $warehouse = Warehouse::where('keeper_id', $user->id)->first();
+
+                if (!$warehouse) {
+                    throw new CustomException('لا يوجد مستودع مرتبط بك');
+                }
+
+                $warehouseManId = $user->id;
+                $deliveryCost = 0;
+            } else {
+
+                $warehouse = $region->warehouse;
+
+                if (!$warehouse) {
+                    throw new CustomException('لا يوجد مستودع مرتبط بهذه المنطقة');
+                }
+
+                $warehouseManId = $warehouse->keeper_id;
+                $deliveryCost = $region->delivery_cost;
+            }
+            $orderData = array_merge($resolved, [
+                'is_stock_reserved' => true,
+                'team_id' => $team?->id,
+                'sub_team_id' => $isWarehouseMan
+                    ? null
+                    : $user->subteam_id,
+            ]);
             $orderData += [
-                'delivery_cost' => $region->delivery_cost,
+                'delivery_cost' => $deliveryCost,
                 'currency_id' => $zone->currency_id,
                 'current_exchange_rate' => $zone->currency->exchange_value,
                 'zone_id' => $zone->id,
                 'warehouse_id' => $warehouse->id,
-                'warehouse_man_id' => $warehouse?->keeper_id
+                'warehouse_man_id' => $warehouseManId,
             ];
             $orderData = array_merge($orderData, collect($data)->except(['products', 'offers'])->toArray());
 
@@ -278,7 +314,15 @@ class OrderService
             }
 
             $baseAmount = $totalBasePrice * $orderData['current_exchange_rate'];
+            if ($isWarehouseMan) {
+                $warehouseProfit = $totalBasePrice
+                    * $resolved['marketer_percentage']
+                    / 100;
 
+                $totalPrice -= $warehouseProfit;
+
+                $totalPrice = max(0, $totalPrice);
+            }
             $amounts = $this->orderSharedService->calculateAmounts($baseAmount, $resolved, $data, $zone->currency->exchange_value);
 
             $order->update([
@@ -377,32 +421,39 @@ class OrderService
             $order->offers()->delete();
 
             $user = auth()->user();
-            $user->load('team', 'subTeam.team');
-            $team = $user->subTeam
-                ? $user->subTeam->team
-                : $user->team;
+            $isWarehouseMan = (bool) $user->is_warehouse_man;
+            $team = null;
+            $teamleaderId = null;
+            $isDirectTeam = false;
+            $resolved = [
+                'teamleader_id' => null,
+                'manager_id' => null,
+                'marketer_percentage' => 40,
+                'teamleader_percentage' => 0,
+                'manager_percentage' => 0
+            ];
 
-            if (!$team) {
-                throw new CustomException('يجب أن تنتمي إلى فريق');
+            if (!$isWarehouseMan) {
+                $user->load('team', 'subTeam.team');
+                $team = $user->subTeam
+                    ? $user->subTeam->team
+                    : $user->team;
+
+                if (!$team) {
+                    throw new CustomException('يجب أن تنتمي إلى فريق');
+                }
+
+                $teamleaderId = $user->subTeam?->team_leader_id;
+
+                $isDirectTeam = $user->subTeam?->is_direct;
+
+                $resolved = $this->orderSharedService->resolvePercentages(
+                    $user,
+                    $team,
+                    $teamleaderId,
+                    $isDirectTeam
+                );
             }
-
-            $teamleaderId = $user->subTeam?->team_leader_id;
-            $isDirectTeam = $user->subTeam?->is_direct;
-
-
-
-            $resolved = $this->orderSharedService->resolvePercentages(
-                $user,
-                $team,
-                $teamleaderId,
-                $isDirectTeam
-            );
-
-            $orderData = array_merge($resolved, [
-                'is_stock_reserved' => true,
-                'team_id' => $team->id,
-                'sub_team_id' => $user->subteam_id,
-            ]);
 
             $address = Address::with('region.city.zone', 'region.warehouse.keeper')->find($data['address_id']);
 
@@ -412,15 +463,41 @@ class OrderService
 
             $zone = $address->region->city->zone;
             $region = $address->region;
-            $warehouse = $address->region->warehouse;
+            if ($isWarehouseMan) {
 
+                $warehouse = Warehouse::where('keeper_id', $user->id)->first();
+
+                if (!$warehouse) {
+                    throw new CustomException('لا يوجد مستودع مرتبط بك');
+                }
+
+                $warehouseManId = $user->id;
+                $deliveryCost = 0;
+            } else {
+
+                $warehouse = $region->warehouse;
+
+                if (!$warehouse) {
+                    throw new CustomException('لا يوجد مستودع مرتبط بهذه المنطقة');
+                }
+
+                $warehouseManId = $warehouse->keeper_id;
+                $deliveryCost = $region->delivery_cost;
+            }
+            $orderData = array_merge($resolved, [
+                'is_stock_reserved' => true,
+                'team_id' => $team?->id,
+                'sub_team_id' => $isWarehouseMan
+                    ? null
+                    : $user->subteam_id,
+            ]);
             $orderData += [
-                'delivery_cost' => $region->delivery_cost,
+                'delivery_cost' => $deliveryCost,
                 'currency_id' => $zone->currency_id,
                 'current_exchange_rate' => $zone->currency->exchange_value,
                 'zone_id' => $zone->id,
                 'warehouse_id' => $warehouse->id,
-                'warehouse_man_id' => $warehouse?->keeper_id
+                'warehouse_man_id' => $warehouseManId,
             ];
 
             $orderData = array_merge(
@@ -587,7 +664,15 @@ class OrderService
 
 
             $baseAmount = $totalBasePrice * $orderData['current_exchange_rate'];
+            if ($isWarehouseMan) {
+                $warehouseProfit = $totalBasePrice
+                    * $resolved['marketer_percentage']
+                    / 100;
 
+                $totalPrice -= $warehouseProfit;
+
+                $totalPrice = max(0, $totalPrice);
+            }
             $amounts = $this->orderSharedService->calculateAmounts($baseAmount, $resolved, $data, $orderData['current_exchange_rate']);
 
             $order->update([

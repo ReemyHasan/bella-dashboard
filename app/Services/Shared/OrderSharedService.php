@@ -11,23 +11,47 @@ use Illuminate\Support\Facades\DB;
 class OrderSharedService
 {
 
+    // public function generateOrderNumber(): string
+    // {
+    //     $date = now()->format('Ymd');
+
+    //     $lastOrder = CustomerOrder::whereDate('created_at', now()->toDateString())
+    //         ->lockForUpdate()
+    //         ->latest('id')
+    //         ->first();
+
+    //     $sequence = 1;
+
+    //     if ($lastOrder && $lastOrder->order_number) {
+    //         $lastSequence = (int) substr($lastOrder->order_number, -6);
+    //         $sequence = $lastSequence + 1;
+    //     }
+
+    //     return 'ORD-' . $date . '-' . str_pad($sequence, 6, '0', STR_PAD_LEFT);
+    // }
     public function generateOrderNumber(): string
     {
-        $date = now()->format('Ymd');
+        $month = now()->format('M'); // AUG, DEC, etc.
+        $month = strtoupper($month);
 
-        $lastOrder = CustomerOrder::whereDate('created_at', now()->toDateString())
+        $lastOrder = CustomerOrder::whereMonth('created_at', now()->month)
+            // ->whereYear('created_at', now()->year)
             ->lockForUpdate()
             ->latest('id')
             ->first();
 
         $sequence = 1;
 
-        if ($lastOrder && $lastOrder->order_number) {
-            $lastSequence = (int) substr($lastOrder->order_number, -6);
+        if (
+            $lastOrder &&
+            $lastOrder->order_number &&
+            preg_match('/^[A-Z]{3}-\d+$/', $lastOrder->order_number)
+        ) {
+            $lastSequence = (int) substr($lastOrder->order_number, strlen($month) + 1);
             $sequence = $lastSequence + 1;
         }
 
-        return 'ORD-' . $date . '-' . str_pad($sequence, 6, '0', STR_PAD_LEFT);
+        return $month . '-' . $sequence;
     }
 
     public function resolvePercentages($user, $team, $teamleaderId, $isDirectTeam)
@@ -132,9 +156,20 @@ class OrderSharedService
             $teamleaderAmount = $order->teamleader_amount;
             $managerAmount    = $order->manager_amount;
 
+            $marketer = $order->appUser;
 
-
-            $this->addBalance($vault, $order->app_user_id, $marketerAmount, VaultTransactionType::marketer_percentage->value, $order, $order->marketer_percentage, true);
+            if (!$marketer?->is_warehouse_man) {
+                $this->addBalance(
+                    $vault,
+                    $order->app_user_id,
+                    $marketerAmount,
+                    VaultTransactionType::marketer_percentage->value,
+                    $order,
+                    $order->marketer_percentage,
+                    true
+                );
+            }
+            // $this->addBalance($vault, $order->app_user_id, $marketerAmount, VaultTransactionType::marketer_percentage->value, $order, $order->marketer_percentage, true);
             if ($order->teamleader_id) {
                 $this->addBalance($vault, $order->teamleader_id, $teamleaderAmount, VaultTransactionType::teamleader_percentage->value, $order, $order->teamleader_percentage);
             }

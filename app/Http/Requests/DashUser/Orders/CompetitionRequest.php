@@ -102,9 +102,8 @@ class CompetitionRequest extends FormRequest
                 // 🔹 TEAM MANAGER
                 if ($coCreator->hasRole('Team Manager')) {
 
-                    if (!in_array($target, [CompetitionTarget::subteams->value, CompetitionTarget::marketers->value])) {
+                    if (!in_array($target, [CompetitionTarget::all->value, CompetitionTarget::subteams->value, CompetitionTarget::all_subteams->value, CompetitionTarget::marketers->value])) {
                         $validator->errors()->add('target', 'يمكن لمدير الفريق فقط اختيار فرق فرعية أو مسوقين تابعين للفرق المشرف عليها.');
-                       
                     }
 
                     // Validate subteams belong to his team
@@ -135,9 +134,8 @@ class CompetitionRequest extends FormRequest
                 // 🔹 TEAM LEADER
                 if ($coCreator->hasRole('Team Leader')) {
 
-                    if ($target != CompetitionTarget::marketers->value) {
+                    if (!in_array($target, [CompetitionTarget::all->value, CompetitionTarget::marketers->value])) {
                         $validator->errors()->add('target', 'يمكن لدير الفريق الفرعي فقط اختيار مسوقين تابعين له.');
-                      
                     }
 
                     // Validate marketers belong to his subteam
