@@ -145,13 +145,15 @@
             <tr>
                 <th>رقم الطلب</th>
                 <th>طريقة الدفع</th>
+                <th>معلومات الدفع</th>
+
                 <th>المسوق</th>
                 <th>الموبايل</th>
 
                 <th>التبعية</th>
                 <th>ملاحظات المسوق</th>
                 <th>الموزع</th>
-                <th>المبلغ المطلوب</th>
+                <th>عنوان المسوق</th>
                 <th>المبلغ الموافق عليه</th>
                 <th>رصيد خزنة المسوق الحالة</th>
                 <th>الحالة</th>
@@ -166,12 +168,14 @@
             <tr>
                 <td>{{ $product['id'] }}</td>
                 <td>{{ $product['payment_method'] }}</td>
+                <td>{{ $product['payment_method_fields'] }}</td>
+
                 <td>{{ $product['requested_for'] }}</td>
                 <td>{{ $product['mobile'] }}</td>
                 <td>{{ $product['team'] .'-'. $product['subteam'] }}</td>
                 <td>{{ $product['notes'] }}</td>
                 <td>{{ $product['delivered_by'] }}</td>
-                <td>{{ $product['requested_amount'] }}</td>
+                <td>{{ $product['address'] }}</td>
                 <td>{{ $product['approved_amount'] }}</td>
                 <td>{{ $product['from_vault_balance'] }}</td>
 

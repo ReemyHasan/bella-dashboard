@@ -82,15 +82,18 @@ class VaultReportService
             ->orderBy('transaction_date')
             ->get()
             ->map(function ($trx) use ($vault) {
+                $direction = $trx->directionForVault($vault->id);
 
                 return [
                     'id' => $trx->id,
                     'date' => $trx->transaction_date,
                     'type' => VaultTransactionType::from($trx->type)->label(),
                     // 'type' => $trx->type,
-                    'amount' => $trx->amount,
+                    'amount' => $direction === 'صادر'
+                        ? -abs($trx->amount)
+                        : abs($trx->amount),
 
-                    'direction' => $trx->directionForVault($vault->id),
+                    'direction' => $direction,
 
                     'from_balance_before' => $trx->from_vault_balance_before,
                     'from_balance_after' => $trx->from_vault_balance_after,

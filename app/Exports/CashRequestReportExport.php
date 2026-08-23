@@ -24,13 +24,14 @@ class CashRequestReportExport implements FromCollection, WithHeadings, WithMappi
             $this->rows[] = [
                 'id'   =>  $item['id'],
                 'payment_method'   =>  $item['payment_method'],
+                'payment_method_fields' => $item['payment_method_fields'] ?? null,
                 'requested_for'   =>  $item['requested_for'],
                 'mobile'   =>  $item['mobile'],
                 'team'   =>  $item['team'],
                 'subteam'   =>  $item['subteam'],
                 'notes'   =>  $item['notes'],
                 'delivered_by'   =>  $item['delivered_by'],
-                'requested_amount'   =>  $item['requested_amount'],
+                'address'   =>  $item['address'],
                 'approved_amount'   =>  $item['approved_amount'],
                 'from_vault_balance'   =>  $item['from_vault_balance'],
                 'status'   =>  $item['status'],
@@ -51,12 +52,13 @@ class CashRequestReportExport implements FromCollection, WithHeadings, WithMappi
         return [
             'رقم الطلب',
             'طريقة الدفع',
+            'معلومات الدفع',
             'المسوق',
             'الموبايل',
             'التبعية',
             'ملاحظات المسوق',
             'الموزع',
-            'المبلغ المطلوب',
+            'عنوان المسوق',
             'المبلغ الموافق عليه',
             'رصيد خزنة المسوق الحالة',
             'الحالة',
@@ -70,12 +72,13 @@ class CashRequestReportExport implements FromCollection, WithHeadings, WithMappi
         return [
             $row['id'],
             $row['payment_method'],
+            $row['payment_method_fields'],
             $row['requested_for'],
             $row['mobile'],
             $row['team'] . '-' . $row['subteam'],
             $row['notes'],
             $row['delivered_by'],
-            $row['requested_amount'],
+            $row['address'],
             $row['approved_amount'],
             $row['from_vault_balance'],
 
@@ -85,15 +88,15 @@ class CashRequestReportExport implements FromCollection, WithHeadings, WithMappi
     }
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A:L')
+        $sheet->getStyle('A:M')
             ->getNumberFormat()
             ->setFormatCode(NumberFormat::FORMAT_NUMBER);
-        foreach (range('A', 'L') as $col) {
+        foreach (range('A', 'M') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
         $sheet->setRightToLeft(true);
         // 🔥 Header row styling
-        $sheet->getStyle('A1:L1')->applyFromArray([
+        $sheet->getStyle('A1:M1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'], // white text

@@ -888,7 +888,7 @@ class OrderService
         ]);
         $user = auth()->user();
         VaultTransaction::create([
-            'to_vault_id' => $vault->id,
+            'from_vault_id' => $vault->id,
 
             'type' => VaultTransactionType::ORDER_REFUND->value,
 
@@ -904,8 +904,8 @@ class OrderService
             'reference_type' => CustomerOrder::class,
             'reference_id' => $order->id,
 
-            'to_vault_balance_before' => $oldVaultBalance,
-            'to_vault_balance_after' => $newVaultBalance,
+            'from_vault_balance_before' => $oldVaultBalance,
+            'from_vault_balance_after' => $newVaultBalance,
         ]);
 
         $this->orderSharedService->subtractBalance($vault, $order->app_user_id, $order->marketer_amount, VaultTransactionType::refund_marketer->value, $order, $order->marketer_percentage, true);

@@ -16,6 +16,7 @@ class FinancialReportService
                 'requestedFor.team:id,name',
                 'requestedFor.subTeam',
                 'requestedFor.subTeam.team:id,name',
+                'address',
                 'deliveredBy:id,first_name,last_name,user_name,mobile,team_id,subteam_id',
             ])
 
@@ -82,7 +83,24 @@ class FinancialReportService
                 'id' => $item->id,
 
                 'payment_method' => $item->paymentMethod?->name_ar . '-' . $item->paymentMethod?->name_en,
+                'payment_method_fields' =>  collect($item->payment_method_fields ?? [])
+                    ->map(function ($value, $key) use ($item) {
 
+                        $paymentMethod = $item->paymentMethod;
+
+                        $field = collect($paymentMethod?->required_fields ?? [])
+                            ->firstWhere('key', $key);
+
+                        if (($field['type'] ?? null) === 'image') {
+                            return getPublicFileUrl($value);
+                        }
+
+                        return $value;
+                    })
+                    ->map(function ($value, $key) {
+                        return "{$value}";
+                    })
+                    ->implode(', '),
                 'requested_for' =>
                 trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''))
                     . ' (' . $user->user_name . ')',
@@ -93,11 +111,11 @@ class FinancialReportService
                 'subteam' => $user->subTeam?->name,
 
                 'notes' => $item->notes,
-
+                'address' => $item->address?->name,
                 'delivered_by' => trim(($deliveredBy->first_name ?? '') . ' ' . ($deliveredBy->last_name ?? ''))
                     . ' (' . $deliveredBy->user_name . ')',
 
-                'requested_amount' => $item->requested_amount,
+                // 'requested_amount' => $item->requested_amount,
                 'approved_amount' => $item->approved_amount,
 
                 'from_vault_balance' => $item->fromVault?->balance,
