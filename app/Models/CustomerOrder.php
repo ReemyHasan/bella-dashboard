@@ -226,16 +226,26 @@ class CustomerOrder extends Model
     public function scopeVisibleTo($query)
     {
         $user = auth()->user();
+
         if ($user->hasRole('Team Manager')) {
-            return $query->where('team_id', $user->team_id);
+            return $query->where(function ($q) use ($user) {
+                $q->where('team_id', $user->team_id)
+                    ->orWhere('app_user_id', $user->id);
+            });
         }
 
         if ($user->hasRole('Team Leader')) {
-            return $query->where('sub_team_id', $user->subteam_id);
+            return $query->where(function ($q) use ($user) {
+                $q->where('sub_team_id', $user->subteam_id)
+                    ->orWhere('app_user_id', $user->id);
+            });
         }
 
         if ($user->is_warehouse_man) {
-            return $query->where('warehouse_man_id', $user->id);
+            return $query->where(function ($q) use ($user) {
+                $q->where('warehouse_man_id', $user->id)
+                    ->orWhere('app_user_id', $user->id);
+            });
         }
 
         return $query->where('app_user_id', $user->id);
