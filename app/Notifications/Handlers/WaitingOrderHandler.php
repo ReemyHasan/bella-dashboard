@@ -59,11 +59,13 @@ class WaitingOrderHandler
         $order = $event->data['order'];
 
         $users = collect([
-            optional($order)->marketer
-        ])->filter();
+            $order->marketer,
+        ]);
+        $users->push($order->warehouseMan);
+
 
         return [
-            'users' => $users->unique('id'),
+            'users' => $users->filter()->unique('id'),
             'order' => $order,
         ];
     }

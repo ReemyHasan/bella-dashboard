@@ -11,4 +11,4 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('messages:send-scheduled')->everySixHours();
 Schedule::command('orders:send-waiting-notifications')
-    ->dailyAt('00:00');
+    ->everySixHours();
