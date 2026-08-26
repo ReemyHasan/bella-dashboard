@@ -25,35 +25,73 @@ class UserAccountReportService
 
         $transactions = VaultTransaction::where('balance_user_type', AppUser::class)
             ->where('balance_user_id', $user->id)
-
-            // ->where('to_vault_balance_before', '>=', 0)
             ->whereBetween('transaction_date', [$from, $to])
-            // ->where('action_by_id', $user->id)
             ->orderBy('transaction_date')
-            ->get()
-            ->map(function ($trx) use ($user) {
-                return [
-                    'date' => $trx->transaction_date,
-                    // 'type' => __('constant.' . $trx->type),
-                    'type' => VaultTransactionType::from($trx->type)->label(),
+            ->get();
 
-                    'reference_type' => match ($trx->reference_type) {
-                        BalanceTransferRequest::class => 'تحويل رصيد',
-                        CashRequest::class            => 'طلب نقدي',
-                        FinancialAdjustment::class    => 'تعديل مالي',
-                        VaultTransfer::class          => 'تحويل خزنة',
-                        CustomerOrder::class          => 'طلب عميل',
-                        Competition::class          => 'هدف تسويقي',
-                        default                       => 'غير معروف',
-                    },
-                    'reference_id' => $trx->reference_id,
-                    'amount' => $trx->amount,
-                    'balance_before' => $trx->to_vault_balance_before ?? $trx->from_vault_balance_before,
-                    'balance_after' => $trx->to_vault_balance_after ?? $trx->from_vault_balance_after,
-                    'notes' => $trx->notes ?? "N/A",
-                    'reason' => $trx->reason ?? "N/A",
-                ];
-            });
+        /*
+        |--------------------------------------------------------------------------
+        | Get all Customer Order references in ONE query
+        |--------------------------------------------------------------------------
+        */
+
+        $orderIds = $transactions
+            ->where('reference_type', CustomerOrder::class)
+            ->pluck('reference_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $orderNumbers = CustomerOrder::whereIn('id', $orderIds)
+            ->pluck('order_number', 'id');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Format transactions
+        |--------------------------------------------------------------------------
+        */
+
+        $transactions = $transactions->map(function ($trx) use ($orderNumbers) {
+
+            $referenceValue = $trx->reference_id;
+
+            if ($trx->reference_type === CustomerOrder::class) {
+                $referenceValue = $orderNumbers->get($trx->reference_id)
+                    ?? $trx->reference_id;
+            }
+
+            return [
+                'date' => $trx->transaction_date,
+
+                'type' => VaultTransactionType::from($trx->type)->label(),
+
+                'reference_type' => match ($trx->reference_type) {
+                    BalanceTransferRequest::class => 'تحويل رصيد',
+                    CashRequest::class            => 'طلب نقدي',
+                    FinancialAdjustment::class    => 'تعديل مالي',
+                    VaultTransfer::class          => 'تحويل خزنة',
+                    CustomerOrder::class          => 'طلب عميل',
+                    Competition::class            => 'هدف تسويقي',
+                    default                       => 'غير معروف',
+                },
+
+                'reference_id' => $referenceValue,
+
+                'amount' => $trx->amount,
+
+                'balance_before' =>
+                $trx->to_vault_balance_before
+                    ?? $trx->from_vault_balance_before,
+
+                'balance_after' =>
+                $trx->to_vault_balance_after
+                    ?? $trx->from_vault_balance_after,
+
+                'notes' => $trx->notes ?? 'N/A',
+
+                'reason' => $trx->reason ?? 'N/A',
+            ];
+        });
 
         return [
             'user' => [

@@ -31,7 +31,9 @@ class UserBalanceLedgerResource extends JsonResource
                 default                       => 'غير معروف',
             },
 
-            'reference_id' => $this->reference_id,
+            'reference_id' =>  $this->reference_type === CustomerOrder::class
+                ? ($this->reference_order_number ?? $this->reference_id)
+                : $this->reference_id,
             'amount' => $this->amount,
             'balance_before' => $this->to_vault_balance_before ?? $this->from_vault_balance_before,
             'balance_after' => $this->to_vault_balance_after ?? $this->from_vault_balance_after,

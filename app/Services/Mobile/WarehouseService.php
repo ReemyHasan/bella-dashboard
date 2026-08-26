@@ -18,7 +18,7 @@ class WarehouseService
     {
         $user = Auth::user();
 
-        if (!$user->hasRole('Team Manager') && !$user->hasRole('Team Leader') && !$user->is_warehouse_man) {
+        if (!$user->hasRole('Team Manager') && !$user->hasRole('Team Leader')) {
             throw new CustomException('لا يمكن رؤية معلومات المستودعات إلا من قبل مدير أو أمين مستودع');
         }
     }
@@ -32,6 +32,17 @@ class WarehouseService
             ->latest();
 
         return $query->paginate(PaginationEnum::GeneralPagination->value);
+    }
+    public function show()
+    {
+        $user = Auth::user();
+
+        $warehouse = $user->warehouse;
+        if (!$warehouse) {
+            abort(403, __('messages.unauthorized_action'));
+        }
+        $warehouse->load('zone', 'keeper');
+        return $warehouse;
     }
 
     public function warehouseProducts($request, Warehouse $warehouse)

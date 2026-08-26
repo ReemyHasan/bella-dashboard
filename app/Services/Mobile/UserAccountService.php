@@ -5,6 +5,7 @@ namespace App\Services\Mobile;
 use App\Enums\PaginationEnum;
 use App\Http\Resources\Mobile\UserBalanceLedgerResource;
 use App\Models\AppUser;
+use App\Models\CustomerOrder;
 use App\Models\VaultTransaction;
 use Carbon\Carbon;
 use App\Traits\ResultTrait;
@@ -34,7 +35,25 @@ class UserAccountService
             })
             ->orderByDesc('transaction_date')
             ->paginate(PaginationEnum::GeneralPagination->value);
+        $orderIds = $transactions->getCollection()
+            ->where('reference_type', CustomerOrder::class)
+            ->pluck('reference_id')
+            ->filter()
+            ->unique()
+            ->values();
 
+        $orderNumbers = CustomerOrder::whereIn('id', $orderIds)
+            ->pluck('order_number', 'id');
+
+        $transactions->getCollection()->transform(function ($transaction) use ($orderNumbers) {
+
+            if ($transaction->reference_type === CustomerOrder::class) {
+                $transaction->reference_order_number =
+                    $orderNumbers->get($transaction->reference_id);
+            }
+
+            return $transaction;
+        });
         return [
             'current_balance' => $user->balance,
             'from' => isset($from) ? $from->format('Y-m-d') : null,

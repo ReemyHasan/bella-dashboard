@@ -22,6 +22,11 @@ class WarehouseController extends Controller
         $warehouses = $this->warehouseService->list($request);
         return response()->format($this->returnPaginatedResponse($warehouses, WarehouseResource::collection($warehouses)), 'messages.success', 200);
     }
+    public function show()
+    {
+        $warehouse = $this->warehouseService->show();
+        return response()->format(new WarehouseResource($warehouse), 'messages.success', 200);
+    }
     public function warehouseProducts(Request $request, Warehouse $warehouse)
     {
         $warehouseProducts = $this->warehouseService->warehouseProducts($request, $warehouse);

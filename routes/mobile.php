@@ -61,6 +61,8 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::apiResource('warehouse-man-reviews', WarehouseManReviewController::class)->only('index', 'store');
 
         Route::get('warehouses', [WarehouseController::class, 'index']);
+        Route::get('my-warehouse', [WarehouseController::class, 'show']);
+
         Route::get('warehouses-products/{warehouse}', [WarehouseController::class, 'warehouseProducts']);
         Route::get('warehouses-offers/{warehouse}', [WarehouseController::class, 'warehouseOffers']);
         Route::get('offers/{offer}', [WarehouseController::class, 'showOffer']);
