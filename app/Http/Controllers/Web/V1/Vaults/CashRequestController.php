@@ -63,7 +63,7 @@ class CashRequestController extends Controller implements HasMiddleware
     public function handle(Request $request, CashRequest $cash_request)
     {
         $validated = $request->validate([
-            'status' => ['required', 'in:approved,rejected,in_transit,delivered,not_delivered,waiting_delivery_approve,completed'],
+            'status' => ['required', 'in:approved,rejected,in_transit,delivered,not_delivered,waiting_delivery_approve,completed,cancelled'],
 
             'approved_amount' => ['required_if:status,approved', 'numeric', 'min:1'],
 

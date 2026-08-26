@@ -273,7 +273,16 @@ class CashRequestService
                 'status' => CashRequestStatus::REJECTED->value,
             ]);
 
-            return $cashRequest->refresh();
+            event(new NotificationEvent(
+                type: NotificationType::CASH_REQUEST_UPDATE,
+                data: [
+                    'cash_request' => $cashRequest->refresh(),
+                    'old_status' =>  CashRequestStatus::PENDING,
+                    'new_status' => CashRequestStatus::REJECTED,
+                ]
+            ));
+
+            return $cashRequest;
         });
     }
 

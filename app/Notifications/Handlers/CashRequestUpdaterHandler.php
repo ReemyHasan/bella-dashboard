@@ -60,7 +60,7 @@ class CashRequestUpdaterHandler
         ]);
 
         // notify warehouse keeper on approval
-        if ($newStatus === CashRequestStatus::APPROVED) {
+        if ($newStatus === CashRequestStatus::APPROVED || $newStatus === CashRequestStatus::REJECTED || $newStatus === CashRequestStatus::CANCELLED) {
 
             $warehouseKeeper = $cashRequest->deliveredBy;
 
