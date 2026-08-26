@@ -16,11 +16,13 @@ class ProcessAdjustmentService
     public function approveBonus(FinancialAdjustment $financialAdjustment)
     {
         return DB::transaction(function () use ($financialAdjustment) {
-
-            $financialAdjustment->update([
-                'reviewed_by' => Auth::id(),
-                'reviewed_at' => now(),
-            ]);
+            $user = Auth::user();
+            if ($user instanceof DashUser) {
+                $financialAdjustment->update([
+                    'reviewed_by' => Auth::id(),
+                    'reviewed_at' => now(),
+                ]);
+            }
             $this->processAdjustment($financialAdjustment);
         });
     }
