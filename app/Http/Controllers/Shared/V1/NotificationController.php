@@ -39,4 +39,19 @@ class NotificationController extends Controller
 
         return response()->format(null, 'messages.success', 200);
     }
+
+    public function unreadCount()
+    {
+        $count = auth()->user()
+            ->unreadNotifications()
+            ->count();
+
+        return response()->format(
+            [
+                'count' => $count,
+            ],
+            'messages.success',
+            200
+        );
+    }
 }

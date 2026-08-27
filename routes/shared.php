@@ -19,10 +19,10 @@ Route::middleware(['auth:sanctum', 'api.blocked'])->group(function () {
     Route::get('select-warehouse-products/{warehouseId}', [SharedSelectController::class, 'warehouseProducts']);
     Route::get('select-warehouse-offers/{warehouseId}', [SharedSelectController::class, 'warehouseOffers']);
 
-    
-        Route::get('warehouses-products-paginated/{warehouse}', [SharedSelectController::class, 'warehouseProductsPaginated']);
-        Route::get('warehouses-offers-paginated/{warehouse}', [SharedSelectController::class, 'warehouseOffersPaginated']);
-        
+
+    Route::get('warehouses-products-paginated/{warehouse}', [SharedSelectController::class, 'warehouseProductsPaginated']);
+    Route::get('warehouses-offers-paginated/{warehouse}', [SharedSelectController::class, 'warehouseOffersPaginated']);
+
 
     Route::get('select-customer-addresses/{customerId}', [SharedSelectController::class, 'customerAddresses']);
     Route::get('select-subteams/{teamId}', [SharedSelectController::class, 'selectAvailableSubteams']);
@@ -49,4 +49,5 @@ Route::middleware(['auth:sanctum', 'api.blocked'])->group(function () {
     Route::get('notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::post('update-fcm-token', [NotificationController::class, 'updateFcmToken']);
+    Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
 });
