@@ -2,7 +2,9 @@
 
 namespace App\Services\DashUser;
 
+use App\Enums\NotificationType;
 use App\Enums\PaginationEnum;
+use App\Events\NotificationEvent;
 use App\Models\Offer;
 use App\Traits\HandlesImageUpload;
 use Illuminate\Support\Facades\DB;
@@ -150,6 +152,7 @@ class OfferService
                 'tags'
 
             );
+
             return $offer;
         });
     }
@@ -181,6 +184,12 @@ class OfferService
                 'mainImage',
                 'tags'
             );
+            event(new NotificationEvent(
+                type: NotificationType::UPDATE_OFFER,
+                data: [
+                    'offer' => $offer,
+                ]
+            ));
             return $offer;
         });
     }

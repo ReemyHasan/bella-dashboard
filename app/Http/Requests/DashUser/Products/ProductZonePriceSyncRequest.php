@@ -30,7 +30,7 @@ class ProductZonePriceSyncRequest extends FormRequest
                 'distinct'
             ],
 
-            'zones.*.price' => ['required', 'numeric', 'min:0'],
+            'zones.*.price' => ['required', 'numeric', 'min:0', 'max:10000000'],
 
             'zones.*.is_available' => ['required', 'boolean'],
         ];

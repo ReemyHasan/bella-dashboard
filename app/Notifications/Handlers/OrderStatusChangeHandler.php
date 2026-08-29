@@ -88,8 +88,10 @@ class OrderStatusChangeHandler
         return in_array($status, [
             OrderStatus::new,
             OrderStatus::refund,
-            OrderStatus::cancelled
-
+            OrderStatus::cancelled,
+            OrderStatus::delivering,
+            OrderStatus::waiting,
+            OrderStatus::completed
         ]);
     }
 }

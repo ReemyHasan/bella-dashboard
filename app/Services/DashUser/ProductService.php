@@ -187,6 +187,12 @@ class ProductService
                 'mainImage',
                 'brand'
             );
+            event(new NotificationEvent(
+                type: NotificationType::UPDATE_PRODUCT,
+                data: [
+                    'product' => $product,
+                ]
+            ));
             return $product;
         });
     }

@@ -44,7 +44,11 @@ class OrderController extends Controller
         $customer_order = $this->orderService->show($customer_order);
         return response()->format(new CustomerOrderDetailsResource($customer_order), 'messages.success', 200);
     }
-
+    public function todayOrdersCount()
+    {
+        $count = $this->orderService->todayOrdersCount();
+        return response()->format(["count" => $count], 'messages.success', 200);
+    }
     public function handle(HandleOrderRequest $request, CustomerOrder $customer_order)
     {
 

@@ -48,11 +48,11 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::get('products/{product}', [ProductController::class, 'show']);
         Route::get('select-products', [ProductController::class, 'selectAvailable']);
 
+        Route::get('customer-orders/today-count', [OrderController::class, 'todayOrdersCount']);
 
         Route::get('managed-customer-orders', [OrderController::class, 'managedOrders']);
         Route::post('customer-orders/{customer_order}/handle', [OrderController::class, 'handle']);
         Route::patch('customer-orders/{customer_order}/add-notes', [OrderController::class, 'addNotes']);
-
         Route::apiResource('customer-orders', OrderController::class)->only('index', 'store', 'update', 'show');
 
         Route::apiResource('customers', CustomerController::class)->only('index', 'store', 'update', 'show');

@@ -33,12 +33,17 @@ class OrderService
         private StockHandleService $stockHandleService,
         private OrderSharedService $orderSharedService
     ) {}
-
+    public function todayOrdersCount()
+    {
+        return CustomerOrder::visibleTo()
+            ->whereDate('created_at', today())
+            ->count();
+    }
     public function list($request)
     {
 
         return CustomerOrder::visibleTo()->with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog', 'address')
-            ->where('app_user_id', auth()->user()->id)->filterBy($request->all())
+            ->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
     }
@@ -358,12 +363,40 @@ class OrderService
 
     public function update(CustomerOrder $order, array $data)
     {
-        if ($order->order_status != OrderStatus::new->value) {
-            throw new CustomException('لا يمكن تعديل الطلب بعد مراجعته.');
+        $user = auth()->user();
+
+        $isMarketer = $order->app_user_id == $user->id;
+        $isWarehouseMan = $order->warehouse_man_id == $user->id;
+
+        // User is neither the creator nor the assigned warehouse man
+        if (!$isMarketer && !$isWarehouseMan) {
+            throw new CustomException(
+                'لا يمكن تعديل الطلب إلا من قبل المسوق المنشئ له أو الموزع المسند لهذا الطلب.'
+            );
         }
 
-        if ($order->app_user_id != auth()->user()->id) {
-            throw new CustomException('لا يمكن تعديل الطلب إلا من قبل المسوق المنشئ له.');
+        // Marketer can edit only new orders
+        if ($isMarketer && !$isWarehouseMan) {
+            if ($order->order_status != OrderStatus::new->value) {
+                throw new CustomException(
+                    'لا يمكن تعديل الطلب بعد مراجعته.'
+                );
+            }
+        }
+
+        // Warehouse man can edit new, delivering, and waiting orders
+        if ($isWarehouseMan) {
+            $allowedStatuses = [
+                OrderStatus::new->value,
+                OrderStatus::delivering->value,
+                OrderStatus::waiting->value,
+            ];
+
+            if (!in_array($order->order_status, $allowedStatuses, true)) {
+                throw new CustomException(
+                    'لا يمكن للموزع تعديل الطلب في حالته الحالية.'
+                );
+            }
         }
         return DB::transaction(function () use ($order, $data) {
 
@@ -420,8 +453,9 @@ class OrderService
             $order->products()->delete();
             $order->offers()->delete();
 
-            $user = auth()->user();
-            $isWarehouseMan = (bool) $user->is_warehouse_man;
+            $marketer = $order->marketer;
+            $isWarehouseMan = (bool) $marketer->is_warehouse_man;
+
             $team = null;
             $teamleaderId = null;
             $isDirectTeam = false;
@@ -434,21 +468,21 @@ class OrderService
             ];
 
             if (!$isWarehouseMan) {
-                $user->load('team', 'subTeam.team');
-                $team = $user->subTeam
-                    ? $user->subTeam->team
-                    : $user->team;
+                $marketer->load('team', 'subTeam.team');
+                $team = $marketer->subTeam
+                    ? $marketer->subTeam->team
+                    : $marketer->team;
 
                 if (!$team) {
                     throw new CustomException('يجب أن تنتمي إلى فريق');
                 }
 
-                $teamleaderId = $user->subTeam?->team_leader_id;
+                $teamleaderId = $marketer->subTeam?->team_leader_id;
 
-                $isDirectTeam = $user->subTeam?->is_direct;
+                $isDirectTeam = $marketer->subTeam?->is_direct;
 
                 $resolved = $this->orderSharedService->resolvePercentages(
-                    $user,
+                    $marketer,
                     $team,
                     $teamleaderId,
                     $isDirectTeam
@@ -465,13 +499,13 @@ class OrderService
             $region = $address->region;
             if ($isWarehouseMan) {
 
-                $warehouse = Warehouse::where('keeper_id', $user->id)->first();
+                $warehouse = Warehouse::where('keeper_id', $marketer->id)->first();
 
                 if (!$warehouse) {
                     throw new CustomException('لا يوجد مستودع مرتبط بك');
                 }
 
-                $warehouseManId = $user->id;
+                $warehouseManId = $marketer->id;
                 $deliveryCost = 0;
             } else {
 
@@ -489,7 +523,7 @@ class OrderService
                 'team_id' => $team?->id,
                 'sub_team_id' => $isWarehouseMan
                     ? null
-                    : $user->subteam_id,
+                    : $marketer->subteam_id,
             ]);
             $orderData += [
                 'delivery_cost' => $deliveryCost,
