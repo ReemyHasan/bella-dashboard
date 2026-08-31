@@ -47,6 +47,8 @@ class AuthController extends Controller
         if ($currentToken) {
             $currentToken->delete();
         }
+        auth()->user()->update(['fcm_token' => null]);
+
         return response()->format(null, 'messages.logout_success', 200, true);
     }
 }

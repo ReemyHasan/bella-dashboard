@@ -23,7 +23,7 @@ class SendWaitingOrdersNotificationsCommand extends Command
      */
     public function handle()
     {
-        CustomerOrder::query()
+        CustomerOrder::query()->with(['marketer', 'warehouseMan'])
             ->whereNotNull('waiting_until')
             ->whereDate('waiting_until', today())
             ->chunkById(50, function ($orders) {
