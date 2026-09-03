@@ -51,6 +51,8 @@ class TeamObserver
 
                 if ($oldManager) {
                     $oldManager->removeRole('Team Manager');
+                    $oldManager->assignRole('Marketer');
+
                     if ((int) $oldManager->team_id === (int) $team->id) {
 
                         $directSubTeam = $team->subTeams()

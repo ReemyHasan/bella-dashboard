@@ -49,7 +49,9 @@ class WarehouseObserver
                         'is_delivery_man' => false,
                         'warehouse_id' => null
                     ]);
+
                     $oldKeeper->removeRole('Warehouse Keeper');
+                    $oldKeeper->assignRole('Marketer');
                 }
             }
 

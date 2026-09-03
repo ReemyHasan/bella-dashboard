@@ -65,7 +65,9 @@ class AppUserObserver
     public function updated(AppUser $user): void
     {
         $user->clearRolesCache();
-
+        if ($user->roles()->doesntExist()) {
+            $user->assignRole('Marketer');
+        }
         if ($user->wasChanged('balance')) {
 
             event(new NotificationEvent(
@@ -123,6 +125,7 @@ class AppUserObserver
 
         if (!$isManager) {
             $user->removeRole('Team Manager');
+            $user->assignRole('Marketer');
         }
     }
 
@@ -148,6 +151,7 @@ class AppUserObserver
          */
         if (!$user->subteam_id) {
             $user->removeRole('Team Leader');
+            $user->assignRole('Marketer');
 
             return;
         }
@@ -163,6 +167,7 @@ class AppUserObserver
 
         if (!$isLeader) {
             $user->removeRole('Team Leader');
+            $user->assignRole('Marketer');
         }
     }
 

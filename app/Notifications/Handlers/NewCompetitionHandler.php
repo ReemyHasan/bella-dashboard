@@ -104,7 +104,17 @@ class NewCompetitionHandler
                 'subteam_id',
                 $competition->subteams->pluck('id')
             ),
+            'all_teams' =>
+            AppUser::query()->whereIn(
+                'team_id',
+                $competition->teams->pluck('id')
+            ),
 
+            'all_subteams' =>
+            AppUser::query()->whereIn(
+                'subteam_id',
+                $competition->subteams->pluck('id')
+            ),
             default => AppUser::query()->whereRaw('1 = 0'),
         };
     }

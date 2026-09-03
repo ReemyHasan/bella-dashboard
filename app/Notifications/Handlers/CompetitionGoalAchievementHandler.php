@@ -75,6 +75,13 @@ class CompetitionGoalAchievementHandler
             'subteams'
             => optional($participant->participant)->subTeam?->teamLeader,
 
+            'all_teams'
+            => optional($participant->participant)->team?->manager,
+
+            'all_subteams'
+            => optional($participant->participant)->subTeam?->teamLeader,
+
+
             default => null,
         };
 

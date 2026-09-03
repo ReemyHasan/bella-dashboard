@@ -1,14 +1,11 @@
 <?php
 
-namespace App\Http\Requests\DashUser\Teams;
+namespace App\Http\Requests\Mobile\AppUser;
 
 use App\Enums\DashUserStatus;
-use App\Enums\GuardType;
-use App\Models\Role;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
-use Illuminate\Validation\Validator;
 
 class AppUserRequest extends FormRequest
 {
@@ -47,28 +44,6 @@ class AppUserRequest extends FormRequest
             ],
             'birth_date'         => 'nullable|date',
             'join_date'         => 'nullable|date',
-            'status'        => ['nullable', new Enum(DashUserStatus::class)],
-
-            // 'is_team_leader' => 'nullable|boolean',
-            // 'is_manager' => 'nullable|boolean',
-            // 'is_delivery_man' => 'nullable|boolean',
-            // 'is_warehouse_man' => 'nullable|boolean',
-            'team_id' => [
-                'nullable',
-                'exists:teams,id',
-            ],
-            'subteam_id' => [
-                'nullable',
-                Rule::exists('sub_teams', 'id')
-                    ->where(function ($query) {
-                        $query->where('team_id', $this->team_id);
-                    }),
-            ],
-
-            'warehouse_id' => [
-                'nullable',
-                'exists:warehouses,id',
-            ],
             'addresses' => 'nullable|array|min:0',
 
             'addresses.*.id' => [
@@ -80,68 +55,11 @@ class AppUserRequest extends FormRequest
             'addresses.*.is_main' => [
                 'required',
                 'boolean',
-            ],
-            'balance' => 'required|numeric',
+            ]
 
-            // 'roles' => $this->isMethod('post') ? [
-            //     'required',
-            //     'array',
-            //     'min:1'
-            // ] : [
-            //     'nullable',
-            //     'array'
-            // ],
-
-            // 'roles.*' => [
-            //     'required',
-            //     'integer',
-            //     'exists:roles,id'
-            // ],
         ];
     }
 
-    public function withValidator($validator)
-    {
-        // $validator->after(function ($validator) {
-
-        //     $addresses = $this->input('addresses', []);
-
-        //     $mainCount = collect($addresses)
-        //         ->where('is_main', true)
-        //         ->count();
-
-        //     if ($mainCount !== 1) {
-        //         $validator->errors()->add(
-        //             'addresses',
-        //             'لا يمكنك إضافة أكثر من عنوان رئيسي'
-        //         );
-        //     }
-        // });
-
-        // $validator->after(function ($validator) {
-
-        //     $roleIds = $this->input('roles', []);
-
-        //     if (empty($roleIds)) {
-        //         return;
-        //     }
-
-        //     $validRoles = Role::whereIn('id', $roleIds)
-        //         ->where('guard_name', GuardType::app_user_guard->value)
-        //         ->pluck('id')
-        //         ->toArray();
-        //     if (count($validRoles) !== count($roleIds)) {
-        //         $validator->errors()->add(
-        //             'roles',
-        //             'لا يمكنك إسناد بعض الأدوار لمستخدم التطبيق.'
-        //         );
-        //     }
-        // });
-    }
-
-    /**
-     * Translate field names to Arabic
-     */
     public function attributes(): array
     {
         return [

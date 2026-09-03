@@ -87,6 +87,7 @@ Route::prefix('v1/mobile')->middleware('api')->group(function () {
         Route::get('managed-marketers-sales', [ManagementController::class, 'marketersSales']);
         Route::get('managed-subteams-sales', [ManagementController::class, 'subteamsSales']);
         Route::get('select-managed-marketers', [ManagementController::class, 'selectManagedMarketer']);
+        Route::post('create-new-marketer', [ManagementController::class, 'createNewMarketer']);
 
         Route::apiResource('financial-adjustments', FinancialAdjustmentController::class)->except('destroy', 'update');
 

@@ -42,6 +42,8 @@ class SubTeamObserver
 
                 if ($oldManager) {
                     $oldManager->removeRole('Team Leader');
+                    $oldManager->assignRole('Marketer');
+
                 }
             }
 

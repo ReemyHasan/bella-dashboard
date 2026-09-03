@@ -41,7 +41,7 @@ class AppUserService
                 'subteam_id' => $data['subteam_id'] ?? null,
                 'warehouse_id' => $data['warehouse_id'] ?? null,
                 'balance' => $data['balance'],
-                'profile_link' => $data['profile_link'],
+                'profile_link' => $data['profile_link'] ?? null,
 
                 'created_by_dash_user_id' => auth()->user()->id,
 
@@ -75,14 +75,14 @@ class AppUserService
             'last_name' => $data['last_name'],
             'user_name' => $data['user_name'],
             'mobile' => $data['mobile'],
-            'birth_date' => $data['birth_date'],
-            'join_date' => $data['join_date'],
-            'status' => $data['status'],
+            'birth_date' => $data['birth_date'] ?? null,
+            'join_date' => $data['join_date'] ?? null,
+            'status' => $data['status'] ?? null,
             'team_id' => $data['team_id'] ?? null,
             'subteam_id' => $data['subteam_id'] ?? null,
-            'warehouse_id' => $data['warehouse_id'] ?? null,
+            'warehouse_id' => $data['warehouse_id'] ?? $user->warehouse_id ?? null,
             'balance' => $data['balance'],
-            'profile_link' => $data['profile_link'],
+            'profile_link' => $data['profile_link'] ?? null,
 
             // 'is_delivery_man' => $data['is_delivery_man'],
             // 'is_warehouse_man' => $data['is_warehouse_man'],
@@ -128,7 +128,7 @@ class AppUserService
 
         if (!$directSubTeam) {
             $directSubTeam = $team->subTeams()->create([
-                'name' => 'Direct '. $team->name,
+                'name' => 'Direct ' . $team->name,
                 'active' => true,
                 'is_direct' => true,
                 'team_leader_id' => null,

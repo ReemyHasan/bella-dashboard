@@ -2,6 +2,7 @@
 
 namespace App\Services\Mobile;
 
+use App\Enums\DashUserStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaginationEnum;
 use App\Exceptions\CustomException;
@@ -13,6 +14,55 @@ use Illuminate\Support\Facades\DB;
 
 class ManagementService
 {
+    public function createNewMarketer(array $data): AppUser
+    {
+        $user = auth()->user();
+
+        $isManager = $user->hasRole('Team Manager');
+        $isLeader = $user->hasRole('Team Leader');
+
+        if (!$isManager && !$isLeader) {
+            throw new CustomException('غير مسموح بإضافة مستخدمين');
+        }
+        return DB::transaction(function () use ($data, $user) {
+            $team_id = $user->team_id;
+            $subteam_id = $user->subteam_id;
+
+            $createdUser = AppUser::create([
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
+                'user_name' => $data['user_name'],
+                'mobile' => $data['mobile'],
+                'password' => $data['password'],
+                'birth_date' => $data['birth_date'] ?? null,
+                'join_date' => $data['join_date'] ?? null,
+                'status' => DashUserStatus::ACTIVE->value,
+                'team_id' => $team_id ?? null,
+                'subteam_id' =>  $subteam_id ?? null,
+                'warehouse_id' => null,
+                'balance' => 0,
+                'profile_link' => $data['profile_link'] ?? null,
+                'created_by_app_user_id' => auth()->user()->id,
+
+            ]);
+            $createdUser->assignRole('Marketer');
+
+            $attachData = [];
+
+            if (isset($data['addresses'])) {
+                foreach ($data['addresses'] as $address) {
+                    $attachData[$address['id']] = [
+                        'is_main' => $address['is_main']
+                    ];
+                }
+
+                $createdUser->addresses()->attach($attachData);
+            }
+
+            $createdUser->load(['roles', 'addresses', 'team', 'subTeam.team']);
+            return $createdUser;
+        });
+    }
     public function appUsers($request)
     {
         $user = auth()->user();

@@ -19,12 +19,12 @@ class WarehouseService
         $user = Auth::user();
 
         if (!$user->hasRole('Team Manager') && !$user->hasRole('Team Leader')) {
-            throw new CustomException('لا يمكن رؤية معلومات المستودعات إلا من قبل مدير أو أمين مستودع');
+            throw new CustomException('لا يمكن رؤية معلومات المستودعات إلا من قبل مدير');
         }
     }
     public function list($request)
     {
-        $this->allowUser();
+        // $this->allowUser();
         $query = Warehouse::with('zone', 'keeper')
             ->where('active', true)
             ->filterBy($request->all())

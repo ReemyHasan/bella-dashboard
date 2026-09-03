@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Mobile\V1\AppUser;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Mobile\AppUser\AppUserRequest;
 use App\Http\Resources\Mobile\AppUserResource;
 use App\Services\Mobile\ManagementService;
 use Illuminate\Http\Request;
@@ -16,6 +17,11 @@ class ManagementController extends Controller
     {
         $users = $this->appUserService->appUsers($request);
         return response()->format($this->returnPaginatedResponse($users, AppUserResource::collection($users)), 'messages.success', 200);
+    }
+    public function createNewMarketer(AppUserRequest $request)
+    {
+        $appUser = $this->appUserService->createNewMarketer($request->validated());
+        return response()->format(new AppUserResource($appUser),  __('messages.created_successfully',  ['item' => __('constants.app_user')]), 201);
     }
     public function selectManagedMarketer(Request $request)
     {

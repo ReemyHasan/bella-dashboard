@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\WarehouseHandoverObserver;
 use App\Traits\HasFilters;
 use App\Traits\HasFormattedTimestamps;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+#[ObservedBy([WarehouseHandoverObserver::class])]
 class WarehouseHandover extends Model
 {
     use HasFactory, HasFilters, HasFormattedTimestamps;

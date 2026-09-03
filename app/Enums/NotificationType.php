@@ -12,12 +12,14 @@ use App\Notifications\Handlers\NewCustomerOrderHandler;
 use App\Notifications\Handlers\NewMarketerHandler;
 use App\Notifications\Handlers\NewOfferHandler;
 use App\Notifications\Handlers\NewProductHandler;
+use App\Notifications\Handlers\NewWarehouseHandoverHandler;
 use App\Notifications\Handlers\OrderNoteHandler;
 use App\Notifications\Handlers\OrderStatusChangeHandler;
 use App\Notifications\Handlers\UpdateOfferHandler;
 use App\Notifications\Handlers\UpdateProductHandler;
 use App\Notifications\Handlers\WaitingOrderHandler;
 use App\Notifications\Handlers\UpdateCustomerOrderHandler;
+use App\Notifications\Handlers\UpdateWarehouseHandoverHandler;
 
 enum NotificationType: string
 {
@@ -49,6 +51,10 @@ enum NotificationType: string
     case NEW_MARKETER = 'new_marketer'; // manager of the team this marketer registerd in
     case WAITING_ORDER = 'waiting_order';
 
+    case NEW_WAREHOUSE_HANDOVER = 'new_warehouse_handover';
+    case WAREHOUSE_HANDOVER_UPDATE = 'warehouse_handover_update';
+
+
     public function label(): string
     {
         return match ($this) {
@@ -76,6 +82,9 @@ enum NotificationType: string
             self::CASH_REQUEST_UPDATE => 'تحديث طلب رصيد',
 
             self::NEW_MARKETER => 'مسوق جديد',
+            self::NEW_WAREHOUSE_HANDOVER => 'طلب مناقلة جديد',
+            self::WAREHOUSE_HANDOVER_UPDATE => 'تحديث طلب مناقلة',
+
             default => $this->value,
         };
     }
@@ -106,6 +115,10 @@ enum NotificationType: string
             self::FINANCIAL_MOVEMENT => FinancialMovementHandler::class,  // ###########################
             self::CASH_REQUEST_UPDATE => CashRequestUpdaterHandler::class, // ###########################
             self::NEW_MARKETER => NewMarketerHandler::class,  // ###########################
+
+            self::NEW_WAREHOUSE_HANDOVER => NewWarehouseHandoverHandler::class,  // ###########################
+            self::WAREHOUSE_HANDOVER_UPDATE => UpdateWarehouseHandoverHandler::class,  // ###########################
+
         };
     }
 }
