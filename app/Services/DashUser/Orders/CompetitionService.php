@@ -314,10 +314,8 @@ class CompetitionService
 
                 $query->where(function ($query) use ($marketer) {
 
-                    // 🔹 Case: ALL → everyone participates
-                    $query->where('target', CompetitionTarget::all->value);
+                    $query->whereIn('target', [CompetitionTarget::all->value, CompetitionTarget::all_subteams->value, CompetitionTarget::all_teams->value]);
 
-                    // 🔹 Case: marketers → directly assigned
                     $query->orWhere(function ($q) use ($marketer) {
                         $q->where('target', CompetitionTarget::marketers->value)
                             ->whereHas('marketers', function ($q2) use ($marketer) {
@@ -325,7 +323,6 @@ class CompetitionService
                             });
                     });
 
-                    // 🔹 Case: teams → marketer belongs to team
                     $query->orWhere(function ($q) use ($marketer) {
                         $q->where('target', CompetitionTarget::teams->value)
                             ->whereHas('teams', function ($q2) use ($marketer) {
@@ -333,7 +330,6 @@ class CompetitionService
                             });
                     });
 
-                    // 🔹 Case: subteams → marketer belongs to subteam
                     $query->orWhere(function ($q) use ($marketer) {
                         $q->where('target', CompetitionTarget::subteams->value)
                             ->whereHas('subteams', function ($q2) use ($marketer) {

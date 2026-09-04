@@ -48,6 +48,18 @@ class ProcessAdjustmentService
 
         $isDashUser = $adjustment->requested_by_type == DashUser::class;
         $isBonus =  ($adjustment->type == FinancialAdjustmentType::BONUS_ORDER->value ||  $adjustment->type == FinancialAdjustmentType::BONUS_REQUEST->value);
+        // =========================
+        // CASE 0: WAREHOUSE KEEPER
+        // =========================
+        if ($target->is_warehouse_man) {
+            $this->processWarehouseKeeperAdjustment(
+                $adjustment,
+                $target,
+                $isBonus
+            );
+
+            return;
+        }
 
         $note = $this->buildNote($isBonus, $amount, $isDashUser);
 
@@ -175,6 +187,68 @@ class ProcessAdjustmentService
 
             'to_vault_balance_before' => $targetBefore,
             'to_vault_balance_after' => $targetAfter,
+        ]);
+    }
+
+    private function processWarehouseKeeperAdjustment(
+        FinancialAdjustment $adjustment,
+        $warehouseKeeper,
+        bool $isBonus
+    ) {
+        $vault = $warehouseKeeper->vault;
+
+        if (!$vault) {
+            throw new CustomException('خزنة الموزع غير موجودة.');
+        }
+
+        $amount = $adjustment->amount;
+        $vaultBefore = $vault->balance;
+
+        if ($isBonus) {
+            // Bonus: remove money from warehouse keeper's vault
+            if ($vaultBefore < $amount) {
+                throw new CustomException(
+                    "رصيد خزنة الموزع غير كافٍ {$vaultBefore}."
+                );
+            }
+
+            $vaultAfter = $vaultBefore - $amount;
+            $transactionType = VaultTransactionType::TRANSFER_OUT->value;
+        } else {
+            // Deduction: add money to warehouse keeper's vault
+            $vaultAfter = $vaultBefore + $amount;
+            $transactionType = VaultTransactionType::TRANSFER_IN->value;
+        }
+
+        $vault->update([
+            'balance' => $vaultAfter,
+        ]);
+
+        VaultTransaction::create([
+            'vault_id' => $vault->id,
+
+            'balance_user_type' => get_class($warehouseKeeper),
+            'balance_user_id' => $warehouseKeeper->id,
+
+            'type' => $transactionType,
+
+            'amount' => $amount,
+            'transaction_date' => now(),
+
+            'reference_type' => FinancialAdjustment::class,
+            'reference_id' => $adjustment->id,
+
+            'action_by_type' => get_class(Auth::user()),
+            'action_by_id' => Auth::id(),
+
+            'notes' => $this->buildNote(
+                $isBonus,
+                $amount,
+                Auth::user() instanceof DashUser
+            ),
+
+            'to_vault_balance_before' => $vaultBefore,
+            'to_vault_balance_after' => $vaultAfter,
         ]);
     }
 }

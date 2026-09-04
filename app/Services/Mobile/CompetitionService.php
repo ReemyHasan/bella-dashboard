@@ -3,9 +3,12 @@
 namespace App\Services\Mobile;
 
 use App\Enums\CompetitionStatus;
+use App\Enums\CompetitionTarget;
 use App\Enums\PaginationEnum;
 use App\Models\AppUser;
 use App\Models\Competition;
+use App\Models\SubTeam;
+use App\Models\Team;
 
 class CompetitionService
 {
@@ -22,58 +25,9 @@ class CompetitionService
                     $q->orderByDesc('score');
                 }
             ])
-            ->where('status', CompetitionStatus::active->value)
-            ->where(function ($q) use ($user) {
+            ->where('status', CompetitionStatus::active->value);
 
-                // ✅ 1. ALL competitions (everyone sees)
-                $q->where('target', 'all');
-
-                // ✅ 2. marketer participation
-                $q->orWhereHas('marketers', function ($sub) use ($user) {
-                    $sub->where('marketer_id', $user->id);
-                });
-
-                // 🔥 Team Manager
-                if ($user->hasRole('Team Manager')) {
-
-                    $teamId = $user->team_id;
-
-                    // teams competitions
-                    $q->orWhere(function ($sub) use ($teamId) {
-                        $sub->where('target', 'teams')
-                            ->whereHas(
-                                'teams',
-                                fn($t) =>
-                                $t->where('teams.id', $teamId)
-                            );
-                    });
-
-                    // subteams under his team
-                    $q->orWhere(function ($sub) use ($teamId) {
-                        $sub->where('target', 'subteams')
-                            ->whereHas(
-                                'subteams',
-                                fn($st) =>
-                                $st->where('team_id', $teamId)
-                            );
-                    });
-                }
-
-                // 🔥 Team Leader
-                elseif ($user->hasRole('Team Leader')) {
-
-                    $subteamId = $user->subteam_id;
-
-                    $q->orWhere(function ($sub) use ($subteamId) {
-                        $sub->where('target', 'subteams')
-                            ->whereHas(
-                                'subteams',
-                                fn($st) =>
-                                $st->where('subteams.id', $subteamId)
-                            );
-                    });
-                }
-            });
+        $this->applyVisibility($query, $user);
 
         $competitions = $query
             ->filterBy($request->all())
@@ -83,31 +37,12 @@ class CompetitionService
 
         $competitions->getCollection()->transform(function ($competition) use ($user) {
 
-            $participants = $competition->participants;
-
-            $participant = $participants->first(function ($p) use ($user, $competition) {
-
-                return match ($competition->target) {
-
-                    'all',
-                    'marketers'
-                    => $p->participant_id == $user->id
-                        && $p->participant_type === AppUser::class,
-
-                    'teams'
-                    => $p->participant_id == $user->team_id,
-
-                    'subteams'
-                    => $p->participant_id == $user->subteam_id,
-
-                    default => false,
-                };
-            });
+            $participant = $this->getMyParticipant($competition, $user);
 
             $rank = null;
 
             if ($participant) {
-                $rank = $participants
+                $rank = $competition->participants
                     ->pluck('id')
                     ->search($participant->id) + 1;
             }
@@ -120,12 +55,11 @@ class CompetitionService
 
         return $competitions;
     }
-
     public function show($id)
     {
         $user = auth()->user();
 
-        $competition = Competition::query()
+        $query = Competition::query()
             ->with([
                 'zones',
                 'teams',
@@ -136,67 +70,18 @@ class CompetitionService
                 'winners.winner',
                 'participants' => fn($q) => $q->orderByDesc('score'),
             ])
-            ->where('status', CompetitionStatus::active->value)
+            ->where('status', CompetitionStatus::active->value);
 
-            ->where(function ($q) use ($user) {
+        $this->applyVisibility($query, $user);
 
-                $q->where('target', 'all');
+        $competition = $query->findOrFail($id);
 
-                $q->orWhereHas(
-                    'marketers',
-                    fn($m) =>
-                    $m->where('marketer_id', $user->id)
-                );
-
-                if ($user->hasRole('Team Manager')) {
-
-                    $q->orWhereHas(
-                        'teams',
-                        fn($t) =>
-                        $t->where('teams.id', $user->team_id)
-                    );
-
-                    $q->orWhereHas(
-                        'subteams',
-                        fn($st) =>
-                        $st->where('team_id', $user->team_id)
-                    );
-                } elseif ($user->hasRole('Team Leader')) {
-
-                    $q->orWhereHas(
-                        'subteams',
-                        fn($st) =>
-                        $st->where('subteams.id', $user->subteam_id)
-                    );
-                }
-            })
-
-            ->findOrFail($id);
-        $participants = $competition->participants;
-
-        $participant = $participants->first(function ($p) use ($user, $competition) {
-
-            return match ($competition->target) {
-
-                'all',
-                'marketers'
-                => $p->participant_id == $user->id
-                    && $p->participant_type === AppUser::class,
-
-                'teams'
-                => $p->participant_id == $user->team_id,
-
-                'subteams'
-                => $p->participant_id == $user->subteam_id,
-
-                default => false,
-            };
-        });
+        $participant = $this->getMyParticipant($competition, $user);
 
         $rank = null;
 
         if ($participant) {
-            $rank = $participants
+            $rank = $competition->participants
                 ->pluck('id')
                 ->search($participant->id) + 1;
         }
@@ -205,5 +90,130 @@ class CompetitionService
         $competition->my_score = $participant?->score ?? 0;
 
         return $competition;
+    }
+
+
+    private function applyVisibility($query, $user): void
+    {
+        $query->where(function ($q) use ($user) {
+
+            $q->where(
+                'target',
+                CompetitionTarget::all->value
+            );
+
+            $q->orWhere(function ($sub) use ($user) {
+
+                $sub->where(
+                    'target',
+                    CompetitionTarget::marketers->value
+                )
+                    ->whereHas('marketers', function ($m) use ($user) {
+                        $m->where('marketer_id', $user->id);
+                    });
+            });
+
+            if ($user->hasRole('Team Manager')) {
+
+                $teamId = $user->team_id;
+
+                if ($teamId) {
+                    $q->orWhere(function ($sub) use ($teamId) {
+
+                        $sub->where(
+                            'target',
+                            CompetitionTarget::teams->value
+                        )
+                            ->whereHas('teams', function ($team) use ($teamId) {
+                                $team->where('teams.id', $teamId);
+                            });
+                    });
+                }
+
+                $q->orWhere(
+                    'target',
+                    CompetitionTarget::all_teams->value
+                );
+
+                if ($teamId) {
+                    $q->orWhere(function ($sub) use ($teamId) {
+
+                        $sub->where(
+                            'target',
+                            CompetitionTarget::subteams->value
+                        )
+                            ->whereHas('subteams', function ($subteam) use ($teamId) {
+                                $subteam->where('team_id', $teamId);
+                            });
+                    });
+                }
+                $q->orWhere(
+                    'target',
+                    CompetitionTarget::all_subteams->value
+                );
+            } elseif ($user->hasRole('Team Leader')) {
+
+                $subteamId = $user->subteam_id;
+
+                if ($subteamId) {
+                    $q->orWhere(function ($sub) use ($subteamId) {
+
+                        $sub->where(
+                            'target',
+                            CompetitionTarget::subteams->value
+                        )
+                            ->whereHas('subteams', function ($subteam) use ($subteamId) {
+                                $subteam->where('sub_teams.id', $subteamId);
+                            });
+                    });
+                }
+
+                $q->orWhere(
+                    'target',
+                    CompetitionTarget::all_subteams->value
+                );
+            }
+        });
+    }
+
+    private function getMyParticipant($competition, $user)
+    {
+        return $competition->participants->first(function ($participant) use ($user, $competition) {
+
+            return match ($competition->target) {
+
+                CompetitionTarget::all->value =>
+
+                $participant->participant_id == $user->id
+                    && $participant->participant_type === AppUser::class,
+
+                CompetitionTarget::marketers->value =>
+
+                $participant->participant_id == $user->id
+                    && $participant->participant_type === AppUser::class,
+
+                CompetitionTarget::teams->value =>
+
+                $participant->participant_id == $user->team_id
+                    && $participant->participant_type === Team::class,
+
+                CompetitionTarget::all_teams->value =>
+
+                $participant->participant_id == $user->team_id
+                    && $participant->participant_type === Team::class,
+
+                CompetitionTarget::subteams->value =>
+
+                $participant->participant_id == $user->subteam_id
+                    && $participant->participant_type === SubTeam::class,
+
+                CompetitionTarget::all_subteams->value =>
+
+                $participant->participant_id == $user->subteam_id
+                    && $participant->participant_type === SubTeam::class,
+
+                default => false,
+            };
+        });
     }
 }

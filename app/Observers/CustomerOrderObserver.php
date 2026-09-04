@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Enums\CompetitionStatus;
+use App\Enums\CompetitionTarget;
 use App\Enums\NotificationType;
 use App\Enums\OrderStatus;
 use App\Enums\VaultTransactionType;
@@ -83,6 +84,8 @@ class CustomerOrderObserver
         return match ($competition->target) {
 
             'all' => true,
+            CompetitionTarget::all_teams->value => true,
+            CompetitionTarget::all_subteams->value => true,
 
             'teams' => $competition->teams
                 ->pluck('id')
@@ -270,6 +273,9 @@ class CustomerOrderObserver
             // 🔹 SubTeam competitions
             'subteams'
             => [$order->sub_team_id, \App\Models\SubTeam::class],
+
+            CompetitionTarget::all_subteams => [$order->sub_team_id, \App\Models\SubTeam::class],
+            CompetitionTarget::all_teams => [$order->team_id, \App\Models\Team::class],
 
             default => [null, null],
         };
