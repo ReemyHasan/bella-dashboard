@@ -131,6 +131,6 @@ class ProductReportService
             $result = $result->filter(fn($item) => $item['total_sold'] == 0);
         }
 
-        return $result->values();
+        return $result->sortByDesc('total_sold')->values();
     }
 }
