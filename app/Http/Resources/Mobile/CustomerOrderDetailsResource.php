@@ -66,21 +66,21 @@ class CustomerOrderDetailsResource extends JsonResource
 
             'marketer' => $this->whenLoaded('marketer', fn() => [
                 'id' => $this->marketer?->id,
-                'name' => $this->marketer?->first_name . ' ' . $this->marketer?->last_name . ' (' . $this->marketer?->user_name . ')',
+                'name' => $this->marketer?->display_name
             ]),
             'warehouse_man' => $this->whenLoaded('warehouseMan', fn() => [
                 'id' => $this->warehouseMan?->id,
-                'name' => $this->warehouseMan?->first_name . ' ' . $this->warehouseMan?->last_name . ($flag ? ' (' . $this->warehouseMan?->mobile . ')' : ''),
+                'name' => $this->warehouseMan?->display_name . ($flag ? ' (' . $this->warehouseMan?->mobile . ')' : ''),
             ]),
 
             'teamleader' => $this->whenLoaded('teamleader', fn() => [
                 'id' => $this->teamleader?->id,
-                'name' => $this->teamleader?->first_name . ' ' . $this->teamleader?->last_name . ' (' . $this->teamleader?->mobile . ')',
+                'name' => $this->teamleader?->display_name . ' (' . $this->teamleader?->mobile . ')',
             ]),
 
             'manager' => $this->whenLoaded('manager', fn() => [
                 'id' => $this->manager?->id,
-                'name' => $this->manager?->first_name . ' ' . $this->manager?->last_name . ' (' . $this->manager?->mobile . ')',
+                'name' => $this->manager?->display_name . ' (' . $this->manager?->mobile . ')',
             ]),
 
             'warehouse' => $this->whenLoaded('warehouse', fn() => [

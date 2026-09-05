@@ -63,21 +63,21 @@ class CustomerOrderResource extends JsonResource
 
             'marketer' => $this->whenLoaded('marketer', fn() => [
                 'id' => $this->marketer?->id,
-                'name' => $this->marketer?->first_name . ' ' . $this->marketer?->last_name . ' (' . $this->marketer?->user_name . ')',
+                'name' => $this->marketer?->display_name
             ]),
             'warehouse_man' => $this->whenLoaded('warehouseMan', fn() => [
                 'id' => $this->warehouseMan?->id,
-                'name' => $this->warehouseMan?->first_name . ' ' . $this->warehouseMan?->last_name . ' (' . $this->warehouseMan?->user_name . ')',
+                'name' => $this->warehouseMan?->display_name
             ]),
 
             'teamleader' => $this->whenLoaded('teamleader', fn() => [
                 'id' => $this->teamleader?->id,
-                'name' => $this->teamleader?->first_name . ' ' . $this->teamleader?->last_name . ' (' . $this->teamleader?->user_name . ')',
+                'name' => $this->teamleader?->display_name
             ]),
 
             'manager' => $this->whenLoaded('manager', fn() => [
                 'id' => $this->manager?->id,
-                'name' => $this->manager?->first_name . ' ' . $this->manager?->last_name . ' (' . $this->manager?->user_name . ')',
+                'name' => $this->manager?->display_name
             ]),
 
             'warehouse' => $this->whenLoaded('warehouse', fn() => [

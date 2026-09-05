@@ -56,6 +56,36 @@ class AppUser extends Authenticatable
         'balance' => 'decimal:2',
         'password' => 'hashed',
     ];
+    public function getDisplayNameAttribute(): string
+    {
+        $name = trim($this->first_name . ' ' . $this->last_name);
+
+        if ($this->is_warehouse_man) {
+            return "{$name} (موزع)";
+        }
+
+        if ($this->hasRole('Team Manager')) {
+            $organization = $this->team?->name;
+
+            return $organization
+                ? "{$name} (مدير فريق - {$organization})"
+                : "{$name} (مدير فريق)";
+        }
+
+        if ($this->hasRole('Team Leader')) {
+            $organization = $this->subTeam?->name;
+
+            return $organization
+                ? "{$name} (قائد فريق - {$organization})"
+                : "{$name} (قائد فريق)";
+        }
+
+        $organization = $this->subTeam?->name ?? $this->team?->name;
+
+        return $organization
+            ? "{$name} (مسوق - {$organization})"
+            : "{$name} (مسوق)";
+    }
     public function getJoinDateFormattedAttribute()
     {
         return $this->join_date

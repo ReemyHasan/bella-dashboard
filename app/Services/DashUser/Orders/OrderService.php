@@ -35,8 +35,20 @@ class OrderService
 
     public function list($request)
     {
-
-        return CustomerOrder::with('customer', 'currency', 'marketer', 'warehouseMan', 'warehouse', 'address')->filterBy($request->all())
+        return CustomerOrder::with(
+            [
+                'customer',
+                'currency',
+                'marketer.team',
+                'marketer.subTeam',
+                'marketer.roles',
+                'warehouseMan.team',
+                'warehouseMan.subTeam',
+                'warehouseMan.roles',
+                'warehouse',
+                'address'
+            ]
+        )->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
     }

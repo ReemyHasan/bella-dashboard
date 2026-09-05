@@ -42,7 +42,19 @@ class OrderService
     public function list($request)
     {
 
-        return CustomerOrder::visibleTo()->with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog', 'address')
+
+        return CustomerOrder::visibleTo()->with(
+            'customer',
+            'currency',
+            'marketer.team',
+            'marketer.subTeam',
+            'marketer.roles',
+            'warehouseMan.team',
+            'warehouseMan.subTeam',
+            'warehouseMan.roles',
+            'lastStatusLog',
+            'address'
+        )
             ->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
@@ -50,7 +62,12 @@ class OrderService
 
     public function managedOrders($request)
     {
-        return CustomerOrder::visibleTo()->with('customer', 'currency', 'marketer', 'warehouseMan', 'lastStatusLog', 'address')
+        return CustomerOrder::visibleTo()->with('customer', 'currency', 'marketer.team',
+            'marketer.subTeam',
+            'marketer.roles',
+            'warehouseMan.team',
+            'warehouseMan.subTeam',
+            'warehouseMan.roles', 'lastStatusLog', 'address')
             ->filterBy($request->all())
             ->sortBy($request->get('sort', ['created_at' => 'desc']))
             ->paginate(PaginationEnum::GeneralPagination->value);
@@ -61,7 +78,12 @@ class OrderService
         if (!in_array(auth()->user()->id, $allowedUsers)) {
             throw new CustomException('لا يمكن رؤية الطلب إلا من قبل المسوق المنشئ له أو مديره.');
         }
-        $order->load('customer', 'statusLogs.changedBy', 'competition', 'currency', 'marketer', 'warehouseMan', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
+        $order->load('customer', 'statusLogs.changedBy', 'competition', 'currency', 'marketer.team',
+            'marketer.subTeam',
+            'marketer.roles',
+            'warehouseMan.team',
+            'warehouseMan.subTeam',
+            'warehouseMan.roles', 'teamleader', 'manager', 'warehouse', 'reviewedBy', 'address', 'createdBy', 'products.product', 'offers.offer');
         return $order;
     }
 

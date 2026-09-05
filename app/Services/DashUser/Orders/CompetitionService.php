@@ -279,10 +279,15 @@ class CompetitionService
                 'zones',
                 'teams',
                 'subteams',
-                'marketers',
+                'marketers.team',
+                'marketers.subTeam',
+                'marketers.roles',
                 'products',
                 'offers',
-                'winners.winner'
+                'winners.winner.team',
+                'winners.winner.subTeam',
+                'winners.winner.roles'
+
             ]
         );
         return $competition;

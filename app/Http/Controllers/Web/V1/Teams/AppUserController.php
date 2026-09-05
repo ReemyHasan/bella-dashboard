@@ -94,13 +94,13 @@ class AppUserController extends Controller implements HasMiddleware
 
         $returnedData = $appUsers->map(fn($appUser) => [
             'key' => $appUser?->id,
-            'value' => $appUser?->first_name . ' ' . $appUser?->last_name . ' (' . $appUser?->user_name . ')',
+            'value' => $appUser?->display_name,
 
         ]);
         return response()->format($returnedData, 'messages.success', 200);
     }
 
-       public function selectAvailable2(Request $request)
+    public function selectAvailable2(Request $request)
     {
         $team = $request->input('team');
         $subTeam = $request->input('subTeam');
@@ -129,7 +129,7 @@ class AppUserController extends Controller implements HasMiddleware
 
         $returnedData = $appUsers->map(fn($appUser) => [
             'id' => $appUser?->id,
-            'name' => $appUser?->first_name . ' ' . $appUser?->last_name . ' (' . $appUser?->user_name . ')',
+            'name' => $appUser?->display_name,
             'team_id' => $appUser?->team_id,
             'subteam_id' => $appUser?->subteam_id,
 

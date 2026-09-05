@@ -24,7 +24,7 @@ class CustomerOrderListResource extends JsonResource
             'created_at' => $this->created_at_formatted,
             'marketer' => $this->whenLoaded('marketer', fn() => [
                 'id' => $this->marketer?->id,
-                'name' => $this->marketer?->first_name . ' ' . $this->marketer?->last_name . ' (' . $this->marketer?->user_name . ')',
+                'name' => $this->marketer?->display_name
             ]),
 
             'customer' => $this->whenLoaded('customer', fn() => [
@@ -33,7 +33,7 @@ class CustomerOrderListResource extends JsonResource
             ]),
             'warehouse_man' => $this->whenLoaded('warehouseMan', fn() => [
                 'id' => $this->warehouseMan?->id,
-                'name' => $this->warehouseMan?->first_name . ' ' . $this->warehouseMan?->last_name . ($flag ? ' (' . $this->warehouseMan?->mobile . ')' : ''),
+                'name' => $this->warehouseMan?->display_name . ($flag ? ' (' . $this->warehouseMan?->mobile . ')' : ''),
             ]),
             'currency' => $this->whenLoaded('currency', fn() => [
                 'id' => $this->currency?->id,

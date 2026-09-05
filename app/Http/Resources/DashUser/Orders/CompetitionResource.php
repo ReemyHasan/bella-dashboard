@@ -76,7 +76,7 @@ class CompetitionResource extends JsonResource
                 fn() =>
                 $this->marketers->map(fn($user) => [
                     'id' => $user->id,
-                    'name' => $user?->first_name . ' ' . $user?->last_name . ' (' . $user?->user_name . ')',
+                    'name' => $user?->display_name
 
                 ])
             ),
@@ -109,7 +109,7 @@ class CompetitionResource extends JsonResource
                 fn() =>
                 $this->winners->map(fn($winner) => [
                     'id' => $winner->winner->id,
-                    'name' => $winner->winner?->first_name . ' ' . $winner->winner?->last_name . ' (' . $winner->winner?->user_name . ')',
+                    'name' => $winner->winner?->display_name,
                     'achieved_value' => $winner->achieved_value ?? null
                 ])
             ),

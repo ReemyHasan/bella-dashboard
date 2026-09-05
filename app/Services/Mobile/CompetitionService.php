@@ -20,7 +20,9 @@ class CompetitionService
             ->with([
                 'teams',
                 'subteams',
-                'marketers',
+                'marketers.team',
+                'marketers.subTeam',
+                'marketers.roles',
                 'participants' => function ($q) {
                     $q->orderByDesc('score');
                 }
@@ -64,10 +66,14 @@ class CompetitionService
                 'zones',
                 'teams',
                 'subteams',
-                'marketers',
+                'marketers.team',
+                'marketers.subTeam',
+                'marketers.roles',
                 'products',
                 'offers',
-                'winners.winner',
+                'winners.winner.team',
+                'winners.winner.subTeam',
+                'winners.winner.roles',
                 'participants' => fn($q) => $q->orderByDesc('score'),
             ])
             ->where('status', CompetitionStatus::active->value);

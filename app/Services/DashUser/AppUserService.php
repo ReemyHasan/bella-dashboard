@@ -223,7 +223,7 @@ class AppUserService
     ) {
 
         $users = AppUser::query()
-
+            ->with(['team', 'subTeam', 'roles'])
             ->when($isTeamManager, function ($query) {
                 $query->whereHas('roles', function ($q) {
                     $q->where('name', 'Team Manager');
