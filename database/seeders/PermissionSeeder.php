@@ -275,6 +275,8 @@ class PermissionSeeder extends Seeder
             ['name' => 'view_all_balance_transfer_requests', 'name_ar' => 'عرض طلبات نقل رصيد', 'guard_name' => 'dash_user_guard', 'group' => 'طلب نقل رصيد'],
             ['name' => 'handle_balance_transfer_request', 'name_ar' => 'تأكيد أو إلغاء طلب نقل رصيد', 'guard_name' => 'dash_user_guard', 'group' => 'طلب نقل رصيد'],
 
+            ['name' => 'create_balance_transfer_request', 'name_ar' => 'إدخال طلب نقل رصيد', 'guard_name' => 'dash_user_guard', 'group' => 'طلب نقل رصيد'],
+            ['name' => 'update_balance_transfer_request', 'name_ar' => 'تحديث طلب نقل رصيد', 'guard_name' => 'dash_user_guard', 'group' => 'طلب نقل رصيد'],
 
 
         ];

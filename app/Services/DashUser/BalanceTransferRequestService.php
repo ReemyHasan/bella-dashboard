@@ -2,6 +2,7 @@
 
 namespace App\Services\DashUser;
 
+use App\Enums\CashRequestStatus;
 use App\Enums\PaginationEnum;
 use App\Enums\VaultTransactionType;
 use App\Exceptions\CustomException;
@@ -21,6 +22,52 @@ class BalanceTransferRequestService
             ->latest()->paginate(PaginationEnum::GeneralPagination->value);
     }
 
+    public function create(array $data)
+    {
+        $user = Auth::user();
+
+        return DB::transaction(function () use ($data, $user) {
+
+
+
+            $balanceTransferRequest = BalanceTransferRequest::create([
+                'from_user_id' => $data['from_user_id'],
+                'to_user_id' => $data['to_user_id'],
+                'date' => $data['date'],
+
+                'amount' => $data['amount'],
+                'notes' => $data['notes'] ?? null,
+                'status' => CashRequestStatus::PENDING->value,
+
+            ]);
+            $balanceTransferRequest->load('fromUser', 'toUser');
+
+            return $balanceTransferRequest;
+        });
+    }
+
+    public function update(BalanceTransferRequest $balanceTransferRequest, array $data)
+    {
+        if ($balanceTransferRequest->status != CashRequestStatus::PENDING->value) {
+            throw new CustomException('لا يمكن تعديل الطلب بعد مراجعته.');
+        }
+
+        return DB::transaction(function () use ($balanceTransferRequest, $data) {
+
+            $balanceTransferRequest->update([
+                'from_user_id' => $data['from_user_id'],
+                'to_user_id' => $data['to_user_id'],
+
+                'amount' => $data['amount'],
+                'date' => $data['date'],
+
+                'notes' => $data['notes'] ?? null,
+            ]);
+            $balanceTransferRequest->load('fromUser', 'toUser');
+
+            return $balanceTransferRequest;
+        });
+    }
     public function show(BalanceTransferRequest $balance_transfer_request)
     {
         $balance_transfer_request->load('fromUser', 'toUser', 'reviewedBy');

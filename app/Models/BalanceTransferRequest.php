@@ -17,6 +17,7 @@ class BalanceTransferRequest extends Model
         'amount',
         'status',
         'notes',
+        'date',
         'review_notes',
         'reviewed_by',
         'reviewed_at',

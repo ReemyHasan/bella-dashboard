@@ -2,9 +2,7 @@
 
 namespace App\Services\DashUser;
 
-use App\Enums\NotificationType;
 use App\Enums\PaginationEnum;
-use App\Events\NotificationEvent;
 use App\Models\Message;
 use App\Models\MessageAssignee;
 use Illuminate\Support\Facades\DB;

@@ -19,6 +19,7 @@ class BalanceTransferRequestResource extends JsonResource
             'amount' => $this->amount,
             'status' => $this->status,
             'notes' => $this->notes,
+            'date' => $this->date,
 
             'from_user' => $this->whenLoaded('fromUser', fn() => [
                 'id' => $this->fromUser?->id,

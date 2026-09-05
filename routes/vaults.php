@@ -51,4 +51,4 @@ Route::apiResource('financial-adjustments', FinancialAdjustmentController::class
 
 
 Route::post('balance-transfer-requests/{balance_transfer_request}/handle', [BalanceTransferRequestController::class, 'handle']);
-Route::apiResource('balance-transfer-requests', BalanceTransferRequestController::class)->only('index', 'show');
+Route::apiResource('balance-transfer-requests', BalanceTransferRequestController::class)->only('index', 'show', 'update', 'store');

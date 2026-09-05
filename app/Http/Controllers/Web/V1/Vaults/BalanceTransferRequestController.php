@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\V1\Vaults;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DashUser\Vaults\BalanceTransferRequestRequest;
 use App\Http\Resources\DashUser\BalanceTransferRequestResource;
 use App\Models\BalanceTransferRequest;
 use App\Models\CashRequest;
@@ -20,6 +21,9 @@ class BalanceTransferRequestController extends Controller implements HasMiddlewa
             new Middleware('permission:view_all_balance_transfer_requests', only: ['index']),
             new Middleware('permission:view_balance_transfer_request_by_id', only: ['show']),
             new Middleware('permission:handle_balance_transfer_request', only: ['handle']),
+            new Middleware('permission:create_balance_transfer_request', only: ['store']),
+            new Middleware('permission:update_balance_transfer_request', only: ['update']),
+
         ];
     }
 
@@ -36,7 +40,17 @@ class BalanceTransferRequestController extends Controller implements HasMiddlewa
         $balance_transfer_request = $this->balance_transfer_request_service->show($balance_transfer_request);
         return response()->format(new BalanceTransferRequestResource($balance_transfer_request), 'messages.success', 200);
     }
+    public function store(BalanceTransferRequestRequest $request)
+    {
+        $cash_request = $this->balance_transfer_request_service->create($request->validated());
+        return response()->format(new BalanceTransferRequestResource($cash_request),  __('messages.created_successfully',  ['item' => __('constants.balance_transfer_request')]), 201);
+    }
 
+    public function update(BalanceTransferRequestRequest $request, BalanceTransferRequest $balance_transfer_request)
+    {
+        $balance_transfer_request = $this->balance_transfer_request_service->update($balance_transfer_request, $request->validated());
+        return response()->format(new BalanceTransferRequestResource($balance_transfer_request),  __('messages.updated_successfully',  ['item' => __('constants.balance_transfer_request')]), 200);
+    }
     public function handle(Request $request, BalanceTransferRequest $balance_transfer_request)
     {
         $validated = $request->validate([
