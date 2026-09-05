@@ -3,15 +3,11 @@
 namespace App\Services\Mobile;
 
 use App\Enums\AssignmentType;
-use App\Enums\NotificationType;
 use App\Enums\PaginationEnum;
-use App\Events\NotificationEvent;
 use App\Exceptions\CustomException;
 use App\Models\AppUser;
 use App\Models\Message;
 use App\Models\MessageAssignee;
-use App\Models\SubTeam;
-use App\Models\Team;
 use Illuminate\Support\Facades\DB;
 
 class MessageService
@@ -25,30 +21,15 @@ class MessageService
 
             ->where(function ($q) use ($user) {
 
-                /*
-            |--------------------------------------------------------------------------
-            | Messages created by him
-            |--------------------------------------------------------------------------
-            | Creator can always see his messages
-            */
                 $q->where(function ($sub) use ($user) {
 
                     $sub->where('created_by_type', get_class($user))
                         ->where('created_by_id', $user->id);
                 })
 
-                    /*
-            |--------------------------------------------------------------------------
-            | Assigned messages (must be visible by date)
-            |--------------------------------------------------------------------------
-            */
+
                     ->orWhere(function ($sub) use ($user) {
 
-                        /*
-                |--------------------------------------------------------------------------
-                | Visibility Date Condition
-                |--------------------------------------------------------------------------
-                */
                         $sub->where(function ($dateQuery) {
 
                             $now = now();
@@ -86,52 +67,178 @@ class MessageService
                                         ->whereNull('appears_to');
                                 });
                         })
-
-                            /*
-                |--------------------------------------------------------------------------
-                | Direct marketer assignment
-                |--------------------------------------------------------------------------
-                */
                             ->where(function ($targetQuery) use ($user) {
 
-                                $targetQuery
+                                if ($user->is_warehouse_man) {
 
-                                    ->where(function ($q) use ($user) {
+                                    $targetQuery
+                                        // ALL warehouse keepers
+                                        ->where(function ($q) {
+                                            $q->where(
+                                                'assignment_type',
+                                                AssignmentType::ALL->value
+                                            )
+                                                ->where(
+                                                    'target_type',
+                                                    'warehouse_keeper'
+                                                );
+                                        })
 
-                                        $q->where('target_type', 'marketer')
-                                            ->whereHas('assignees', function ($a) use ($user) {
+                                        // SPECIFIC warehouse keeper
+                                        ->orWhere(function ($q) use ($user) {
+                                            $q->where(
+                                                'assignment_type',
+                                                AssignmentType::SPECIFIC->value
+                                            )
+                                                ->where(
+                                                    'target_type',
+                                                    'warehouse_keeper'
+                                                )
+                                                ->whereHas('assignees', function ($a) use ($user) {
+                                                    $a->where(
+                                                        'marketer_id',
+                                                        $user->id
+                                                    );
+                                                });
+                                        });
 
-                                                $a->where('marketer_id', $user->id);
-                                            });
-                                    })
+                                    return;
+                                }
 
-                                    /*
-                        |--------------------------------------------------------------------------
-                        | Team assignment
-                        |--------------------------------------------------------------------------
-                        */
-                                    ->orWhere(function ($q) use ($user) {
+                                /*
+                    |--------------------------------------------------------------------------
+                    | TEAM MANAGER
+                    |--------------------------------------------------------------------------
+                    */
+                                if ($user->hasRole('Team Manager')) {
 
-                                        $q->where('target_type', 'team')
-                                            ->whereHas('assignees', function ($a) use ($user) {
+                                    $targetQuery
+                                        // ALL team
+                                        ->where(function ($q) {
+                                            $q->where(
+                                                'assignment_type',
+                                                AssignmentType::ALL->value
+                                            )
+                                                ->where('target_type', 'team');
+                                        })
 
-                                                $a->where('team_id', $user->team_id);
-                                            });
-                                    })
+                                        // SPECIFIC team
+                                        ->orWhere(function ($q) use ($user) {
+                                            $q->where(
+                                                'assignment_type',
+                                                AssignmentType::SPECIFIC->value
+                                            )
+                                                ->where('target_type', 'team')
+                                                ->whereHas('assignees', function ($a) use ($user) {
+                                                    $a->where(
+                                                        'team_id',
+                                                        $user->team_id
+                                                    );
+                                                });
+                                        })
 
-                                    /*
-                        |--------------------------------------------------------------------------
-                        | Subteam assignment
-                        |--------------------------------------------------------------------------
-                        */
-                                    ->orWhere(function ($q) use ($user) {
+                                        // SPECIFIC marketer
+                                        ->orWhere(function ($q) use ($user) {
+                                            $q->where(
+                                                'assignment_type',
+                                                AssignmentType::SPECIFIC->value
+                                            )
+                                                ->where('target_type', 'marketer')
+                                                ->whereHas('assignees.marketer', function ($a) use ($user) {
+                                                    $a->where('team_id', $user->team_id);
+                                                });
+                                        });
 
-                                        $q->where('target_type', 'sub_team')
-                                            ->whereHas('assignees', function ($a) use ($user) {
+                                    return;
+                                }
 
-                                                $a->where('sub_team_id', $user->subteam_id);
-                                            });
-                                    });
+                                /*
+                    |--------------------------------------------------------------------------
+                    | TEAM LEADER
+                    |--------------------------------------------------------------------------
+                    */
+                                if ($user->hasRole('Team Leader')) {
+
+                                    $targetQuery
+                                        // ALL sub-team
+                                        ->where(function ($q) {
+                                            $q->where(
+                                                'assignment_type',
+                                                AssignmentType::ALL->value
+                                            )
+                                                ->where('target_type', 'sub_team');
+                                        })
+
+                                        // SPECIFIC sub-team
+                                        ->orWhere(function ($q) use ($user) {
+                                            $q->where(
+                                                'assignment_type',
+                                                AssignmentType::SPECIFIC->value
+                                            )
+                                                ->where('target_type', 'sub_team')
+                                                ->whereHas('assignees', function ($a) use ($user) {
+                                                    $a->where(
+                                                        'sub_team_id',
+                                                        $user->subteam_id
+                                                    );
+                                                });
+                                        })
+
+                                        // SPECIFIC marketer
+                                        ->orWhere(function ($q) use ($user) {
+                                            $q->where(
+                                                'assignment_type',
+                                                AssignmentType::SPECIFIC->value
+                                            )
+                                                ->where('target_type', 'marketer')
+                                                ->whereHas('assignees.marketer', function ($a) use ($user) {
+                                                    $a->where(
+                                                        'subteam_id',
+                                                        $user->subteam_id
+                                                    );
+                                                });
+                                        });
+
+                                    return;
+                                }
+
+                                /*
+                    |--------------------------------------------------------------------------
+                    | MARKETER
+                    |--------------------------------------------------------------------------
+                    */
+                                if ($user->hasRole('Marketer')) {
+
+                                    $targetQuery
+                                        // ALL marketers
+                                        ->where(function ($q) {
+                                            $q->where(
+                                                'assignment_type',
+                                                AssignmentType::ALL->value
+                                            )
+                                                ->where('target_type', 'marketer');
+                                        })
+
+                                        // SPECIFIC marketer
+                                        ->orWhere(function ($q) use ($user) {
+                                            $q->where(
+                                                'assignment_type',
+                                                AssignmentType::SPECIFIC->value
+                                            )
+                                                ->where('target_type', 'marketer')
+                                                ->whereHas('assignees', function ($a) use ($user) {
+                                                    $a->where(
+                                                        'marketer_id',
+                                                        $user->id
+                                                    );
+                                                });
+                                        });
+
+                                    return;
+                                }
+
+                                // No matching user type
+                                $targetQuery->whereRaw('1 = 0');
                             });
                     });
             })
@@ -238,43 +345,69 @@ class MessageService
         ) {
             $allowed = true;
         }
-        if (
-            !$allowed &&
-            $message->target_type === 'marketer'
-        ) {
-
-            $allowed = $message->assignees()
-                ->where('marketer_id', $user->id)
-                ->exists();
-        }
-
-        if (
-            !$allowed &&
-            $message->target_type === 'team' &&
-            $user->team_id
-        ) {
-
-            $allowed = $message->assignees()
-                ->where('team_id', $user->team_id)
-                ->exists();
-        }
-
-        if (
-            !$allowed &&
-            $message->target_type === 'sub_team' &&
-            $user->subteam_id
-        ) {
-
-            $allowed = $message->assignees()
-                ->where('sub_team_id', $user->subteam_id)
-                ->exists();
-        }
 
         /*
-    |--------------------------------------------------------------------------
-    | ❌ Unauthorized
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | ALL
+        |--------------------------------------------------------------------------
+        */
+        if (!$allowed && $message->assignment_type === AssignmentType::ALL->value) {
+
+            if (
+                $user->is_warehouse_man &&
+                $message->target_type === 'warehouse_keeper'
+            ) {
+                $allowed = true;
+            } elseif (
+                $user->hasRole('Marketer') &&  $message->target_type === 'marketer'
+            ) {
+                $allowed = true;
+            } elseif (
+                $user->team_id &&  $message->target_type === 'team'
+            ) {
+                $allowed = true;
+            } elseif (
+                $user->subteam_id && $message->target_type === 'sub_team'
+            ) {
+                $allowed = true;
+            }
+        }
+        if (
+            !$allowed &&
+            $message->assignment_type === AssignmentType::SPECIFIC->value
+        ) {
+
+            if (
+                $user->is_warehouse_man &&
+                $message->target_type === 'warehouse_keeper'
+            ) {
+                $allowed = $message->assignees()
+                    ->where('marketer_id', $user->id)
+                    ->exists();
+            } elseif (
+                $user->hasRole('Marketer') &&
+                $message->target_type === 'marketer'
+            ) {
+                $allowed = $message->assignees()
+                    ->where('marketer_id', $user->id)
+                    ->exists();
+            } elseif (
+                $user->hasRole('Team Manager') &&
+                $message->target_type === 'team'
+            ) {
+                $allowed = $message->assignees()
+                    ->where('team_id', $user->team_id)
+                    ->exists();
+            } elseif (
+                $user->hasRole('Team Leader') &&
+                $message->target_type === 'sub_team'
+            ) {
+                $allowed = $message->assignees()
+                    ->where('sub_team_id', $user->subteam_id)
+                    ->exists();
+            }
+        }
+
         if (!$allowed) {
 
             throw new CustomException(

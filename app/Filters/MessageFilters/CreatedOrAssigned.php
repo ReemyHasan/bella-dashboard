@@ -2,6 +2,7 @@
 
 namespace App\Filters\MessageFilters;
 
+use App\Enums\TargetType;
 use App\Filters\QueryFilter;
 use App\Filters\FilterContract;
 use App\Models\AppUser;
@@ -68,6 +69,17 @@ class CreatedOrAssigned extends QueryFilter implements FilterContract
                         $sub->where('target_type', 'sub_team')
                             ->whereHas('assignees', function ($a) use ($user) {
                                 $a->where('sub_team_id', $user->subteam_id);
+                            });
+                    });
+                }
+
+                  if ($user->is_warehouse_man) {
+
+                    $q->orWhere(function ($sub) use ($user) {
+
+                        $sub->where('target_type', TargetType::WAREHOUSE_KEEPER->value)
+                            ->whereHas('assignees', function ($a) use ($user) {
+                                $a->where('marketer_id', $user->subteam_id);
                             });
                     });
                 }

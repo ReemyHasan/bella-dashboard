@@ -53,7 +53,7 @@ class ChartsController extends Controller implements HasMiddleware
             ->first();
 
 
-        $bestMarketer = CustomerOrder::select(
+        $bestMarketers = CustomerOrder::select(
             'app_user_id',
             DB::raw('COUNT(*) as total_orders')
         )
@@ -63,10 +63,23 @@ class ChartsController extends Controller implements HasMiddleware
             ->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
             ->when($to, fn($q) => $q->whereDate('created_at', '<=', $to))
             ->orderByDesc('total_orders')
-            ->first();
+            ->limit(10)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->marketer?->id,
+                    'name' => $item->marketer
+                        ? trim($item->marketer->first_name . ' ' . $item->marketer->last_name)
+                        : null,
+                    'total_orders' => (int) $item->total_orders,
+                ];
+            })
+            ->values();
 
-
-        $bestTeam = CustomerOrder::select(
+        /*
+     * Best Teams
+     */
+        $bestTeams = CustomerOrder::select(
             'team_id',
             DB::raw('COUNT(*) as total_orders')
         )
@@ -76,7 +89,17 @@ class ChartsController extends Controller implements HasMiddleware
             ->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
             ->when($to, fn($q) => $q->whereDate('created_at', '<=', $to))
             ->orderByDesc('total_orders')
-            ->first();
+            ->limit(10)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->team?->id,
+                    'name' => $item->team?->name,
+                    'total_orders' => (int) $item->total_orders,
+                ];
+            })
+            ->values();
+
 
         $retuned = [
             'bestProduct' => [
@@ -89,16 +112,8 @@ class ChartsController extends Controller implements HasMiddleware
                 "name" => $bestOffer?->offer?->name,
                 'value' => $bestOffer?->total_quantity
             ],
-            'bestMarketer' => [
-                "id" => $bestMarketer?->marketer?->id,
-                "name" => $bestMarketer?->marketer?->first_name . ' ' . $bestMarketer?->marketer?->last_name,
-                'value' => $bestMarketer?->total_orders
-            ],
-            'bestTeam' => [
-                "id" => $bestTeam?->team?->id,
-                "name" => $bestTeam?->team?->name,
-                'total_orders' => $bestTeam?->total_orders
-            ]
+            'bestMarketers' => $bestMarketers,
+            'bestTeams' => $bestTeams,
         ];
 
         return response()->format($retuned, 'messages.success', 200);
@@ -220,7 +235,7 @@ class ChartsController extends Controller implements HasMiddleware
 
     public function financialSummaryReport(Request $request)
     {
-        
+
         $from = $request->input('from');
         $to = $request->input('to');
 

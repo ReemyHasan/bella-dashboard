@@ -58,8 +58,12 @@ class MessageHandler
 
     private function resolveUsers($message)
     {
+        if ($message->assignment_type->value === 'all' & $message->target_type->value == 'warehouse_keeper') {
 
-        if ($message->assignment_type->value == 'all') {
+            return AppUser::query()
+                ->where('status', DashUserStatus::ACTIVE->value)
+                ->where('is_warehouse_man', true);
+        } elseif ($message->assignment_type->value == 'all') {
 
             return AppUser::query()->where('status', DashUserStatus::ACTIVE->value);
         }
@@ -68,6 +72,11 @@ class MessageHandler
         return match ($message->target_type->value) {
 
             'marketer' =>
+            AppUser::query()->whereIn(
+                'id',
+                $message->assignees->pluck('marketer_id')
+            ),
+            'warehouse_keeper' =>
             AppUser::query()->whereIn(
                 'id',
                 $message->assignees->pluck('marketer_id')

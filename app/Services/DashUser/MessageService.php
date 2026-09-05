@@ -79,6 +79,8 @@ class MessageService
             'team' => 'team_id',
             'sub_team' => 'sub_team_id',
             'marketer' => 'marketer_id',
+            'warehouse_keeper' => 'marketer_id',
+
         };
 
         $rows = collect($data['assignees'])

@@ -7,4 +7,6 @@ enum TargetType: string
     case TEAM = 'team';
     case SUB_TEAM = 'sub_team';
     case MARKETER = 'marketer';
+    case WAREHOUSE_KEEPER = 'warehouse_keeper';
+
 }

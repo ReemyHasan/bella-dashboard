@@ -45,6 +45,8 @@ class MessageRequest extends FormRequest
                 'team' => 'teams',
                 'sub_team' => 'sub_teams',
                 'marketer' => 'app_users',
+                'warehouse_keeper' => 'app_users',
+
                 default => null,
             };
 
