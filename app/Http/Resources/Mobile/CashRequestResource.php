@@ -60,7 +60,7 @@ class CashRequestResource extends JsonResource
                 'id' => $this->paymentMethod?->id,
                 'name' => $this->paymentMethod?->name_ar . '-' . $this->paymentMethod?->name_en
             ]),
-            'payment_method_fields' => collect($this->payment_method_fields)
+            'payment_method_fields' => $this->payment_method_fields ? collect($this->payment_method_fields)
                 ->map(function ($value, $key) {
 
                     $paymentMethod = $this->paymentMethod;
@@ -68,12 +68,40 @@ class CashRequestResource extends JsonResource
                     $field = collect($paymentMethod?->required_fields)
                         ->firstWhere('key', $key);
 
-                    if (($field['type'] ?? null) === 'image') {
-                        return getPublicFileUrl($value);
+                    if (!empty($value)) {
+                        if (($field['type'] ?? null) == 'image') {
+                            return getPublicFileUrl($value);
+                        }
+
+                        return $value;
                     }
 
-                    return $value;
-                }),
+                    return match ($key) {
+                        'name' => $this->requestedFor
+                            ? trim($this->requestedFor->first_name . ' ' . $this->requestedFor->last_name)
+                            : null,
+
+                        'mobile' => $this->requestedFor?->mobile,
+
+                        'address' => $this->whenLoaded('address', fn() => [
+                            'id' => $this->address?->id,
+                            'name' => $this->address?->name,
+                        ]),
+
+                        default => $value,
+                    };
+                }): [
+                        'name' => $this->requestedFor
+                            ? trim($this->requestedFor->first_name . ' ' . $this->requestedFor->last_name)
+                            : null,
+
+                        'mobile' => $this->requestedFor?->mobile,
+
+                        'address' => $this->whenLoaded('address', fn() => [
+                            'id' => $this->address?->id,
+                            'name' => $this->address?->name,
+                        ]),
+                ],
 
 
             'delivered_at' => $this->delivered_at_formatted,
