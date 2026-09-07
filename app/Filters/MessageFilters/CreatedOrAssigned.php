@@ -16,14 +16,13 @@ class CreatedOrAssigned extends QueryFilter implements FilterContract
         $user = auth()->user();
 
         /*
-        |--------------------------------------------------------------------------
-        | created_by_me
-        |--------------------------------------------------------------------------
-        */
+    |--------------------------------------------------------------------------
+    | created_by_me
+    |--------------------------------------------------------------------------
+    */
         if ($value === 'created_by_me') {
 
             $this->query->where(function ($q) use ($user) {
-
                 $q->where('created_by_type', get_class($user))
                     ->where('created_by_id', $user->id);
             });
@@ -32,58 +31,130 @@ class CreatedOrAssigned extends QueryFilter implements FilterContract
         }
 
         /*
-        |--------------------------------------------------------------------------
-        | assigned_to_me
-        |--------------------------------------------------------------------------
-        */
+    |--------------------------------------------------------------------------
+    | assigned_to_me
+    |--------------------------------------------------------------------------
+    */
         if ($value === 'assigned_to_me') {
 
             $this->query->where(function ($q) use ($user) {
 
-                // direct marketer assignment
+                /*
+            |--------------------------------------------------------------------------
+            | Marketer
+            |--------------------------------------------------------------------------
+            */
+
                 $q->where(function ($sub) use ($user) {
 
-                    $sub->where('target_type', 'marketer')
-                        ->whereHas('assignees', function ($a) use ($user) {
-                            $a->where('marketer_id', $user->id);
+                    // ALL marketers
+                    $sub->where(function ($all) {
+                        $all->where('assignment_type', 'all')
+                            ->where('target_type', TargetType::MARKETER->value);
+                    })
+
+                        // Specific marketer
+                        ->orWhere(function ($specific) use ($user) {
+                            $specific->where('assignment_type', 'specific')
+                                ->where('target_type', TargetType::MARKETER->value)
+                                ->whereHas('assignees', function ($a) use ($user) {
+                                    $a->where('marketer_id', $user->id);
+                                });
                         });
                 });
 
-                // team assignment
+
+                /*
+            |--------------------------------------------------------------------------
+            | Team
+            |--------------------------------------------------------------------------
+            */
+
                 if ($user->team_id) {
 
                     $q->orWhere(function ($sub) use ($user) {
 
-                        $sub->where('target_type', 'team')
-                            ->whereHas('assignees', function ($a) use ($user) {
-                                $a->where('team_id', $user->team_id);
+                        // ALL teams
+                        $sub->where(function ($all) {
+                            $all->where('assignment_type', 'all')
+                                ->where('target_type', TargetType::TEAM->value);
+                        })
+
+                            // Specific team
+                            ->orWhere(function ($specific) use ($user) {
+                                $specific->where('assignment_type', 'specific')
+                                    ->where('target_type', TargetType::TEAM->value)
+                                    ->whereHas('assignees', function ($a) use ($user) {
+                                        $a->where('team_id', $user->team_id);
+                                    });
                             });
                     });
                 }
 
-                // subteam assignment
+
+                /*
+            |--------------------------------------------------------------------------
+            | Sub Team
+            |--------------------------------------------------------------------------
+            */
+
                 if ($user->subteam_id) {
 
                     $q->orWhere(function ($sub) use ($user) {
 
-                        $sub->where('target_type', 'sub_team')
-                            ->whereHas('assignees', function ($a) use ($user) {
-                                $a->where('sub_team_id', $user->subteam_id);
+                        // ALL subteams
+                        $sub->where(function ($all) {
+                            $all->where('assignment_type', 'all')
+                                ->where('target_type', TargetType::SUB_TEAM->value);
+                        })
+
+                            // Specific subteam
+                            ->orWhere(function ($specific) use ($user) {
+                                $specific->where('assignment_type', 'specific')
+                                    ->where('target_type', TargetType::SUB_TEAM->value)
+                                    ->whereHas('assignees', function ($a) use ($user) {
+                                        $a->where('sub_team_id', $user->subteam_id);
+                                    });
                             });
                     });
                 }
 
-                  if ($user->is_warehouse_man) {
+
+                /*
+            |--------------------------------------------------------------------------
+            | Warehouse Keeper
+            |--------------------------------------------------------------------------
+            */
+
+                if ($user->is_warehouse_man) {
 
                     $q->orWhere(function ($sub) use ($user) {
 
-                        $sub->where('target_type', TargetType::WAREHOUSE_KEEPER->value)
-                            ->whereHas('assignees', function ($a) use ($user) {
-                                $a->where('marketer_id', $user->subteam_id);
+                        // ALL warehouse keepers
+                        $sub->where(function ($all) {
+                            $all->where('assignment_type', 'all')
+                                ->where(
+                                    'target_type',
+                                    TargetType::WAREHOUSE_KEEPER->value
+                                );
+                        })
+
+                            // Specific warehouse keeper
+                            ->orWhere(function ($specific) use ($user) {
+                                $specific->where('assignment_type', 'specific')
+                                    ->where(
+                                        'target_type',
+                                        TargetType::WAREHOUSE_KEEPER->value
+                                    )
+                                    ->whereHas('assignees', function ($a) use ($user) {
+                                        $a->where('marketer_id', $user->id);
+                                    });
                             });
                     });
                 }
             });
+
+            return;
         }
     }
 

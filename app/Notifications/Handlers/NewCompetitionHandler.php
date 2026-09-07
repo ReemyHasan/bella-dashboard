@@ -27,21 +27,8 @@ class NewCompetitionHandler
                         'competition_id' => $competition->id,
                     ]
                 );
-                // ->onQueue('database-notifications');;
             });
 
-        // foreach ($users as $user) {
-
-        //     $this->notificationService->createNotification(
-        //         type: $event->type->value,
-        //         client: $user,
-        //         title: $event->type->label(),
-        //         body: $competition->name,
-        //         data: [
-        //             'competition_id' => $competition->id,
-        //         ]
-        //     );
-        // }
     }
 
     public function handleFirebase(NotificationEvent $event): void
@@ -63,24 +50,8 @@ class NewCompetitionHandler
                         'competition_id' => (string) $competition->id,
                     ]
                 );
-                // ->onQueue('firebase-notifications');
             });
-        // foreach ($users as $user) {
-
-        //     if (!$user->fcm_token) {
-        //         continue;
-        //     }
-
-        //     $this->firebaseNotificationService->sendNotification(
-        //         tokens: $user->fcm_token,
-        //         title: $event->type->label(),
-        //         body: $competition->name,
-        //         data: [
-        //             'type' => $event->type->value,
-        //             'competition_id' => (string) $competition->id,
-        //         ]
-        //     );
-        // }
+      
     }
 
     private function resolveUsers($competition)

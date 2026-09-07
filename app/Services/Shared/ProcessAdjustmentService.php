@@ -7,6 +7,7 @@ use App\Enums\VaultTransactionType;
 use App\Exceptions\CustomException;
 use App\Models\DashUser;
 use App\Models\FinancialAdjustment;
+use App\Models\Vault;
 use App\Models\VaultTransaction;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -195,11 +196,9 @@ class ProcessAdjustmentService
         $warehouseKeeper,
         bool $isBonus
     ) {
-        $vault = $warehouseKeeper->vault;
-
-        if (!$vault) {
-            throw new CustomException('خزنة الموزع غير موجودة.');
-        }
+        $vault = Vault::where('owner_id', $warehouseKeeper->id)->first();
+        if ($vault == null)
+            throw new CustomException('من فضلك تواصل مع الإدارة, الموزع ليس لديه معلومات كافية.');
 
         $amount = $adjustment->amount;
         $vaultBefore = $vault->balance;
