@@ -28,7 +28,6 @@ class NewCompetitionHandler
                     ]
                 );
             });
-
     }
 
     public function handleFirebase(NotificationEvent $event): void
@@ -51,7 +50,6 @@ class NewCompetitionHandler
                     ]
                 );
             });
-      
     }
 
     private function resolveUsers($competition)
@@ -64,29 +62,45 @@ class NewCompetitionHandler
                 $competition->marketers->pluck('id')
             ),
 
-            'teams' =>
+            'all' =>
+            $this->resolveAllTargetUsers($competition),
+
+            'teams', 'all_teams' =>
             AppUser::query()->whereIn(
                 'team_id',
                 $competition->teams->pluck('id')
             ),
 
-            'subteams' =>
+            'subteams', 'all_subteams' =>
             AppUser::query()->whereIn(
                 'subteam_id',
                 $competition->subteams->pluck('id')
-            ),
-            'all_teams' =>
-            AppUser::query()->whereIn(
-                'team_id',
-                $competition->teams->pluck('id')
             ),
 
-            'all_subteams' =>
-            AppUser::query()->whereIn(
-                'subteam_id',
-                $competition->subteams->pluck('id')
-            ),
-            default => AppUser::query()->whereRaw('1 = 0'),
+            default =>
+            AppUser::query()->whereRaw('1 = 0'),
         };
+    }
+
+    private function resolveAllTargetUsers($competition)
+    {
+        $query = AppUser::query();
+
+        $coCreator = $competition->coCreatedBy;
+
+        if ($coCreator) {
+
+            if ($coCreator->hasRole('Team Manager')) {
+
+                // All marketers in the manager's team
+                $query->where('team_id', $coCreator->team_id);
+            } elseif ($coCreator->hasRole('Team Leader')) {
+
+                // All marketers in the leader's subteam
+                $query->where('sub_team_id', $coCreator->sub_team_id);
+            }
+        }
+
+        return $query;
     }
 }
