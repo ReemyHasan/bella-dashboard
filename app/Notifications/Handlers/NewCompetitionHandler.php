@@ -92,12 +92,11 @@ class NewCompetitionHandler
 
             if ($coCreator->hasRole('Team Manager')) {
 
-                // All marketers in the manager's team
                 $query->where('team_id', $coCreator->team_id);
             } elseif ($coCreator->hasRole('Team Leader')) {
 
                 // All marketers in the leader's subteam
-                $query->where('sub_team_id', $coCreator->sub_team_id);
+                $query->where('subteam_id', $coCreator->subteam_id);
             }
         }
 

@@ -102,23 +102,62 @@ class CompetitionService
     private function applyVisibility($query, $user): void
     {
         $query->where(function ($q) use ($user) {
+            $q->orWhere(function ($sub) use ($user) {
 
-            $q->where(
-                'target',
-                CompetitionTarget::all->value
-            );
+                $sub->where('target', CompetitionTarget::all->value)
+                    ->where(function ($all) use ($user) {
 
+                        // No co-creator => visible to all marketers
+                        $all->whereNull('co_created_by_id')
+
+                            // Team Manager => only his team
+                            ->orWhere(function ($manager) use ($user) {
+                                if (!$user->team_id) {
+                                    return;
+                                }
+
+                                $manager->whereHas('coCreatedBy', function ($coCreator) use ($user) {
+                                    $coCreator
+                                        ->whereHas('roles', function ($role) {
+                                            $role->where('name', 'Team Manager');
+                                        })
+                                        ->where('team_id', $user->team_id);
+                                });
+                            })
+
+                            // Team Leader => only his subteam
+                            ->orWhere(function ($leader) use ($user) {
+                                if (!$user->subteam_id) {
+                                    return;
+                                }
+
+                                $leader->whereHas('coCreatedBy', function ($coCreator) use ($user) {
+                                    $coCreator
+                                        ->whereHas('roles', function ($role) {
+                                            $role->where('name', 'Team Leader');
+                                        })
+                                        ->where('subteam_id', $user->subteam_id);
+                                });
+                            });
+                    });
+            });
+
+            /*
+         * SPECIFIC MARKETERS
+         */
             $q->orWhere(function ($sub) use ($user) {
 
                 $sub->where(
                     'target',
                     CompetitionTarget::marketers->value
-                )
-                    ->whereHas('marketers', function ($m) use ($user) {
-                        $m->where('marketer_id', $user->id);
-                    });
+                )->whereHas('marketers', function ($m) use ($user) {
+                    $m->where('marketer_id', $user->id);
+                });
             });
 
+            /*
+         * TEAM MANAGER
+         */
             if ($user->hasRole('Team Manager')) {
 
                 $teamId = $user->team_id;
@@ -129,10 +168,9 @@ class CompetitionService
                         $sub->where(
                             'target',
                             CompetitionTarget::teams->value
-                        )
-                            ->whereHas('teams', function ($team) use ($teamId) {
-                                $team->where('teams.id', $teamId);
-                            });
+                        )->whereHas('teams', function ($team) use ($teamId) {
+                            $team->where('teams.id', $teamId);
+                        });
                     });
                 }
 
@@ -147,17 +185,21 @@ class CompetitionService
                         $sub->where(
                             'target',
                             CompetitionTarget::subteams->value
-                        )
-                            ->whereHas('subteams', function ($subteam) use ($teamId) {
-                                $subteam->where('team_id', $teamId);
-                            });
+                        )->whereHas('subteams', function ($subteam) use ($teamId) {
+                            $subteam->where('team_id', $teamId);
+                        });
                     });
                 }
+
                 $q->orWhere(
                     'target',
                     CompetitionTarget::all_subteams->value
                 );
-            } elseif ($user->hasRole('Team Leader')) {
+            }
+
+            /*
+         * TEAM LEADER
+         */ elseif ($user->hasRole('Team Leader')) {
 
                 $subteamId = $user->subteam_id;
 
@@ -167,9 +209,9 @@ class CompetitionService
                         $sub->where(
                             'target',
                             CompetitionTarget::subteams->value
-                        ) ->whereHas('subteams', function ($subteam) use ($subteamId) {
-                                $subteam->where('sub_teams.id', $subteamId);
-                            });
+                        )->whereHas('subteams', function ($subteam) use ($subteamId) {
+                            $subteam->where('sub_teams.id', $subteamId);
+                        });
                     });
                 }
 

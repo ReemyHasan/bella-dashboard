@@ -233,8 +233,8 @@ class CompetitionService
                     } elseif ($coCreator->hasRole('Team Leader')) {
 
                         $marketerQuery->where(
-                            'sub_team_id',
-                            $coCreator->sub_team_id
+                            'subteam_id',
+                            $coCreator->subteam_id
                         );
                     }
                 }
