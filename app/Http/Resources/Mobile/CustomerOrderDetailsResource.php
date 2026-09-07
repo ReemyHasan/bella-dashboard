@@ -107,13 +107,13 @@ class CustomerOrderDetailsResource extends JsonResource
             'created_by' => $this->whenLoaded('createdBy', fn() => [
                 'id' => $this->createdBy?->id,
                 'type' => get_class($this->createdBy) == 'App\Models\DashUser' ? 'الإدارة' :  'من قبلك',
-                'name' => $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name . ' (' . $this->createdBy?->user_name . ')',
+                'name' => $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name ,
             ]),
 
             'reviewed_at' => $this->reviewed_at_formatted,
             'reviewed_by' => $this->whenLoaded('reviewedBy', fn() => [
                 'id' => $this->reviewedBy?->id,
-                'name' => $this->reviewedBy?->first_name . ' ' . $this->reviewedBy?->last_name . ' (' . $this->reviewedBy?->user_name . ')',
+                'name' => $this->reviewedBy?->first_name . ' ' . $this->reviewedBy?->last_name,
             ]),
 
 

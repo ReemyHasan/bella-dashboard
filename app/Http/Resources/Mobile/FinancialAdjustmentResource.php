@@ -30,7 +30,7 @@ class FinancialAdjustmentResource extends JsonResource
 
             'requested_for' => $this->whenLoaded('requestedFor', fn() => [
                 'id' => $this->requestedFor?->id,
-                'name' => $this->requestedFor?->first_name . ' ' . $this->requestedFor?->last_name . ' (' . $this->requestedFor?->user_name . ')',
+                'name' => $this->requestedFor?->first_name . ' ' . $this->requestedFor?->last_name ,
             ]),
 
             'created_at' => $this->created_at_formatted,

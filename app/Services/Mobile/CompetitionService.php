@@ -167,8 +167,7 @@ class CompetitionService
                         $sub->where(
                             'target',
                             CompetitionTarget::subteams->value
-                        )
-                            ->whereHas('subteams', function ($subteam) use ($subteamId) {
+                        ) ->whereHas('subteams', function ($subteam) use ($subteamId) {
                                 $subteam->where('sub_teams.id', $subteamId);
                             });
                     });

@@ -31,7 +31,7 @@ class MessageResource extends JsonResource
             ),
 
             'created_by' => $this->whenLoaded('createdBy', fn() => 
-            $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name . ' (' . $this->createdBy?->user_name . ')'
+            $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name 
             )
         ];
     }

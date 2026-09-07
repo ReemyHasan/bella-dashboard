@@ -113,7 +113,7 @@ class CashRequestResource extends JsonResource
 
 
             'reviewed_by' => $this->whenLoaded('reviewedBy', fn() =>
-            $this->reviewedBy?->first_name . ' ' . $this->reviewedBy?->last_name . ' (' . $this->reviewedBy?->user_name . ')'),
+            $this->reviewedBy?->first_name . ' ' . $this->reviewedBy?->last_name ),
 
 
 

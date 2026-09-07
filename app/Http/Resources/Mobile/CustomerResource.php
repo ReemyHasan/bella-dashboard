@@ -35,16 +35,16 @@ class CustomerResource extends JsonResource
 
             'created_by' => $this->whenLoaded('createdBy', fn() => [
                 'id' => $this->createdBy?->id,
-                'name' => $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name . ' (' . $this->createdBy?->user_name . ')',
+                'name' => $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name ,
             ]),
             'blocked_by' => $this->whenLoaded('blockedBy', fn() => [
                 'id' => $this->blockedBy?->id,
-                'name' => $this->blockedBy?->first_name . ' ' . $this->blockedBy?->last_name . ' (' . $this->blockedBy?->user_name . ')',
+                'name' => $this->blockedBy?->first_name . ' ' . $this->blockedBy?->last_name ,
             ]),
 
             'updated_by' => $this->whenLoaded('updatedBy', fn() => [
                 'id' => $this->updatedBy?->id,
-                'name' => $this->updatedBy?->first_name . ' ' . $this->updatedBy?->last_name . ' (' . $this->updatedBy?->user_name . ')',
+                'name' => $this->updatedBy?->first_name . ' ' . $this->updatedBy?->last_name ,
             ]),
             'created_at' => $this->created_at_formatted,
             'updated_at' => $this->updated_at_formatted,

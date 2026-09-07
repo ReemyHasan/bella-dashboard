@@ -122,7 +122,7 @@ class CustomerOrderObserver
     }
     private function handleFinancial($order, $competition)
     {
-        $amount = $order->final_total_price;
+        $amount = $order->total_base_price;
 
         $this->increaseScore($competition, $order, $amount);
     }

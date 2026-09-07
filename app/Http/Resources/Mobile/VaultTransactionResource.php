@@ -52,23 +52,23 @@ class VaultTransactionResource extends JsonResource
                 : $this->whenLoaded(
                     'fromVault',
                     fn() =>
-                    $this->fromVault?->owner?->first_name . ' ' . $this->fromVault?->owner?->last_name . ' (' . $this->fromVault?->owner?->user_name . ')'
+                    $this->fromVault?->owner?->first_name . ' ' . $this->fromVault?->owner?->last_name
                 ),
             'to_vault' => $this->toVault?->id == 1 ? 'خزنة الشركة'
                 : $this->whenLoaded(
                     'toVault',
-                    fn() => $this->toVault?->owner?->first_name . ' ' . $this->toVault?->owner?->last_name . ' (' . $this->toVault?->owner?->user_name . ')'
+                    fn() => $this->toVault?->owner?->first_name . ' ' . $this->toVault?->owner?->last_name 
                 ),
 
 
             'action_by' => $this->whenLoaded(
                 'actionBy',
                 fn() =>
-                $this->actionBy?->first_name . ' ' . $this->actionBy?->last_name . ' (' . $this->actionBy?->user_name . ')'
+                $this->actionBy?->first_name . ' ' . $this->actionBy?->last_name 
             ),
 
             'to_user' => $this->whenLoaded('balanceUser', fn() =>
-            $this->balanceUser?->first_name . ' ' . $this->balanceUser?->last_name . ' (' . $this->balanceUser?->user_name . ')'),
+            $this->balanceUser?->first_name . ' ' . $this->balanceUser?->last_name ),
 
             'created_at' => $this->created_at_formatted,
             'updated_at' => $this->updated_at_formatted,
