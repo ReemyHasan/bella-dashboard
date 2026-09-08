@@ -68,6 +68,13 @@ class CompetitionService
                 $competition->teams()->sync($teamIds);
             }
 
+            if ($data['target'] === CompetitionTarget::teams->value) {
+
+                $competition->teams()->sync(
+                    $data['teams']
+                );
+            }
+
             if ($data['target'] === CompetitionTarget::subteams->value) {
 
                 $competition->subteams()->sync(
@@ -183,6 +190,13 @@ class CompetitionService
                 $competition->teams()->sync($teamIds);
             }
 
+
+            if ($data['target'] === CompetitionTarget::teams->value) {
+
+                $competition->teams()->sync(
+                    $data['teams']
+                );
+            }
             if ($data['target'] === CompetitionTarget::subteams->value) {
 
                 $competition->subteams()->sync(
