@@ -2,7 +2,11 @@
 
 namespace App\Notifications\Handlers;
 
+use App\Enums\CompetitionTarget;
 use App\Events\NotificationEvent;
+use App\Models\AppUser;
+use App\Models\SubTeam;
+use App\Models\Team;
 use App\Services\Notification\FirebaseNotificationService;
 use App\Services\Notification\NotificationService;
 
@@ -54,44 +58,97 @@ class CompetitionGoalAchievementHandler
         }
     }
 
-    private function resolveData(NotificationEvent $event): array
-    {
-        $participant = $event->data['participant'];
-        $competition = $event->data['competition'];
+   private function resolveData(NotificationEvent $event): array
+{
+    $participant = $event->data['participant'];
+    $competition = $event->data['competition'];
 
-        $users = collect();
+    $users = collect();
 
-        // winner
-        if ($participant->participant) {
-            $users->push($participant->participant);
-        }
+    $participantModel = $participant->participant;
 
-        // manager/team leader
-        $manager = match ($competition->target) {
-
-            'teams'
-            => optional($participant->participant)->team?->manager,
-
-            'subteams'
-            => optional($participant->participant)->subTeam?->teamLeader,
-
-            'all_teams'
-            => optional($participant->participant)->team?->manager,
-
-            'all_subteams'
-            => optional($participant->participant)->subTeam?->teamLeader,
-
-
-            default => null,
-        };
-
-        if ($manager) {
-            $users->push($manager);
-        }
-
+    if (!$participantModel) {
         return [
-            'users' => $users->unique('id'),
+            'users' => collect(),
             'competition' => $competition,
         ];
     }
+
+    /*
+     * MARKETER
+     *
+     * Participant itself is the marketer.
+     */
+    if (get_class($participantModel) == AppUser::class) {
+        $users->push($participantModel);
+    }
+
+    /*
+     * TEAM
+     *
+     * Participant itself is the Team.
+     * Notify the Team Manager.
+     */
+    if (get_class($participantModel) == Team::class) {
+        if ($participantModel->manager) {
+            $users->push($participantModel->manager);
+        }
+    }
+
+    /*
+     * SUBTEAM
+     *
+     * Participant itself is the SubTeam.
+     * Notify the Team Leader.
+     */
+    if (get_class($participantModel) == SubTeam::class) {
+        if ($participantModel->teamLeader) {
+            $users->push($participantModel->teamLeader);
+        }
+    }
+
+    /*
+     * ALL
+     *
+     * For `all`, participants are marketers.
+     *
+     * The co-creator is:
+     * - Team Manager
+     * - Team Leader
+     *
+     * depending on who created the competition.
+     */
+    if ($competition->target === CompetitionTarget::all->value) {
+        $coCreator = $this->resolveAllCoCreator($competition);
+
+        if ($coCreator) {
+            $users->push($coCreator);
+        }
+    }
+
+    return [
+        'users' => $users->unique('id')->values(),
+        'competition' => $competition,
+    ];
+}
+
+private function resolveAllCoCreator($competition)
+{
+    $competition->loadMissing('coCreatedBy');
+
+    $coCreator = $competition->coCreatedBy;
+
+    if (!$coCreator) {
+        return null;
+    }
+
+    if (
+        $coCreator->hasRole('Team Manager') ||
+        $coCreator->hasRole('Team Leader')
+    ) {
+        return $coCreator;
+    }
+
+    return null;
+}
 }

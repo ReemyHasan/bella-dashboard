@@ -373,6 +373,11 @@ class CustomerOrderObserver
 
             'subteams'
             => optional($participant->participant)->teamLeader,
+            'all_teams'
+            => optional($participant->participant)->manager,
+
+            'all_subteams'
+            => optional($participant->participant)->teamLeader,
 
             default => null,
         };

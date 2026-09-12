@@ -96,7 +96,7 @@ class SharedInfoService
 
         $requiredData = [
 
-            'marketer_percentage' => $isWarehouseMan ? 40: $team?->marketer_percentage ?? 0,
+            'marketer_percentage' => $isWarehouseMan ? 40 : $team?->marketer_percentage ?? 0,
             'teamleader_percentage' => $team?->team_leader_percentage ?? 0,
             // 'manager_percentage' => $isDirectTeam ? null : $team->manager_percentage
             'manager_percentage' => $team?->manager_percentage ?? 0
@@ -293,39 +293,111 @@ class SharedInfoService
         }
 
         return Competition::query()
+
             ->when(!is_null($status), function ($query) use ($status) {
                 $query->where('status', $status);
             })
+            ->where('start_at', '<=', now())
+            ->where('end_at', '>=', now())
+
             ->when(!is_null($marketer), function ($query) use ($marketer) {
 
                 $query->where(function ($query) use ($marketer) {
 
-                    // 🔹 Case: ALL → everyone participates
-                    $query->where('target', CompetitionTarget::all->value);
+                    /*
+                 * ALL
+                 *
+                 * No co-creator:
+                 *      => all marketers
+                 *
+                 * Team Manager co-creator:
+                 *      => marketers in his team
+                 *
+                 * Team Leader co-creator:
+                 *      => marketers in his subteam
+                 */
+                    $query->where(function ($q) use ($marketer) {
 
-                    // 🔹 Case: marketers → directly assigned
-                    $query->orWhere(function ($q) use ($marketer) {
-                        $q->where('target', CompetitionTarget::marketers->value)
-                            ->whereHas('marketers', function ($q2) use ($marketer) {
-                                $q2->where('marketer_id', $marketer->id);
+                        $q->where('target', CompetitionTarget::all->value)
+                            ->where(function ($all) use ($marketer) {
+
+                                // No co-creator => all marketers
+                                $all->whereNull('co_created_by_id')
+
+                                    // Co-creator is Team Manager
+                                    ->orWhereHas('coCreatedBy', function ($coCreator) use ($marketer) {
+                                        $coCreator
+                                            ->whereHas('roles', function ($role) {
+                                                $role->where('name', 'Team Manager');
+                                            })
+                                            ->where('team_id', $marketer->team_id);
+                                    })
+
+                                    // Co-creator is Team Leader
+                                    ->orWhereHas('coCreatedBy', function ($coCreator) use ($marketer) {
+                                        $coCreator
+                                            ->whereHas('roles', function ($role) {
+                                                $role->where('name', 'Team Leader');
+                                            })
+                                            ->where('subteam_id', $marketer->subteam_id);
+                                    });
                             });
                     });
 
-                    // 🔹 Case: teams → marketer belongs to team
+                    /*
+                 * MARKETERS
+                 * Directly assigned marketer
+                 */
                     $query->orWhere(function ($q) use ($marketer) {
-                        $q->where('target', CompetitionTarget::teams->value)
-                            ->whereHas('teams', function ($q2) use ($marketer) {
-                                $q2->where('team_id', $marketer->team_id);
-                            });
+                        $q->where(
+                            'target',
+                            CompetitionTarget::marketers->value
+                        )->whereHas('marketers', function ($q2) use ($marketer) {
+                            $q2->where('marketer_id', $marketer->id);
+                        });
                     });
 
-                    // 🔹 Case: subteams → marketer belongs to subteam
+                    /*
+                 * TEAMS
+                 * Marketer belongs to the selected team
+                 */
                     $query->orWhere(function ($q) use ($marketer) {
-                        $q->where('target', CompetitionTarget::subteams->value)
-                            ->whereHas('subteams', function ($q2) use ($marketer) {
-                                $q2->where('sub_team_id', $marketer->sub_team_id);
-                            });
+                        $q->where(
+                            'target',
+                            CompetitionTarget::teams->value
+                        )->whereHas('teams', function ($q2) use ($marketer) {
+                            $q2->where('teams.id', $marketer->team_id);
+                        });
                     });
+
+                    /*
+                 * SUBTEAMS
+                 * Marketer belongs to the selected subteam
+                 */
+                    $query->orWhere(function ($q) use ($marketer) {
+                        $q->where(
+                            'target',
+                            CompetitionTarget::subteams->value
+                        )->whereHas('subteams', function ($q2) use ($marketer) {
+                            $q2->where('sub_teams.id', $marketer->subteam_id);
+                        });
+                    });
+
+                    /*
+                 * ALL TEAMS
+                 */
+                    $query->orWhere(
+                        'target',
+                        CompetitionTarget::all_teams->value
+                    );
+
+                    /*
+                 * ALL SUBTEAMS
+                 */
+                    $query->orWhere(
+                        'target',
+                        CompetitionTarget::all_subteams->value
+                    );
                 });
             })
 
@@ -333,7 +405,9 @@ class SharedInfoService
             ->get([
                 'id',
                 'name',
-                'status'
+                'status',
+                'start_at',
+                'end_at',
             ]);
     }
 

@@ -153,6 +153,7 @@ class BalanceTransferRequestService
 
                 'reference_type' => BalanceTransferRequest::class,
                 'reference_id' => $request->id,
+                'transaction_date' => now(),
 
                 'to_vault_balance_before' => $fromBefore,
                 'to_vault_balance_after' => $fromAfter,
@@ -167,6 +168,7 @@ class BalanceTransferRequestService
                 'balance_user_id' => $to->id,
                 'type' => VaultTransactionType::TRANSFER_IN->value,
                 'amount' => $amount,
+                'transaction_date' => now(),
 
                 'reference_type' => BalanceTransferRequest::class,
                 'reference_id' => $request->id,

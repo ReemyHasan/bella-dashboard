@@ -30,8 +30,11 @@ class MessageResource extends JsonResource
                 $this->whenLoaded('assignees')
             ),
 
-            'created_by' => $this->whenLoaded('createdBy', fn() => 
-            $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name 
+
+            'created_by' => $this->whenLoaded(
+                'createdBy',
+                fn() =>
+                $this->createdBy?->first_name . ' ' . $this->createdBy?->last_name . get_class($this->createdBy) == 'App\Models\DashUser' ? '(الإدارة)' :  ''
             )
         ];
     }
